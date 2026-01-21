@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "RecordingApp (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "RecordingApp (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
