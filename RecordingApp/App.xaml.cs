@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 
+using RecordingApp.Features.Shell;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -31,6 +33,7 @@ namespace RecordingApp
                 .ConfigureServices((context, services) =>
                 {
                     services.AddTransient<MainWindow>();
+                    services.AddSingleton<ShellPage>();
                 })
                 .Build();
         }
@@ -54,6 +57,7 @@ namespace RecordingApp
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = GetService<MainWindow>();
+            _window.Content = GetService<ShellPage>();
             _window.Activate();
         }
     }
