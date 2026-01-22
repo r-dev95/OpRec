@@ -1,8 +1,12 @@
 ﻿using System;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+
+using NLog.Extensions.Logging;
 
 using RecordingApp.Features.Shell;
 
@@ -30,6 +34,12 @@ namespace RecordingApp
             _host = Host
                 .CreateDefaultBuilder()
                 .UseContentRoot(AppContext.BaseDirectory)
+                .ConfigureLogging((context, logging) =>
+                {
+                    logging.AddDebug();
+                    logging.AddNLog();
+                    logging.AddConfiguration(context.Configuration);
+                })
                 .ConfigureServices((context, services) =>
                 {
                     services.AddTransient<MainWindow>();
@@ -54,7 +64,7 @@ namespace RecordingApp
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _window = GetService<MainWindow>();
             _window.Content = GetService<ShellPage>();
