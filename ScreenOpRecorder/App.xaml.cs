@@ -8,12 +8,12 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
-using RecordingApp.Features.Shell;
+using ScreenOpRecorder.Features.Shell;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace RecordingApp
+namespace ScreenOpRecorder
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
