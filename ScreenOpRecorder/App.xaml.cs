@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
+using ScreenOpRecorder.Features.Overlay;
 using ScreenOpRecorder.Features.Shell;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -42,8 +43,8 @@ namespace ScreenOpRecorder
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddTransient<MainWindow>();
-                    services.AddSingleton<ShellPage>();
+                    services.AddSingleton<MainWindow>();
+                    services.AddSingleton<OverlayPage>();
                 })
                 .Build();
         }
@@ -67,7 +68,7 @@ namespace ScreenOpRecorder
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _window = GetService<MainWindow>();
-            _window.Content = GetService<ShellPage>();
+            _window.Content = GetService<OverlayPage>();
             _window.Activate();
         }
     }
