@@ -21,6 +21,7 @@
     <TrimMode>full</TrimMode>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Features\Overlay\OverlayPage.xaml" />
     <None Remove="Features\Shell\ShellPage.xaml" />
   </ItemGroup>
 
@@ -61,7 +62,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Shared\Helpers\" />
     <Folder Include="Shared\Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Features\Overlay\OverlayPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--

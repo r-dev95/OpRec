@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
+using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Overlay;
 using ScreenOpRecorder.Features.Shell;
 
@@ -45,6 +46,10 @@ namespace ScreenOpRecorder
                 {
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<OverlayPage>();
+                    services.AddSingleton<OverlayViewModel>();
+
+                    // Input Hook Services
+                    services.AddSingleton<IMouseHookService, MouseHookService>();
                 })
                 .Build();
         }
