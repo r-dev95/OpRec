@@ -50,6 +50,7 @@ namespace ScreenOpRecorder
 
                     // Input Hook Services
                     services.AddSingleton<IMouseHookService, MouseHookService>();
+                    services.AddSingleton<IKeyboardHookService, KeyboardHookService>();
                 })
                 .Build();
         }

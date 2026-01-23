@@ -1,33 +1,53 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Input;
+
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ScreenOpRecorder.Features.Overlay
 {
     public partial class OverlayViewModel : ObservableObject
     {
         private readonly ILogger<OverlayViewModel> _logger;
+
         private readonly IMouseHookService _mouseHookService;
+        private readonly IKeyboardHookService _keyboardHookService;
+
+        private CancellationTokenSource? _cts;
+
         private double _scaleFactor = 1.0;
 
-        public event Action<double, double, bool>? RippleRequested;
-        public event Action<string>? KeyStrokeRequested;
+        [ObservableProperty]
+        private string _currentKeyText = "";
 
-        public OverlayViewModel(ILogger<OverlayViewModel> logger, IMouseHookService mouseHookService)
+        public event Action<double, double, bool>? RippleRequested;
+
+        public OverlayViewModel(ILogger<OverlayViewModel> logger, IMouseHookService mouseHookService, IKeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _mouseHookService = mouseHookService;
             _mouseHookService.MouseClicked += OnMouseClicked;
+            _keyboardHookService = keyboardHookService;
+            _keyboardHookService.KeyDown += OnKeyDown;
         }
 
-        public void Initialize(double scaleFactor)
+        public void Start()
+        {
+            _mouseHookService.Start();
+            _keyboardHookService.Start();
+        }
+
+        public void SetScaleFactor(double scaleFactor)
         {
             _scaleFactor = scaleFactor;
-            _mouseHookService.Start();
             _logger.LogDebug("OverlayViewModel initialized with scale factor: {Scale}", _scaleFactor);
         }
 
@@ -38,6 +58,21 @@ namespace ScreenOpRecorder.Features.Overlay
             double logicalY = y / _scaleFactor;
 
             RippleRequested?.Invoke(logicalX, logicalY, isDouble);
+        }
+
+        private async void OnKeyDown(string keyName)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+
+            CurrentKeyText += keyName + " ";
+
+            try
+            {
+                await Task.Delay(1500, _cts.Token);
+                CurrentKeyText = "";
+            }
+            catch { }
         }
     }
 }

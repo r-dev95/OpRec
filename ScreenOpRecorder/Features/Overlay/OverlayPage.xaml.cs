@@ -32,9 +32,9 @@ namespace ScreenOpRecorder.Features.Overlay
             OverlayHelper.MaximizeWindow(mainWindow);
 
             var scale = OverlayHelper.GetScaleFactor(mainWindow);
-            ViewModel.Initialize(scale);
-
+            ViewModel.SetScaleFactor(scale);
             ViewModel.RippleRequested += OnRippleRequested;
+            ViewModel.Start();
             
         }
 
