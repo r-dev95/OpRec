@@ -2,6 +2,7 @@ using System;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -13,29 +14,29 @@ using Microsoft.UI.Xaml.Shapes;
 namespace ScreenOpRecorder.Features.Overlay
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class OverlayPage : Page
+    public sealed partial class OverlayWindow : Window
     {
         private readonly ILogger _logger;
         private readonly OverlayViewModel ViewModel;
-        public OverlayPage(ILogger<OverlayPage> logger, MainWindow mainWindow, OverlayViewModel viewModel)
+
+        public OverlayWindow(ILogger<OverlayWindow> logger, OverlayViewModel viewModel)
         {
             InitializeComponent();
             _logger = logger;
             ViewModel = viewModel;
 
-            mainWindow.ExtendsContentIntoTitleBar = true;
-            OverlayHelper.SetAlwaysOnTop(mainWindow, true);
-            OverlayHelper.SetClickThrough(mainWindow, true);
-            OverlayHelper.SetWindowOpacity(mainWindow, 128);
-            OverlayHelper.MaximizeWindow(mainWindow);
+            this.ExtendsContentIntoTitleBar = true;
+            OverlayHelper.SetAlwaysOnTop(this, true);
+            OverlayHelper.SetClickThrough(this, true);
+            OverlayHelper.SetWindowOpacity(this, 128);
+            OverlayHelper.MaximizeWindow(this);
 
-            var scale = OverlayHelper.GetScaleFactor(mainWindow);
+            var scale = OverlayHelper.GetScaleFactor(this);
             ViewModel.SetScaleFactor(scale);
             ViewModel.RippleRequested += OnRippleRequested;
             ViewModel.Start();
-            
         }
 
         private void OnRippleRequested(double x, double y, bool isDouble)
@@ -93,3 +94,4 @@ namespace ScreenOpRecorder.Features.Overlay
         }
     }
 }
+

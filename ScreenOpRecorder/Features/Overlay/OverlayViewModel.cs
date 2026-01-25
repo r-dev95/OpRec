@@ -5,12 +5,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Input;
-
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ScreenOpRecorder.Features.Overlay
 {
@@ -18,8 +15,8 @@ namespace ScreenOpRecorder.Features.Overlay
     {
         private readonly ILogger<OverlayViewModel> _logger;
 
-        private readonly IMouseHookService _mouseHookService;
-        private readonly IKeyboardHookService _keyboardHookService;
+        private readonly MouseHookService _mouseHookService;
+        private readonly KeyboardHookService _keyboardHookService;
 
         private CancellationTokenSource? _cts;
 
@@ -30,7 +27,7 @@ namespace ScreenOpRecorder.Features.Overlay
 
         public event Action<double, double, bool>? RippleRequested;
 
-        public OverlayViewModel(ILogger<OverlayViewModel> logger, IMouseHookService mouseHookService, IKeyboardHookService keyboardHookService)
+        public OverlayViewModel(ILogger<OverlayViewModel> logger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _mouseHookService = mouseHookService;
@@ -49,6 +46,11 @@ namespace ScreenOpRecorder.Features.Overlay
         {
             _scaleFactor = scaleFactor;
             _logger.LogDebug("OverlayViewModel initialized with scale factor: {Scale}", _scaleFactor);
+        }
+
+        public Visibility IsVisibility(string text)
+        {
+            return string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void OnMouseClicked(int x, int y, bool isDouble)

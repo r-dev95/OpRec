@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ScreenOpRecorder.Features.Input
 {
-    public class MouseHookService : IMouseHookService
+    public class MouseHookService : IDisposable
     {
         private readonly ILogger<MouseHookService> _logger;
 
@@ -20,6 +20,8 @@ namespace ScreenOpRecorder.Features.Input
         private int _doubleClickX;
         private int _doubleClickY;
 
+        public int CurrentX { get; private set; }
+        public int CurrentY { get; private set; }
         public event Action<int, int, bool>? MouseClicked;
 
         public MouseHookService(ILogger<MouseHookService> logger)
@@ -54,6 +56,9 @@ namespace ScreenOpRecorder.Features.Input
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             var pt = InputHelper.GetCursorPos(nCode, wParam, lParam);
+            CurrentX = pt.x;
+            CurrentY = pt.y;
+
             if (pt.x != InputHelper.dummyVal && pt.y != InputHelper.dummyVal)
             {
                 DateTime now = DateTime.Now;

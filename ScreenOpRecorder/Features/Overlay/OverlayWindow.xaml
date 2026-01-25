@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="ScreenOpRecorder.Features.Overlay.OverlayWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ScreenOpRecorder.Features.Overlay"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="OverlayWindow">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid"
+          Background="Transparent">
+        <Canvas x:Name="OverlayCanvas"
+                Background="Transparent">
+        </Canvas>
+
+        <Border VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,100"
+                Background="#AA000000"
+                CornerRadius="8"
+                Padding="20,10"
+                Visibility="{x:Bind ViewModel.IsVisibility(ViewModel.CurrentKeyText), Mode=OneWay}">
+            <TextBlock Text="{x:Bind ViewModel.CurrentKeyText, Mode=OneWay}"
+                       Foreground="White"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       TextAlignment="Center" />
+        </Border>
+    </Grid>
+</Window>

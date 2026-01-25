@@ -21,7 +21,13 @@
     <TrimMode>full</TrimMode>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Features\Overlay\OverlayPage.xaml" />
+    <Compile Remove="Shared\**" />
+    <EmbeddedResource Remove="Shared\**" />
+    <None Remove="Shared\**" />
+    <Page Remove="Shared\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Features\Overlay\OverlayWindow.xaml" />
     <None Remove="Features\Shell\ShellPage.xaml" />
   </ItemGroup>
 
@@ -53,6 +59,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7463" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260101001" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.1.0" />
@@ -63,11 +70,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Shared\Helpers\" />
-    <Folder Include="Shared\Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Features\Overlay\OverlayPage.xaml">
+    <Page Update="Features\Overlay\OverlayWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -88,4 +91,7 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
   </PropertyGroup>
+  <ItemGroup>
+    <PRIResource Remove="Shared\**" />
+  </ItemGroup>
 </Project>

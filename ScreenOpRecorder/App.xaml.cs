@@ -10,7 +10,10 @@ using NLog.Extensions.Logging;
 
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Overlay;
+using ScreenOpRecorder.Features.Record;
 using ScreenOpRecorder.Features.Shell;
+
+using Windows.Graphics.Capture;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -45,12 +48,16 @@ namespace ScreenOpRecorder
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<MainWindow>();
-                    services.AddSingleton<OverlayPage>();
+                    services.AddSingleton<ShellPage>();
+                    services.AddSingleton<ShellViewModel>();
+                    services.AddSingleton<OverlayWindow>();
                     services.AddSingleton<OverlayViewModel>();
 
                     // Input Hook Services
-                    services.AddSingleton<IMouseHookService, MouseHookService>();
-                    services.AddSingleton<IKeyboardHookService, KeyboardHookService>();
+                    services.AddSingleton<MouseHookService>();
+                    services.AddSingleton<KeyboardHookService>();
+                    services.AddSingleton<RecordService>();
+
                 })
                 .Build();
         }
@@ -74,8 +81,10 @@ namespace ScreenOpRecorder
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _window = GetService<MainWindow>();
-            _window.Content = GetService<OverlayPage>();
+            _window.Content = GetService<ShellPage>();
             _window.Activate();
+
+            GetService<OverlayWindow>().Activate();
         }
     }
 }

@@ -13,11 +13,14 @@ namespace ScreenOpRecorder.Features.Shell
     {
         private readonly ILogger<ShellPage> _logger;
 
-        public ShellPage(ILogger<ShellPage> logger)
+        private readonly ShellViewModel ViewModel;
+
+        public ShellPage(ILogger<ShellPage> logger, ShellViewModel viewModel)
         {
             InitializeComponent();
-
             _logger = logger;
+
+            ViewModel = viewModel;
         }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ScreenOpRecorder.Features.Input
 {
-    public class KeyboardHookService : IKeyboardHookService
+    public class KeyboardHookService : IDisposable
     {
         private readonly ILogger<KeyboardHookService> _logger;
 
