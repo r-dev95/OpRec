@@ -30,7 +30,6 @@ namespace ScreenOpRecorder.Features.Overlay
             this.ExtendsContentIntoTitleBar = true;
             OverlayHelper.SetAlwaysOnTop(this, true);
             OverlayHelper.SetClickThrough(this, true);
-            OverlayHelper.SetWindowOpacity(this, 128);
             OverlayHelper.MaximizeWindow(this);
 
             var scale = OverlayHelper.GetScaleFactor(this);

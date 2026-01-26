@@ -17,8 +17,6 @@ namespace ScreenOpRecorder.Features.Overlay
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
 
-        private const int LWA_ALPHA = 0x2;
-
         private const int SW_MAXIMIZE = 3;
 
         private const uint SWP_NOSIZE = 0x0001;
@@ -33,9 +31,6 @@ namespace ScreenOpRecorder.Features.Overlay
 
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll")]
-        public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
@@ -76,12 +71,6 @@ namespace ScreenOpRecorder.Features.Overlay
             }
 
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
-        }
-
-        public static void SetWindowOpacity(Window window, byte opacity)
-        {
-            var hwnd = GetHwnd(window);
-            SetLayeredWindowAttributes(hwnd, 0, opacity, LWA_ALPHA);
         }
 
         public static void MaximizeWindow(Window window)

@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Text;
 
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Overlay;
@@ -18,8 +13,6 @@ using Windows.Media.Core;
 using Windows.Media.MediaProperties;
 using Windows.Media.Transcoding;
 using Windows.Storage;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ScreenOpRecorder.Features.Record
 {

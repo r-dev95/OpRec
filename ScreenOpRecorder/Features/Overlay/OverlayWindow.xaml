@@ -6,18 +6,18 @@
     xmlns:local="using:ScreenOpRecorder.Features.Overlay"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d"
     Title="OverlayWindow">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop />
+        <winuiex:TransparentTintBackdrop />
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid"
           Background="Transparent">
-        <Canvas x:Name="OverlayCanvas"
-                Background="Transparent">
-        </Canvas>
+        <Canvas x:Name="OverlayCanvas" 
+                Background="Transparent" />
 
         <Border VerticalAlignment="Bottom"
                 HorizontalAlignment="Center"
