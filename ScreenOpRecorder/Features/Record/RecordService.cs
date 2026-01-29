@@ -39,7 +39,7 @@ namespace ScreenOpRecorder.Features.Record
         private MediaEncodingProfile? _profile;
 
         private CanvasRenderTarget? _renderTarget;
-        private CanvasRenderTarget? _currentFrame;
+        private CanvasBitmap? _canvasBitmap;
 
         private Task? _recordingTask;
 
@@ -102,14 +102,14 @@ namespace ScreenOpRecorder.Features.Record
 
         public void Dispose()
         {
-            _currentFrame?.Dispose();
-            _currentFrame = null;
-
             _mediaStreamSource!.SampleRequested -= OnSampleRequested;
             _mediaStreamSource = null;
 
             _renderTarget?.Dispose();
             _renderTarget = null;
+
+            _canvasBitmap?.Dispose();
+            _canvasBitmap = null;
 
             _framePool?.Dispose();
             _framePool = null;
@@ -132,15 +132,22 @@ namespace ScreenOpRecorder.Features.Record
 
         private void OnSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
         {
-            if (_isStopRecord || _currentFrame == null)
+            if (_isStopRecord || _canvasBitmap == null)
             {
                 args.Request.Sample = null;
                 return;
             }
 
+            if (_renderTarget == null)
+            {
+                _renderTarget = new CanvasRenderTarget(_device, (float)_canvasBitmap.Size.Width, (float)_canvasBitmap.Size.Height, 96);
+            }
+
+            _compositionManager!.ComposeFrame(_renderTarget, _canvasBitmap);
+
             try
             {
-                var surface = (IDirect3DSurface)_currentFrame;
+                var surface = (IDirect3DSurface)_renderTarget;
                 var timeStamp = DateTimeOffset.Now - _startTime;
                 args.Request.Sample = MediaStreamSample.CreateFromDirect3D11Surface(surface, timeStamp);
             }
@@ -158,16 +165,7 @@ namespace ScreenOpRecorder.Features.Record
                 return;
             }
 
-            using var canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
-
-            if (_renderTarget == null)
-            {
-                _renderTarget = new CanvasRenderTarget(_device, (float)canvasBitmap.Size.Width, (float)canvasBitmap.Size.Height, 96);
-            }
-
-            _compositionManager!.ComposeFrame(_renderTarget, canvasBitmap);
-
-            _currentFrame = _renderTarget;
+            _canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
         }
     }
 }
