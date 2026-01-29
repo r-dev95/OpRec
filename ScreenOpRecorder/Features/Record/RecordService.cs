@@ -23,19 +23,20 @@ namespace ScreenOpRecorder.Features.Record
         private readonly OverlayViewModel _viewModel;
 
         private readonly MouseHookService _mouseHookService;
+        private readonly KeyboardHookService _keyboardHookService;
 
-        private CompositionController _compositionEngine;
+        private CompositionManager? _compositionManager;
 
-        private CanvasDevice _device;
-        private GraphicsCaptureItem _item;
+        private CanvasDevice? _device;
+        private GraphicsCaptureItem? _item;
 
-        private Direct3D11CaptureFramePool _framePool;
-        private GraphicsCaptureSession _session;
+        private Direct3D11CaptureFramePool? _framePool;
+        private GraphicsCaptureSession? _session;
 
-        private MediaStreamSource _mediaStreamSource;
-        private VideoStreamDescriptor _videoDescriptor;
-        private MediaTranscoder _transcoder;
-        private MediaEncodingProfile _profile;
+        private MediaStreamSource? _mediaStreamSource;
+        private VideoStreamDescriptor? _videoDescriptor;
+        private MediaTranscoder? _transcoder;
+        private MediaEncodingProfile? _profile;
 
         private CanvasRenderTarget? _renderTarget;
         private CanvasRenderTarget? _currentFrame;
@@ -46,27 +47,28 @@ namespace ScreenOpRecorder.Features.Record
 
         private bool _isStopRecord = false;
 
-        public RecordService(ILogger<RecordService> logger, OverlayViewModel viewModel, MouseHookService mouseHookService)
+        public RecordService(ILogger<RecordService> logger, OverlayViewModel viewModel, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _viewModel = viewModel;
             _mouseHookService = mouseHookService;
+            _keyboardHookService = keyboardHookService;
         }
 
         public void Setup(GraphicsCaptureItem item)
         {
-            int width = item.Size.Width;
-            int height = item.Size.Height;
-
             _isStopRecord = false;
 
             _item = item;
 
-            _compositionEngine = new CompositionController(_device, width, height);
+            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _item);
 
             _device = new CanvasDevice();
 
-            var videoProperties = VideoEncodingProperties.CreateUncompressed(MediaEncodingSubtypes.Bgra8, (uint)width, (uint)height);
+            var videoProperties = VideoEncodingProperties.CreateUncompressed(
+                MediaEncodingSubtypes.Bgra8,
+                (uint)item.Size.Width,
+                (uint)item.Size.Height);
             _videoDescriptor = new VideoStreamDescriptor(videoProperties);
 
             _mediaStreamSource = new MediaStreamSource(_videoDescriptor);
@@ -84,7 +86,7 @@ namespace ScreenOpRecorder.Features.Record
                 _device,
                 Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2,
-                _item.Size);
+                _item!.Size);
 
             _framePool.FrameArrived += OnFrameArrived;
 
@@ -94,7 +96,7 @@ namespace ScreenOpRecorder.Features.Record
             _startTime = DateTimeOffset.Now;
 
             var fileOp = await file.OpenAsync(FileAccessMode.ReadWrite);
-            var prepareOp = await _transcoder.PrepareMediaStreamSourceTranscodeAsync(_mediaStreamSource, fileOp, _profile);
+            var prepareOp = await _transcoder!.PrepareMediaStreamSourceTranscodeAsync(_mediaStreamSource, fileOp, _profile);
             _recordingTask = prepareOp.TranscodeAsync().AsTask();
         }
 
@@ -103,7 +105,7 @@ namespace ScreenOpRecorder.Features.Record
             _currentFrame?.Dispose();
             _currentFrame = null;
 
-            _mediaStreamSource.SampleRequested -= OnSampleRequested;
+            _mediaStreamSource!.SampleRequested -= OnSampleRequested;
             _mediaStreamSource = null;
 
             _renderTarget?.Dispose();
@@ -163,17 +165,7 @@ namespace ScreenOpRecorder.Features.Record
                 _renderTarget = new CanvasRenderTarget(_device, (float)canvasBitmap.Size.Width, (float)canvasBitmap.Size.Height, 96);
             }
 
-            using (var ds = _renderTarget.CreateDrawingSession())
-            {
-                //ds.DrawImage(canvasBitmap);
-                float scaleX = (float)_renderTarget.Size.Width / _item.Size.Width;
-                float scaleY = (float)_renderTarget.Size.Height / _item.Size.Height;
-
-                int mouseX = (int)(_mouseHookService.CurrentX * scaleX);
-                int mouseY = (int)(_mouseHookService.CurrentY * scaleY);
-
-                _compositionEngine.ComposeFrame(ds, canvasBitmap, mouseX, mouseY);
-            }
+            _compositionManager!.ComposeFrame(_renderTarget, canvasBitmap);
 
             _currentFrame = _renderTarget;
         }

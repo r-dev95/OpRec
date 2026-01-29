@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
@@ -13,7 +15,7 @@ using ScreenOpRecorder.Features.Overlay;
 using ScreenOpRecorder.Features.Record;
 using ScreenOpRecorder.Features.Shell;
 
-using Windows.Graphics.Capture;
+using Windows.Graphics;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,7 +28,8 @@ namespace ScreenOpRecorder
     public partial class App : Application
     {
         private readonly IHost _host;
-        private Window? _window;
+        private Window? _mainWindow;
+        private Window? _overlayWindow;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -80,11 +83,33 @@ namespace ScreenOpRecorder
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            _window = GetService<MainWindow>();
-            _window.Content = GetService<ShellPage>();
-            _window.Activate();
+            var shellPage = GetService<ShellPage>();
 
-            GetService<OverlayWindow>().Activate();
+            _mainWindow = GetService<MainWindow>();
+            _mainWindow.Content = shellPage;
+            _mainWindow.Activate();
+            ResizeMainWindow(shellPage);
+
+            _overlayWindow = GetService<OverlayWindow>();
+            _overlayWindow.Activate();
+
+            _mainWindow.Closed += (s, a) => _overlayWindow.Close();
+        }
+
+        private void ResizeMainWindow(ShellPage shellPage)
+        {
+            // TODO: DPIスケーリング対応
+            double scalingFactor = 2.0;
+
+            var desiredSize = shellPage.GetUISize();
+            int width = (int)((desiredSize.Width + 40) * scalingFactor);
+            int height = (int)((desiredSize.Height + 60) * scalingFactor);
+
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+
+            appWindow?.Resize(new SizeInt32(width, height));
         }
     }
 }

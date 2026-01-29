@@ -5,48 +5,34 @@
       xmlns:local="using:ScreenOpRecorder.Features.Shell"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:converter="using:CommunityToolkit.WinUI.Converters"
       mc:Ignorable="d">
 
-    <Grid>
-        <StackPanel VerticalAlignment="Center"
+    <Page.Resources>
+        <converter:BoolNegationConverter x:Key="BoolNegationConverter" />
+    </Page.Resources>
+
+    <Grid x:Name="RootGrid"
+          Margin="20">
+        <StackPanel VerticalAlignment="Top"
                     HorizontalAlignment="Center"
                     Spacing="20">
-            <TextBlock Text="Screen Op Recorder"
-                       FontSize="32"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center" />
-
-            <Ellipse Width="100"
-                     Height="100"
-                     Fill="Red">
-                <Ellipse.Shadow>
-                    <ThemeShadow />
-                </Ellipse.Shadow>
-            </Ellipse>
-
-            <Button Content="Select Monitor"
-                    Command="{x:Bind ViewModel.SelectCaptureItemCommand}"
-                    Width="200"
-                    Height="50"
-                    CornerRadius="25"
-                    Style="{StaticResource AccentButtonStyle}" />
-            
-            <Button Content="Start Recording"
+            <Button Content="録画開始"
                     Command="{x:Bind ViewModel.StartRecordingCommand}"
-                    IsEnabled="{x:Bind ViewModel.HasCaptureItem, Mode=OneWay}"
-                    Width="200"
+                    IsEnabled="{x:Bind ViewModel.IsRecording, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    Width="150"
                     Height="50"
-                    CornerRadius="25"
+                    CornerRadius="12"
                     Style="{StaticResource AccentButtonStyle}" />
 
-            <Button Content="Stop Recording"
+            <Button Content="録画終了"
                     Command="{x:Bind ViewModel.StopRecordingCommand}"
                     IsEnabled="{x:Bind ViewModel.IsRecording, Mode=OneWay}"
-                    Width="200"
+                    Width="150"
                     Height="50"
-                    CornerRadius="25" />
+                    CornerRadius="12" />
 
-            <TextBlock Text="Recording..."
+            <TextBlock Text="録画中..."
                        Visibility="{x:Bind ViewModel.IsRecording, Mode=OneWay}"
                        HorizontalAlignment="Center"
                        Foreground="Red" />

@@ -23,16 +23,10 @@ namespace ScreenOpRecorder.Features.Shell
         private readonly MainWindow _mainWindow;
         private readonly RecordService _recordService;
 
-        private GraphicsCaptureItem _selectedItem;
+        private GraphicsCaptureItem? _selectedItem;
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(StartRecordingCommand))]
-        private bool _hasCaptureItem = false;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(StartRecordingCommand))]
-        [NotifyCanExecuteChangedFor(nameof(StopRecordingCommand))]
-        private bool _isRecording;
+        public partial bool IsRecording { get; set; } = false;
 
         public ShellViewModel(ILogger<ShellViewModel> logger, MainWindow mainWindow, RecordService recordService)
         {
@@ -42,36 +36,22 @@ namespace ScreenOpRecorder.Features.Shell
         }
 
         [RelayCommand]
-        private async Task SelectCaptureItem()
-        {
-            var picker = new GraphicsCapturePicker();
-
-            IntPtr hwnd = WindowNative.GetWindowHandle(_mainWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
-            _selectedItem = await picker.PickSingleItemAsync();
-
-            if (_selectedItem != null)
-            {
-                // アイテムが取れたら録画ボタンを有効にする等の処理
-                HasCaptureItem = true;
-                _selectedItem.Closed += (s, a) => { HasCaptureItem = false; };
-            }
-        }
-
-        [RelayCommand(CanExecute = nameof(CanStart))]
         private async Task StartRecordingAsync()
         {
+            IntPtr hwnd = WindowNative.GetWindowHandle(_mainWindow);
+
+            // 録画画面の選択
+            var capturePicker = new GraphicsCapturePicker();
+            InitializeWithWindow.Initialize(capturePicker, hwnd);
+            _selectedItem = await capturePicker.PickSingleItemAsync();
+
             // 保存先ファイルの選択
-            var picker = new FileSavePicker();
-            picker.SuggestedStartLocation = PickerLocationId.VideosLibrary;
-            picker.FileTypeChoices.Add("MP4 Video", new List<string>() { ".mp4" });
-            picker.SuggestedFileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}";
-
-            var hwnd = WindowNative.GetWindowHandle(_mainWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
-            var file = await picker.PickSaveFileAsync();
+            var filePicker = new FileSavePicker();
+            filePicker.SuggestedStartLocation = PickerLocationId.VideosLibrary;
+            filePicker.SuggestedFileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}";
+            filePicker.FileTypeChoices.Add("MP4 Video", new List<string>() { ".mp4" });
+            InitializeWithWindow.Initialize(filePicker, hwnd);
+            var file = await filePicker.PickSaveFileAsync();
             if (file != null)
             {
                 IsRecording = true;
@@ -80,13 +60,11 @@ namespace ScreenOpRecorder.Features.Shell
             }
         }
 
-        [RelayCommand(CanExecute = nameof(IsRecording))]
-        private async void StopRecording()
+        [RelayCommand]
+        private async Task StopRecordingAsync()
         {
             await _recordService.StopAsync();
             IsRecording = false;
         }
-
-        private bool CanStart() => !IsRecording && HasCaptureItem;
     }
 }

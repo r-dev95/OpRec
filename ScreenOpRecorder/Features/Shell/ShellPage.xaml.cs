@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 
+using Windows.Foundation;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -21,6 +23,14 @@ namespace ScreenOpRecorder.Features.Shell
             _logger = logger;
 
             ViewModel = viewModel;
+        }
+
+        public Size GetUISize()
+        {
+            RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            _logger.LogDebug("RootGrid desired size width: {}, height: {}", RootGrid.DesiredSize.Width, RootGrid.DesiredSize.Height);
+
+            return RootGrid.DesiredSize;
         }
     }
 }

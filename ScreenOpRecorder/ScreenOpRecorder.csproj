@@ -19,6 +19,8 @@
     <!-- 未使用コードのトリミング -->
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>full</TrimMode>
+    <!-- プレビュー言語機能の有効化 -->
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Shared\**" />
