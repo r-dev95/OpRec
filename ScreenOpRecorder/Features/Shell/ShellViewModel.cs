@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using ScreenOpRecorder.Features.Record;
 
 using Windows.Graphics.Capture;
+using Windows.Services.Maps.LocalSearch;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 
 using WinRT.Interop;
@@ -49,13 +51,10 @@ namespace ScreenOpRecorder.Features.Shell
                 return;
             }
 
-            // 保存先ファイルの選択
-            var filePicker = new FileSavePicker();
-            filePicker.SuggestedStartLocation = PickerLocationId.VideosLibrary;
-            filePicker.SuggestedFileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}";
-            filePicker.FileTypeChoices.Add("MP4 Video", new List<string>() { ".mp4" });
-            InitializeWithWindow.Initialize(filePicker, hwnd);
-            var file = await filePicker.PickSaveFileAsync();
+            // 保存先ファイルの設定
+            StorageFolder localFolder = KnownFolders.VideosLibrary;
+            string fileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
+            StorageFile file = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
             if (file != null)
             {
                 IsRecording = true;
