@@ -44,6 +44,10 @@ namespace ScreenOpRecorder.Features.Shell
             var capturePicker = new GraphicsCapturePicker();
             InitializeWithWindow.Initialize(capturePicker, hwnd);
             _selectedItem = await capturePicker.PickSingleItemAsync();
+            if (_selectedItem == null)
+            {
+                return;
+            }
 
             // 保存先ファイルの選択
             var filePicker = new FileSavePicker();

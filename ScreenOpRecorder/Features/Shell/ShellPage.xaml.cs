@@ -1,7 +1,11 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 using Windows.Foundation;
+using Windows.Graphics;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -25,12 +29,23 @@ namespace ScreenOpRecorder.Features.Shell
             ViewModel = viewModel;
         }
 
-        public Size GetUISize()
+        public void ResizeWindow(Window window)
         {
+            // TODO: DPIスケーリング対応
+            double scalingFactor = 2.0;
+
             RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             _logger.LogDebug("RootGrid desired size width: {}, height: {}", RootGrid.DesiredSize.Width, RootGrid.DesiredSize.Height);
 
-            return RootGrid.DesiredSize;
+            var width = (int)((RootGrid.DesiredSize.Width + 40) * scalingFactor);
+            var height = (int)((RootGrid.DesiredSize.Height + 60) * scalingFactor);
+            _logger.LogDebug("Calculated window size width: {}, height: {}", width, height);
+
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+
+            appWindow?.Resize(new SizeInt32(width, height));
         }
     }
 }
