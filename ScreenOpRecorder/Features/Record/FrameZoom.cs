@@ -16,12 +16,14 @@ namespace ScreenOpRecorder.Features.Record
         private Vector2 _targetPos; // ズーム中心位置
         private Vector2 _originalCameraPos; // 全画面のカメラ位置
         private Vector2 _currentCameraPos; // 現在のカメラ位置
-        private float _interpolationSpeed = 0.10f; // 追従の滑らかさ (0.0～1.0)
+        private float _interpolationSpeed = 0.01f; // 追従の滑らかさ (0.0～1.0)
 
         private float _currentZoom = 1.0f; // 現在のズーム倍率
         private float _targetZoom = 1.0f;  // 目標のズーム倍率
         private const float ZoomMax = 2.0f;
         private const float ZoomMin = 1.0f;
+
+        public Action<Rect>? ZoomAction;
 
         public FrameZoom(int width, int height)
         {
@@ -70,6 +72,8 @@ namespace ScreenOpRecorder.Features.Record
             Rect targetRect = new Rect(0, 0, screenSize.Width, screenSize.Height);
 
             ds.DrawImage(rawFrame, targetRect, sourceRect, 1.0f, CanvasImageInterpolation.Linear);
+
+            ZoomAction?.Invoke(sourceRect);
         }
     }
 }

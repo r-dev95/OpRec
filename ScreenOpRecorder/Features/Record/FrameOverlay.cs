@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 using Microsoft.Graphics.Canvas;
@@ -9,6 +10,8 @@ namespace ScreenOpRecorder.Features.Record
 {
     public class FrameOverlay
     {
+        // ---
+        // キーボード入力のキー表示
         private string _currentKey = "";
         private DateTime _lastInputTime;
         private readonly TimeSpan _displayDuration = TimeSpan.FromSeconds(1.5);
@@ -69,6 +72,62 @@ namespace ScreenOpRecorder.Features.Record
                 ds.DrawTextLayout(textLayout, textPos, textColor);
             }
         }
-        
+        // ---
+
+        // ---
+        // クリック位置の波状エフェクト
+        private struct Ripple
+        {
+            public Vector2 Position;
+            public DateTime StartTime;
+        }
+        private readonly List<Ripple> _ripples = new();
+        private readonly TimeSpan _rippleDuration = TimeSpan.FromMilliseconds(600);
+        private const float MaxRadius = 60f; // 波紋が広がる最大半径
+        private Rect _sourceRect;
+
+        public void OnZoomAction(Rect sourceRect)
+        {
+            _sourceRect = sourceRect;
+        }
+        public void AddRipple(float x, float y)
+        {
+            lock (_ripples)
+            {
+                _ripples.Add(new Ripple { Position = new Vector2(x, y), StartTime = DateTime.Now });
+            }
+        }
+
+        public void DrawRipple(CanvasDrawingSession ds, Size screenSize)
+        {
+            DateTime now = DateTime.Now;
+
+            lock (_ripples)
+            {
+                _ripples.RemoveAll(r => (now - r.StartTime) > _rippleDuration);
+
+                float scale = (float)(screenSize.Width / _sourceRect.Width);
+
+                foreach (var ripple in _ripples)
+                {
+                    float progress = (float)((now - ripple.StartTime).TotalMilliseconds / _rippleDuration.TotalMilliseconds);
+
+                    // 1. 座標変換：絶対座標(ripple.Position)を、ズーム枠(sourceRect)内の相対座標に変換
+                    // 2. スケール適用：描画先のサイズに合わせて拡大
+                    float x = (ripple.Position.X - (float)_sourceRect.X) * scale;
+                    float y = (ripple.Position.Y - (float)_sourceRect.Y) * scale;
+                    Vector2 transformedPos = new Vector2(x, y);
+
+                    float radius = progress * MaxRadius * (scale > 1.0f ? 1.2f : 1.0f);
+                    float opacity = 1.0f - progress;
+
+                    var color = Windows.UI.Color.FromArgb((byte)(opacity * 255), 255, 255, 0);
+                    ds.DrawCircle(transformedPos, radius, color, 3.0f * scale);
+                }
+            }
+        }
+        // ---
+
+
     }
 }

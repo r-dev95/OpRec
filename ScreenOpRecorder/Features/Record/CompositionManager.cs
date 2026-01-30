@@ -24,11 +24,14 @@ namespace ScreenOpRecorder.Features.Record
             _frameZoom = new FrameZoom(item.Size.Width, item.Size.Height);
             _frameOverlay = new FrameOverlay();
 
+            _frameZoom.ZoomAction += _frameOverlay.OnZoomAction;
+
             _mouseHookService.MouseClicked += (x, y, isDouble) => {
                 if (isDouble)
                 {
                     _frameZoom.ToggleZoom(x, y);
                 }
+                _frameOverlay.AddRipple(x, y);
             };
 
             _keyboardHookService.KeyDown += (keyName) => {
@@ -46,8 +49,8 @@ namespace ScreenOpRecorder.Features.Record
                 // オーバーレイ描画（キー表示）
                 _frameOverlay.DrawKey(ds, renderTarget.Size);
 
-                // マウス位置に目印（波紋など）を出す場合はここに追加
-                //_frameOverlay.DrawCircle(ds, renderTarget.Size);
+                // オーバレイ描画（クリックリップル表示）
+                _frameOverlay.DrawRipple(ds, renderTarget.Size);
             }
         }
     }
