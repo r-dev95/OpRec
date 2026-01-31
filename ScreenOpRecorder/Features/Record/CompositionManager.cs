@@ -1,7 +1,8 @@
-﻿using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
 
+using Windows.Foundation;
 using Windows.Graphics.Capture;
 
 namespace ScreenOpRecorder.Features.Record
@@ -11,30 +12,37 @@ namespace ScreenOpRecorder.Features.Record
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
         private readonly GraphicsCaptureItem _item;
+        private readonly Rect _captureArea;
 
         private readonly FrameZoom _frameZoom;
         private readonly FrameOverlay _frameOverlay;
 
-        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, GraphicsCaptureItem item)
+        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, GraphicsCaptureItem item, Rect captureArea)
         {
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
             _item = item;
+            _captureArea = captureArea;
 
-            _frameZoom = new FrameZoom(item.Size.Width, item.Size.Height);
+            _frameZoom = new FrameZoom(_captureArea);
             _frameOverlay = new FrameOverlay();
 
             _frameZoom.ZoomAction += _frameOverlay.OnZoomAction;
 
-            _mouseHookService.MouseClicked += (x, y, isDouble) => {
+            _mouseHookService.MouseClicked += (x, y, isDouble) =>
+            {
+                float relativeX = (float)(x - _captureArea.X);
+                float relativeY = (float)(y - _captureArea.Y);
+
                 if (isDouble)
                 {
-                    _frameZoom.ToggleZoom(x, y);
+                    _frameZoom.ToggleZoom(relativeX, relativeY);
                 }
-                _frameOverlay.AddRipple(x, y);
+                _frameOverlay.AddRipple(relativeX, relativeY);
             };
 
-            _keyboardHookService.KeyDown += (keyName) => {
+            _keyboardHookService.KeyDown += (keyName) =>
+            {
                 _frameOverlay.UpdateKey(keyName);
             };
         }

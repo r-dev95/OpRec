@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -7,6 +7,7 @@ using Microsoft.Graphics.Canvas;
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Overlay;
 
+using Windows.Foundation;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Media.Core;
@@ -29,6 +30,7 @@ namespace ScreenOpRecorder.Features.Record
 
         private CanvasDevice? _device;
         private GraphicsCaptureItem? _item;
+        private Rect _captureArea;
 
         private Direct3D11CaptureFramePool? _framePool;
         private GraphicsCaptureSession? _session;
@@ -55,20 +57,21 @@ namespace ScreenOpRecorder.Features.Record
             _keyboardHookService = keyboardHookService;
         }
 
-        public void Setup(GraphicsCaptureItem item)
+        public void Setup(GraphicsCaptureItem item, Rect captureArea)
         {
             _isStopRecord = false;
 
             _item = item;
+            _captureArea = captureArea;
 
-            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _item);
+            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _item, _captureArea);
 
             _device = new CanvasDevice();
 
             var videoProperties = VideoEncodingProperties.CreateUncompressed(
                 MediaEncodingSubtypes.Bgra8,
-                (uint)item.Size.Width,
-                (uint)item.Size.Height);
+                (uint)_captureArea.Width,
+                (uint)_captureArea.Height);
             _videoDescriptor = new VideoStreamDescriptor(videoProperties);
 
             _mediaStreamSource = new MediaStreamSource(_videoDescriptor);
@@ -102,7 +105,7 @@ namespace ScreenOpRecorder.Features.Record
 
         public void Dispose()
         {
-            _mediaStreamSource!.SampleRequested -= OnSampleRequested;
+            _mediaStreamSource?.SampleRequested -= OnSampleRequested;
             _mediaStreamSource = null;
 
             _renderTarget?.Dispose();
@@ -140,7 +143,7 @@ namespace ScreenOpRecorder.Features.Record
 
             if (_renderTarget == null)
             {
-                _renderTarget = new CanvasRenderTarget(_device, (float)_canvasBitmap.Size.Width, (float)_canvasBitmap.Size.Height, 96);
+                _renderTarget = new CanvasRenderTarget(_device, (float)_captureArea.Width, (float)_captureArea.Height, 96);
             }
 
             _compositionManager!.ComposeFrame(_renderTarget, _canvasBitmap);

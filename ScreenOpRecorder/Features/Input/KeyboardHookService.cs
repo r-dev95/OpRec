@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Microsoft.Extensions.Logging;
 
@@ -40,7 +40,7 @@ namespace ScreenOpRecorder.Features.Input
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            var keyName= InputHelper.GetKeyName(nCode, wParam, lParam);
+            var keyName = InputHelper.GetKeyName(nCode, wParam, lParam);
             if (keyName != InputHelper.dummyVal.ToString())
             {
                 KeyDown?.Invoke(keyName);

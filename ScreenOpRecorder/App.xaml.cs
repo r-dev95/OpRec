@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+
+using CommunityToolkit.Mvvm.Messaging;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +26,8 @@ namespace ScreenOpRecorder
     public partial class App : Application
     {
         private readonly IHost _host;
-        private Window? _mainWindow;
-        private Window? _overlayWindow;
+        private MainWindow? _mainWindow;
+        private OverlayWindow? _overlayWindow;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -46,6 +48,8 @@ namespace ScreenOpRecorder
                 })
                 .ConfigureServices((context, services) =>
                 {
+                    services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<ShellPage>();
                     services.AddSingleton<ShellViewModel>();
@@ -84,12 +88,15 @@ namespace ScreenOpRecorder
             _mainWindow = GetService<MainWindow>();
             _mainWindow.Content = shellPage;
             _mainWindow.Activate();
-            shellPage.ResizeWindow(_mainWindow);
 
             _overlayWindow = GetService<OverlayWindow>();
             _overlayWindow.Activate();
 
-            _mainWindow.Closed += (_, _) => _overlayWindow.Close();
+            _mainWindow.Closed += async (_, _) =>
+            {
+                await shellPage.StopRecordingAsync();
+                _overlayWindow.Close();
+            };
         }
     }
 }

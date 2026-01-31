@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -22,7 +22,7 @@ namespace ScreenOpRecorder.Features.Record
             _lastInputTime = DateTime.Now;
         }
 
-        public void DrawKey(CanvasDrawingSession ds, Size screenSize)
+        public void DrawKey(CanvasDrawingSession ds, Size targetSize)
         {
             if (string.IsNullOrEmpty(_currentKey) || (DateTime.Now - _lastInputTime) > _displayDuration)
             {
@@ -50,11 +50,11 @@ namespace ScreenOpRecorder.Features.Record
                 float paddingY = 15;
 
                 // 配置位置（画面下部中央）
-                float centerX = (float)screenSize.Width / 2;
-                float centerY = (float)screenSize.Height - 150;
+                float centerX = (float)targetSize.Width / 2;
+                float centerY = (float)targetSize.Height - 150;
 
                 // 背景描画
-                Rect backgroundRect = new (
+                Rect backgroundRect = new(
                     centerX - (textWidth / 2) - paddingX,
                     centerY - (textHeight / 2) - paddingY,
                     textWidth + (paddingX * 2),
@@ -64,7 +64,7 @@ namespace ScreenOpRecorder.Features.Record
                 ds.FillRoundedRectangle(backgroundRect, 12, 12, bgColor);
 
                 // テキスト描画
-                Vector2 textPos = new (
+                Vector2 textPos = new(
                     (float)backgroundRect.Left + paddingX - (float)textLayout.DrawBounds.Left,
                     (float)backgroundRect.Top + paddingY - (float)textLayout.DrawBounds.Top
                 );
@@ -98,7 +98,7 @@ namespace ScreenOpRecorder.Features.Record
             }
         }
 
-        public void DrawRipple(CanvasDrawingSession ds, Size screenSize)
+        public void DrawRipple(CanvasDrawingSession ds, Size targetSize)
         {
             DateTime now = DateTime.Now;
 
@@ -106,7 +106,7 @@ namespace ScreenOpRecorder.Features.Record
             {
                 _ripples.RemoveAll(r => (now - r.StartTime) > _rippleDuration);
 
-                float scale = (float)(screenSize.Width / _sourceRect.Width);
+                float scale = (float)(targetSize.Width / _sourceRect.Width);
 
                 foreach (var ripple in _ripples)
                 {

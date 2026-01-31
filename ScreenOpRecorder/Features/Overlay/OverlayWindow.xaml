@@ -7,6 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:converters="using:ScreenOpRecorder.Shared.Converters"
     mc:Ignorable="d"
     Title="OverlayWindow">
 
@@ -16,8 +18,56 @@
 
     <Grid x:Name="RootGrid"
           Background="Transparent">
+        <Grid.Resources>
+            <converters:PointerArgsToPointConverter x:Key="PointerArgsToPointConverter" />
+        </Grid.Resources>
         <Canvas x:Name="OverlayCanvas" 
                 Background="Transparent" />
+
+        <Canvas x:Name="SelectionCanvas"
+                Background="#44000000">
+            <interactivity:Interaction.Behaviors>
+                <interactivity:EventTriggerBehavior EventName="PointerPressed">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerPressedCommand}"
+                                                       InputConverter="{StaticResource PointerArgsToPointConverter}" />
+                </interactivity:EventTriggerBehavior>
+
+                <interactivity:EventTriggerBehavior EventName="PointerMoved">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}"
+                                                       InputConverter="{StaticResource PointerArgsToPointConverter}" />
+                </interactivity:EventTriggerBehavior>
+
+                <interactivity:EventTriggerBehavior EventName="PointerReleased">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerReleasedCommand}" />
+                </interactivity:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+
+            <Rectangle Stroke="Cyan"
+                       StrokeThickness="2"
+                       Fill="Transparent"
+                       Width="{x:Bind ViewModel.Width, Mode=OneWay}"
+                       Height="{x:Bind ViewModel.Height, Mode=OneWay}"
+                       Visibility="{x:Bind ViewModel.IsCaptureAreaVisible, Mode=OneWay}">
+                <Rectangle.RenderTransform>
+                    <TranslateTransform X="{x:Bind ViewModel.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.Y, Mode=OneWay}" />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+
+            <Border Background="Cyan"
+                    CornerRadius="4"
+                    Padding="6,2"
+                    Visibility="{x:Bind ViewModel.IsSizeTagVisible, Mode=OneWay}">
+                <Border.RenderTransform>
+                    <TranslateTransform X="{x:Bind ViewModel.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.Y, Mode=OneWay}" />
+                </Border.RenderTransform>
+                <TextBlock Text="{x:Bind ViewModel.SizeLabel, Mode=OneWay}"
+                           Foreground="Black"
+                           FontSize="14"
+                           FontWeight="Bold" />
+            </Border>
+        </Canvas>
 
         <Border VerticalAlignment="Bottom"
                 HorizontalAlignment="Center"

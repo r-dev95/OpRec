@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 using Windows.System;
@@ -197,7 +196,7 @@ namespace ScreenOpRecorder.Features.Input
                     return vkName;
                 }
             }
-            
+
             return dummyVal.ToString();
         }
     }

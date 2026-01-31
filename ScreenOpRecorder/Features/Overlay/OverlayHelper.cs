@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 using Microsoft.UI.Xaml;
+
+using Windows.Graphics.Capture;
 
 using WinRT.Interop;
 
@@ -22,6 +24,10 @@ namespace ScreenOpRecorder.Features.Overlay
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_SHOWWINDOW = 0x0040;
+
+        private const uint MONITOR_DEFAULTTONULL = 0;
+        private const uint MONITOR_DEFAULTTOPRIMARY = 1;
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
 
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -84,6 +90,48 @@ namespace ScreenOpRecorder.Features.Overlay
             var hwnd = GetHwnd(window);
             uint dpi = GetDpiForWindow(hwnd);
             return dpi / 96.0; // 96 DPI = 100%
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromRect(ref RECT lprc, uint dwFlags);
+        public struct RECT
+        {
+            public int left; public int top; public int right; public int bottom;
+        }
+
+        private static Guid GraphicsCaptureItemGuid = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
+
+        [ComImport]
+        [Guid("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [ComVisible(true)]
+        private interface IGraphicsCaptureItemInterop
+        {
+            IntPtr CreateForWindow(
+                [In] IntPtr window,
+                [In] ref Guid iid);
+
+            IntPtr CreateForMonitor(
+                [In] IntPtr monitor,
+                [In] ref Guid iid);
+        }
+
+        public static GraphicsCaptureItem CreateForMonitor(double x, double y, double width, double height)
+        {
+            var rect = new RECT()
+            {
+                left = (int)x,
+                top = (int)y,
+                right = (int)(x + width),
+                bottom = (int)(y + height),
+
+            };
+
+            var hmon = MonitorFromRect(ref rect, 2);
+            var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
+            var ptr = interop.CreateForMonitor(new IntPtr(hmon), GraphicsCaptureItemGuid);
+            var captureItem = GraphicsCaptureItem.FromAbi(ptr);
+            return captureItem;
         }
     }
 }

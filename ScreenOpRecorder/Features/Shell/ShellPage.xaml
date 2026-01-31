@@ -5,12 +5,7 @@
       xmlns:local="using:ScreenOpRecorder.Features.Shell"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:converter="using:CommunityToolkit.WinUI.Converters"
       mc:Ignorable="d">
-
-    <Page.Resources>
-        <converter:BoolNegationConverter x:Key="BoolNegationConverter" />
-    </Page.Resources>
 
     <Grid x:Name="RootGrid"
           Margin="20">
@@ -19,7 +14,7 @@
                     Spacing="20">
             <Button Content="録画開始"
                     Command="{x:Bind ViewModel.StartRecordingCommand}"
-                    IsEnabled="{x:Bind ViewModel.IsRecording, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    IsEnabled="{x:Bind ViewModel.StartReady, Mode=OneWay}"
                     Width="150"
                     Height="50"
                     CornerRadius="12"
