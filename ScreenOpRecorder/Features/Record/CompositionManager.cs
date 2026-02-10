@@ -3,7 +3,6 @@ using Microsoft.Graphics.Canvas;
 using ScreenOpRecorder.Features.Input;
 
 using Windows.Foundation;
-using Windows.Graphics.Capture;
 
 namespace ScreenOpRecorder.Features.Record
 {
@@ -11,17 +10,15 @@ namespace ScreenOpRecorder.Features.Record
     {
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
-        private readonly GraphicsCaptureItem _item;
         private readonly Rect _captureArea;
 
         private readonly FrameZoom _frameZoom;
         private readonly FrameOverlay _frameOverlay;
 
-        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, GraphicsCaptureItem item, Rect captureArea)
+        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, Rect captureArea)
         {
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
-            _item = item;
             _captureArea = captureArea;
 
             _frameZoom = new FrameZoom(_captureArea);
@@ -49,17 +46,16 @@ namespace ScreenOpRecorder.Features.Record
 
         public void ComposeFrame(CanvasRenderTarget renderTarget, CanvasBitmap rawFrame)
         {
-            using (var ds = renderTarget.CreateDrawingSession())
-            {
-                // 画面フレーム描画（ズーム処理あり）
-                _frameZoom.DrawZoomFrame(ds, renderTarget.Size, rawFrame);
+            using var ds = renderTarget.CreateDrawingSession();
 
-                // オーバーレイ描画（キー表示）
-                _frameOverlay.DrawKey(ds, renderTarget.Size);
+            // 画面フレーム描画（ズーム処理あり）
+            _frameZoom.DrawZoomFrame(ds, renderTarget.Size, rawFrame);
 
-                // オーバレイ描画（クリックリップル表示）
-                _frameOverlay.DrawRipple(ds, renderTarget.Size);
-            }
+            // オーバーレイ描画（キー表示）
+            _frameOverlay.DrawKey(ds, renderTarget.Size);
+
+            // オーバレイ描画（クリックリップル表示）
+            _frameOverlay.DrawRipple(ds, renderTarget.Size);
         }
     }
 }

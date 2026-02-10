@@ -24,7 +24,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Features\Overlay\OverlayWindow.xaml" />
-    <None Remove="Features\Selection\SelectionWindow.xaml" />
     <None Remove="Features\Shell\ShellPage.xaml" />
   </ItemGroup>
 
@@ -70,11 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Features\Overlay\OverlayWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Features\Selection\SelectionWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

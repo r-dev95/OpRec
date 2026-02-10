@@ -5,32 +5,41 @@
       xmlns:local="using:ScreenOpRecorder.Features.Shell"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d">
+      mc:Ignorable="d"
+      x:Name="RootPage"
+      MinWidth="360"
+      MinHeight="70">
 
-    <Grid x:Name="RootGrid"
-          Margin="20">
-        <StackPanel VerticalAlignment="Top"
-                    HorizontalAlignment="Center"
-                    Spacing="20">
-            <Button Content="録画開始"
-                    Command="{x:Bind ViewModel.StartRecordingCommand}"
-                    IsEnabled="{x:Bind ViewModel.StartReady, Mode=OneWay}"
-                    Width="150"
-                    Height="50"
-                    CornerRadius="12"
-                    Style="{StaticResource AccentButtonStyle}" />
+    <Grid HorizontalAlignment="Center"
+          Margin="5,0,5,0">
 
-            <Button Content="録画終了"
-                    Command="{x:Bind ViewModel.StopRecordingCommand}"
-                    IsEnabled="{x:Bind ViewModel.IsRecording, Mode=OneWay}"
-                    Width="150"
-                    Height="50"
-                    CornerRadius="12" />
+        <CommandBar DefaultLabelPosition="Right"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    OverflowButtonVisibility="Collapsed">
+            <CommandBar.Content>
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Spacing="10">
+                    <TextBlock Text="{x:Bind ViewModel.RecordingTime, Mode=OneWay}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </CommandBar.Content>
+            <CommandBar.PrimaryCommands>
+                <AppBarButton x:Name="RecordingButton"
+                              Icon="Video"
+                              Label="Recording"
+                              Margin="10,0,0,0"
+                              Command="{x:Bind ViewModel.RecordingCommand}"
+                              IsEnabled="{x:Bind ViewModel.StartReady, Mode=OneWay}" />
+                <AppBarSeparator />
+                <AppBarButton Icon="Setting"
+                              Label="Setting" />
+                <AppBarButton Icon="Cancel"
+                              Label="Close"
+                              Click="OnClickClose" />
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
 
-            <TextBlock Text="録画中..."
-                       Visibility="{x:Bind ViewModel.IsRecording, Mode=OneWay}"
-                       HorizontalAlignment="Center"
-                       Foreground="Red" />
-        </StackPanel>
     </Grid>
 </Page>

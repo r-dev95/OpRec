@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 
-using WinRT.Interop;
+using ScreenOpRecorder.Shared.Helpers;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -31,37 +31,26 @@ namespace ScreenOpRecorder.Features.Overlay
 
             ViewModel.SetRecordingWindow += OnSetRecordingWindow;
             ViewModel.SetNotRecordingWindow += OnSetNotRecordingWindow;
-
-            var hWnd = WindowNative.GetWindowHandle(this);
-            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-            var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-
-            // タイトルバーを非表示にする（OverlappedPresenterを使用）
-            var presenter = appWindow.Presenter as Microsoft.UI.Windowing.OverlappedPresenter;
-            if (presenter != null)
-            {
-                presenter.SetBorderAndTitleBar(false, false); // 枠線とタイトルバーを無効化
-            }
-            OverlayHelper.MaximizeWindow(this);
-
-            var scale = OverlayHelper.GetScaleFactor(this);
-            ViewModel.SetScaleFactor(scale);
             ViewModel.RippleRequested += OnRippleRequested;
+
+            ViewModel.SetScaleFactor(WindowHelper.GetScaleFactor(this));
             ViewModel.Start();
+
+            SetWindow();
         }
 
         private void OnSetRecordingWindow()
         {
-            OverlayHelper.SetAlwaysOnTop(this, true);
-            OverlayHelper.SetClickThrough(this, true);
+            WindowHelper.SetAlwaysOnTop(this, true);
+            WindowHelper.SetClickThrough(this, true);
             ViewModel.IsCaptureAreaVisible = Visibility.Collapsed;
             ViewModel.CanSubmit = false;
         }
 
         private void OnSetNotRecordingWindow()
         {
-            OverlayHelper.SetAlwaysOnTop(this, false);
-            OverlayHelper.SetClickThrough(this, false);
+            WindowHelper.SetAlwaysOnTop(this, false);
+            WindowHelper.SetClickThrough(this, false);
             ViewModel.CanSubmit = true;
         }
 
@@ -118,6 +107,12 @@ namespace ScreenOpRecorder.Features.Overlay
 
             sb.Completed += (s, e) => OverlayCanvas.Children.Remove(ripple);
             sb.Begin();
+        }
+
+        private void SetWindow()
+        {
+            WindowHelper.SetBorderAndTitleBar(this, false, false);
+            WindowHelper.MaximizeWindow(this);
         }
     }
 }

@@ -35,42 +35,41 @@ namespace ScreenOpRecorder.Features.Record
             float opacity = Math.Clamp(2.0f - elapsed * 2.0f, 0.0f, 0.8f);
 
             // 描画位置（画面下部中央など）
-            using (var textFormat = new Microsoft.Graphics.Canvas.Text.CanvasTextFormat
+            using var textFormat = new Microsoft.Graphics.Canvas.Text.CanvasTextFormat
             {
                 FontSize = 45,
                 WordWrapping = Microsoft.Graphics.Canvas.Text.CanvasWordWrapping.NoWrap
-            })
-            using (var textLayout = new Microsoft.Graphics.Canvas.Text.CanvasTextLayout(ds, _currentKey, textFormat, 0, 0))
-            {
-                // DrawBounds は実際に文字が描画される最小の矩形
-                float textWidth = (float)textLayout.DrawBounds.Width;
-                float textHeight = (float)textLayout.DrawBounds.Height;
+            };
+            using var textLayout = new Microsoft.Graphics.Canvas.Text.CanvasTextLayout(ds, _currentKey, textFormat, 0, 0);
 
-                float paddingX = 30;
-                float paddingY = 15;
+            // DrawBounds は実際に文字が描画される最小の矩形
+            float textWidth = (float)textLayout.DrawBounds.Width;
+            float textHeight = (float)textLayout.DrawBounds.Height;
 
-                // 配置位置（画面下部中央）
-                float centerX = (float)targetSize.Width / 2;
-                float centerY = (float)targetSize.Height - 150;
+            float paddingX = 30;
+            float paddingY = 15;
 
-                // 背景描画
-                Rect backgroundRect = new(
-                    centerX - (textWidth / 2) - paddingX,
-                    centerY - (textHeight / 2) - paddingY,
-                    textWidth + (paddingX * 2),
-                    textHeight + (paddingY * 2)
-                );
-                var bgColor = Windows.UI.Color.FromArgb((byte)(opacity * 255), 30, 30, 30);
-                ds.FillRoundedRectangle(backgroundRect, 12, 12, bgColor);
+            // 配置位置（画面下部中央）
+            float centerX = (float)targetSize.Width / 2;
+            float centerY = (float)targetSize.Height - 150;
 
-                // テキスト描画
-                Vector2 textPos = new(
-                    (float)backgroundRect.Left + paddingX - (float)textLayout.DrawBounds.Left,
-                    (float)backgroundRect.Top + paddingY - (float)textLayout.DrawBounds.Top
-                );
-                var textColor = Windows.UI.Color.FromArgb((byte)(opacity * 255), 255, 255, 255);
-                ds.DrawTextLayout(textLayout, textPos, textColor);
-            }
+            // 背景描画
+            Rect backgroundRect = new(
+                centerX - (textWidth / 2) - paddingX,
+                centerY - (textHeight / 2) - paddingY,
+                textWidth + (paddingX * 2),
+                textHeight + (paddingY * 2)
+            );
+            var bgColor = Windows.UI.Color.FromArgb((byte)(opacity * 255), 30, 30, 30);
+            ds.FillRoundedRectangle(backgroundRect, 12, 12, bgColor);
+
+            // テキスト描画
+            Vector2 textPos = new(
+                (float)backgroundRect.Left + paddingX - (float)textLayout.DrawBounds.Left,
+                (float)backgroundRect.Top + paddingY - (float)textLayout.DrawBounds.Top
+            );
+            var textColor = Windows.UI.Color.FromArgb((byte)(opacity * 255), 255, 255, 255);
+            ds.DrawTextLayout(textLayout, textPos, textColor);
         }
         // ---
 
@@ -81,7 +80,7 @@ namespace ScreenOpRecorder.Features.Record
             public Vector2 Position;
             public DateTime StartTime;
         }
-        private readonly List<Ripple> _ripples = new();
+        private readonly List<Ripple> _ripples = [];
         private readonly TimeSpan _rippleDuration = TimeSpan.FromMilliseconds(600);
         private const float MaxRadius = 60f; // 波紋が広がる最大半径
         private Rect _sourceRect;
@@ -116,7 +115,7 @@ namespace ScreenOpRecorder.Features.Record
                     // 2. スケール適用：描画先のサイズに合わせて拡大
                     float x = (ripple.Position.X - (float)_sourceRect.X) * scale;
                     float y = (ripple.Position.Y - (float)_sourceRect.Y) * scale;
-                    Vector2 transformedPos = new Vector2(x, y);
+                    Vector2 transformedPos = new(x, y);
 
                     float radius = progress * MaxRadius * (scale > 1.0f ? 1.2f : 1.0f);
                     float opacity = 1.0f - progress;

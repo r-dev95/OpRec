@@ -1,17 +1,14 @@
-using System;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-using ScreenOpRecorder.Features.Overlay;
+using ScreenOpRecorder.Shared.Helpers;
 
 using Windows.Foundation;
 using Windows.Graphics;
-
-using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -34,10 +31,10 @@ namespace ScreenOpRecorder.Features.Shell
             ViewModel = viewModel;
             _mainWindow = mainWindow;
 
-            ResizeWindow();
-
             ViewModel.StartRecord += OnStartRecord;
             ViewModel.StopRecord += OnStopRecord;
+
+            SetWindow();
         }
 
         public async Task StopRecordingAsync()
@@ -45,44 +42,53 @@ namespace ScreenOpRecorder.Features.Shell
             await ViewModel.StopRecordingAsync();
         }
 
-        private void ResizeWindow()
-        {
-            var scalingFactor = OverlayHelper.GetScaleFactor(_mainWindow);
-
-            RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            _logger.LogDebug("RootGrid desired size width: {}, height: {}", RootGrid.DesiredSize.Width, RootGrid.DesiredSize.Height);
-
-            var width = (int)((RootGrid.DesiredSize.Width + 40) * scalingFactor);
-            var height = (int)((RootGrid.DesiredSize.Height + 60) * scalingFactor);
-            _logger.LogDebug("Calculated window size width: {}, height: {}", width, height);
-
-            IntPtr hWnd = WindowNative.GetWindowHandle(_mainWindow);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-
-            if (appWindow != null)
-            {
-                // 現在のディスプレイ情報を取得
-                DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
-                var screenBounds = displayArea.WorkArea;
-
-                int x = screenBounds.X + (screenBounds.Width - width) / 2;
-                int y = screenBounds.Y;
-
-                appWindow.MoveAndResize(new RectInt32(x, y, width, height));
-            }
-
-            OverlayHelper.SetAlwaysOnTop(_mainWindow, true);
-        }
-
         private void OnStartRecord()
         {
-            OverlayHelper.SetAlwaysOnTop(_mainWindow, false);
+            WindowHelper.SetAlwaysOnTop(_mainWindow, false);
+            RecordingButton.Icon = new SymbolIcon(Symbol.Stop);
+            RecordingButton.Label = "Stop";
         }
 
         private void OnStopRecord()
         {
-            OverlayHelper.SetAlwaysOnTop(_mainWindow, true);
+            WindowHelper.SetAlwaysOnTop(_mainWindow, true);
+            RecordingButton.Icon = new SymbolIcon(Symbol.Video);
+            RecordingButton.Label = "Recording";
+        }
+
+        private void OnClickClose(object sender, RoutedEventArgs args)
+        {
+            _mainWindow.Close();
+        }
+
+        private void SetWindow()
+        {
+            WindowHelper.SetAlwaysOnTop(_mainWindow, true);
+
+            _mainWindow.ExtendsContentIntoTitleBar = true;
+            WindowHelper.SetBorderAndTitleBar(_mainWindow, false, false);
+
+            RootPage.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            _logger.LogDebug("RootPage desired size width: {}, height: {}", RootPage.DesiredSize.Width, RootPage.DesiredSize.Height);
+
+            var scalingFactor = WindowHelper.GetScaleFactor(_mainWindow);
+            var width = (int)(RootPage.DesiredSize.Width * scalingFactor);
+            var height = (int)(RootPage.DesiredSize.Height * scalingFactor);
+            _logger.LogDebug("Calculated window size width: {}, height: {}", width, height);
+
+            var windowId = WindowHelper.GetWindowId(_mainWindow);
+            var appWindow = WindowHelper.GetAppWindow(_mainWindow);
+            if (appWindow != null)
+            {
+                var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+                var screenBounds = displayArea.WorkArea;
+
+                int x = screenBounds.X + (screenBounds.Width - width) / 2;
+                int y = screenBounds.Y + 20;
+
+                appWindow.MoveAndResize(new RectInt32(x, y, width, height));
+
+            }
         }
     }
 }

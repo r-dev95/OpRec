@@ -10,12 +10,14 @@ root = true
 charset = utf-8
 
 # 改行設定
-end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
 # C# ファイル
 [*.cs]
+
+# 改行設定
+end_of_line = crlf
 
 # インデントと間隔
 indent_size = 4

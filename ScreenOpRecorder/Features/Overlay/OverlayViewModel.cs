@@ -134,7 +134,7 @@ namespace ScreenOpRecorder.Features.Overlay
             Height = Math.Abs(startPoint.Y - currentPoint.Y);
         }
 
-        public Rect GetCaptureRect() => new Rect(X * _scaleFactor, Y * _scaleFactor, Width * _scaleFactor, Height * _scaleFactor);
+        public Rect GetCaptureRect() => new(X * _scaleFactor, Y * _scaleFactor, Width * _scaleFactor, Height * _scaleFactor);
 
         private void OnMouseClicked(int x, int y, bool isDouble)
         {

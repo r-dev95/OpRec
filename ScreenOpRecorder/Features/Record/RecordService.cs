@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
-using ScreenOpRecorder.Features.Overlay;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
@@ -20,9 +19,6 @@ namespace ScreenOpRecorder.Features.Record
     public class RecordService : IDisposable
     {
         private readonly ILogger<RecordService> _logger;
-
-        private readonly OverlayViewModel _viewModel;
-
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
 
@@ -49,10 +45,9 @@ namespace ScreenOpRecorder.Features.Record
 
         private bool _isStopRecord = false;
 
-        public RecordService(ILogger<RecordService> logger, OverlayViewModel viewModel, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
+        public RecordService(ILogger<RecordService> logger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
-            _viewModel = viewModel;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
         }
@@ -64,7 +59,7 @@ namespace ScreenOpRecorder.Features.Record
             _item = item;
             _captureArea = captureArea;
 
-            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _item, _captureArea);
+            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea);
 
             _device = new CanvasDevice();
 
@@ -74,8 +69,10 @@ namespace ScreenOpRecorder.Features.Record
                 (uint)_captureArea.Height);
             _videoDescriptor = new VideoStreamDescriptor(videoProperties);
 
-            _mediaStreamSource = new MediaStreamSource(_videoDescriptor);
-            _mediaStreamSource.BufferTime = TimeSpan.FromSeconds(0);
+            _mediaStreamSource = new MediaStreamSource(_videoDescriptor)
+            {
+                BufferTime = TimeSpan.FromSeconds(0)
+            };
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
             _profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
