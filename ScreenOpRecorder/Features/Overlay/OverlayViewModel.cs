@@ -98,7 +98,10 @@ namespace ScreenOpRecorder.Features.Overlay
         private double _scaleFactor = 1.0;
 
         [ObservableProperty]
-        public partial Rect KeyDisplayArea { get; set; }
+        public partial Rect KeyDisplayArea
+        {
+            get; set;
+        }
 
         private Size _screenSize;
         private bool _isRecording;
@@ -131,24 +134,84 @@ namespace ScreenOpRecorder.Features.Overlay
                 SetNotRecordingWindow?.Invoke();
                 _isRecording = false;
                 UpdateKeyDisplayArea();
+                IsZoomedVisible = Visibility.Collapsed;
             });
 
             _messenger.Register<ZoomAreaChangedMessage>(this, (r, m) =>
             {
                 if (_isRecording)
                 {
-                   _dispatcherQueue?.TryEnqueue(() =>
-                   {
-                       // ZoomRectは物理ピクセルなので、論理ピクセルに変換する
-                       double x = m.ZoomRect.X / _scaleFactor;
-                       double y = m.ZoomRect.Y / _scaleFactor;
-                       double w = m.ZoomRect.Width / _scaleFactor;
-                       double h = m.ZoomRect.Height / _scaleFactor;
+                    _dispatcherQueue?.TryEnqueue(() =>
+                    {
+                        // ZoomRectは物理ピクセルなので、論理ピクセルに変換する
+                        double x = m.ZoomRect.X / _scaleFactor;
+                        double y = m.ZoomRect.Y / _scaleFactor;
+                        double w = m.ZoomRect.Width / _scaleFactor;
+                        double h = m.ZoomRect.Height / _scaleFactor;
 
-                       KeyDisplayArea = new Rect(x, y, w, h);
+                        KeyDisplayArea = new Rect(x, y, w, h);
+
+                        // ズーム判定
+                        bool isZoomed = w < (CaptureAreaRect.Width - 1.0);
+                        IsZoomedVisible = isZoomed ? Visibility.Visible : Visibility.Collapsed;
+
+                        if (isZoomed)
+                        {
+                            UpdateMinimap(KeyDisplayArea);
+                        }
+                    });
+                }
             });
         }
-            });
+
+        [ObservableProperty]
+        public partial Visibility IsZoomedVisible { get; set; } = Visibility.Collapsed;
+
+        [ObservableProperty]
+        public partial double MinimapWidth { get; set; } = 150;
+
+        [ObservableProperty]
+        public partial double MinimapHeight
+        {
+            get; set;
+        }
+
+        [ObservableProperty]
+        public partial double MinimapViewportX
+        {
+            get; set;
+        }
+
+        [ObservableProperty]
+        public partial double MinimapViewportY
+        {
+            get; set;
+        }
+
+        [ObservableProperty]
+        public partial double MinimapViewportWidth
+        {
+            get; set;
+        }
+
+        [ObservableProperty]
+        public partial double MinimapViewportHeight
+        {
+            get; set;
+        }
+
+        private void UpdateMinimap(Rect currentViewport)
+        {
+            if (CaptureAreaRect.Width == 0 || CaptureAreaRect.Height == 0)
+                return;
+
+            double scale = MinimapWidth / CaptureAreaRect.Width;
+            MinimapHeight = CaptureAreaRect.Height * scale;
+
+            MinimapViewportX = (currentViewport.X - CaptureAreaRect.X) * scale;
+            MinimapViewportY = (currentViewport.Y - CaptureAreaRect.Y) * scale;
+            MinimapViewportWidth = currentViewport.Width * scale;
+            MinimapViewportHeight = currentViewport.Height * scale;
         }
 
         public void Start()
