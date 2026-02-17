@@ -10,8 +10,6 @@ namespace ScreenOpRecorder.Shared.Converters
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var args = value as PointerRoutedEventArgs;
-            // SelectionCanvasに対しての相対座標を取得
-            // 本来は引数でCanvasを渡すか、RelativeElementを指定する工夫が必要
             var element = args!.OriginalSource as UIElement;
             return args!.GetCurrentPoint(element).Position;
         }

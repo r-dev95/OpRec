@@ -1,3 +1,5 @@
+using System;
+
 using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
@@ -15,6 +17,8 @@ namespace ScreenOpRecorder.Features.Record
         private readonly FrameZoom _frameZoom;
         private readonly FrameOverlay _frameOverlay;
 
+        public event Action<Rect>? ZoomChanged;
+
         public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, Rect captureArea)
         {
             _mouseHookService = mouseHookService;
@@ -24,7 +28,11 @@ namespace ScreenOpRecorder.Features.Record
             _frameZoom = new FrameZoom(_captureArea);
             _frameOverlay = new FrameOverlay();
 
-            _frameZoom.ZoomAction += _frameOverlay.OnZoomAction;
+            _frameZoom.ZoomAction += (rect) =>
+            {
+                _frameOverlay.OnZoomAction(rect);
+                ZoomChanged?.Invoke(rect);
+            };
 
             _mouseHookService.MouseClicked += (x, y, isDouble) =>
             {
@@ -52,10 +60,10 @@ namespace ScreenOpRecorder.Features.Record
             _frameZoom.DrawZoomFrame(ds, renderTarget.Size, rawFrame);
 
             // オーバーレイ描画（キー表示）
-            _frameOverlay.DrawKey(ds, renderTarget.Size);
+            //_frameOverlay.DrawKey(ds, renderTarget.Size);
 
             // オーバレイ描画（クリックリップル表示）
-            _frameOverlay.DrawRipple(ds, renderTarget.Size);
+            //_frameOverlay.DrawRipple(ds, renderTarget.Size);
         }
     }
 }

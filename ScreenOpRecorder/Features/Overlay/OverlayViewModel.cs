@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Input;
+using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
 
@@ -53,6 +54,12 @@ namespace ScreenOpRecorder.Features.Overlay
         partial void OnHeightChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
 
         [ObservableProperty]
+        public partial Rect CaptureAreaRect
+        {
+            get; set;
+        }
+
+        [ObservableProperty]
         public partial Visibility IsCaptureAreaVisible
         {
             get; set;
@@ -90,8 +97,21 @@ namespace ScreenOpRecorder.Features.Overlay
 
         private double _scaleFactor = 1.0;
 
+        [ObservableProperty]
+        public partial Rect KeyDisplayArea { get; set; }
+
+        private Size _screenSize;
+        private bool _isRecording;
+        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
+
         public OverlayViewModel(ILogger<OverlayViewModel> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
+            try
+            {
+                _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            }
+            catch { }
+
             _logger = logger;
             _messenger = messenger;
             _mouseHookService = mouseHookService;
@@ -102,11 +122,32 @@ namespace ScreenOpRecorder.Features.Overlay
             _messenger.Register<StartRecordMessage>(this, (r, m) =>
             {
                 SetRecordingWindow?.Invoke();
+                _isRecording = true;
+                UpdateKeyDisplayArea();
             });
 
             _messenger.Register<StopRecordMessage>(this, (r, m) =>
             {
                 SetNotRecordingWindow?.Invoke();
+                _isRecording = false;
+                UpdateKeyDisplayArea();
+            });
+
+            _messenger.Register<ZoomAreaChangedMessage>(this, (r, m) =>
+            {
+                if (_isRecording)
+                {
+                   _dispatcherQueue?.TryEnqueue(() =>
+                   {
+                       // ZoomRectは物理ピクセルなので、論理ピクセルに変換する
+                       double x = m.ZoomRect.X / _scaleFactor;
+                       double y = m.ZoomRect.Y / _scaleFactor;
+                       double w = m.ZoomRect.Width / _scaleFactor;
+                       double h = m.ZoomRect.Height / _scaleFactor;
+
+                       KeyDisplayArea = new Rect(x, y, w, h);
+            });
+        }
             });
         }
 
@@ -118,6 +159,12 @@ namespace ScreenOpRecorder.Features.Overlay
             CanSubmit = true;
             IsCaptureAreaVisible = Visibility.Collapsed;
             IsSizeTagVisible = Visibility.Collapsed;
+        }
+
+        public void SetScreenSize(double width, double height)
+        {
+            _screenSize = new Size(width, height);
+            UpdateKeyDisplayArea();
         }
 
         public void SetScaleFactor(double scaleFactor)
@@ -132,6 +179,18 @@ namespace ScreenOpRecorder.Features.Overlay
             Y = Math.Min(startPoint.Y, currentPoint.Y);
             Width = Math.Abs(startPoint.X - currentPoint.X);
             Height = Math.Abs(startPoint.Y - currentPoint.Y);
+        }
+
+        private void UpdateKeyDisplayArea()
+        {
+            if (_isRecording)
+            {
+                KeyDisplayArea = CaptureAreaRect;
+            }
+            else
+            {
+                KeyDisplayArea = new Rect(0, 0, _screenSize.Width, _screenSize.Height);
+            }
         }
 
         public Rect GetCaptureRect() => new(X * _scaleFactor, Y * _scaleFactor, Width * _scaleFactor, Height * _scaleFactor);
@@ -160,12 +219,6 @@ namespace ScreenOpRecorder.Features.Overlay
             catch { }
         }
 
-
-        public Visibility IsVisibility(string text)
-        {
-            return string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
-        }
-
         [RelayCommand(CanExecute = nameof(CanSubmit))]
         private void OnPointerPressed(Point position)
         {
@@ -183,6 +236,7 @@ namespace ScreenOpRecorder.Features.Overlay
                 return;
             }
             SetCaptureRect(_startPoint, currentPoint);
+            CaptureAreaRect = new(X, Y, Width, Height);
         }
 
         [RelayCommand(CanExecute = nameof(CanSubmit))]

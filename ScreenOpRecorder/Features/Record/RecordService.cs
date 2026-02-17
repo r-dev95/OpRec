@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 
+using CommunityToolkit.Mvvm.Messaging;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
@@ -19,6 +21,7 @@ namespace ScreenOpRecorder.Features.Record
     public class RecordService : IDisposable
     {
         private readonly ILogger<RecordService> _logger;
+        private readonly IMessenger _messenger;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
 
@@ -45,9 +48,10 @@ namespace ScreenOpRecorder.Features.Record
 
         private bool _isStopRecord = false;
 
-        public RecordService(ILogger<RecordService> logger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
+        public RecordService(ILogger<RecordService> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
+            _messenger = messenger;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
         }
@@ -60,6 +64,10 @@ namespace ScreenOpRecorder.Features.Record
             _captureArea = captureArea;
 
             _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea);
+            _compositionManager.ZoomChanged += (rect) =>
+            {
+                _messenger.Send(new ScreenOpRecorder.Shared.Messages.ZoomAreaChangedMessage(rect));
+            };
 
             _device = new CanvasDevice();
 

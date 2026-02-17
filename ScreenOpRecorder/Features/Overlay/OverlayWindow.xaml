@@ -9,6 +9,7 @@
     xmlns:winuiex="using:WinUIEx"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:converters="using:ScreenOpRecorder.Shared.Converters"
+    xmlns:utils="using:ScreenOpRecorder.Shared.Utils"
     mc:Ignorable="d"
     Title="OverlayWindow">
 
@@ -21,6 +22,7 @@
         <Grid.Resources>
             <converters:PointerArgsToPointConverter x:Key="PointerArgsToPointConverter" />
         </Grid.Resources>
+
         <Canvas x:Name="OverlayCanvas" 
                 Background="Transparent" />
 
@@ -42,15 +44,26 @@
                 </interactivity:EventTriggerBehavior>
             </interactivity:Interaction.Behaviors>
 
-            <Rectangle Stroke="Cyan"
-                       StrokeThickness="2"
+            <Path x:Name="MaskPath"
+                  Fill="#88000000">
+                <Path.Data>
+                    <GeometryGroup FillRule="EvenOdd">
+                        <RectangleGeometry x:Name="FullAreaRect" />
+                        <RectangleGeometry Rect="{x:Bind ViewModel.CaptureAreaRect, Mode=OneWay}" />
+                    </GeometryGroup>
+                </Path.Data>
+            </Path>
+
+            <Rectangle x:Name="CaptureArea"
+                       Stroke="Cyan"
+                       StrokeThickness="1"
                        Fill="Transparent"
-                       Width="{x:Bind ViewModel.Width, Mode=OneWay}"
-                       Height="{x:Bind ViewModel.Height, Mode=OneWay}"
+                       Width="{x:Bind ViewModel.CaptureAreaRect.Width, Mode=OneWay}"
+                       Height="{x:Bind ViewModel.CaptureAreaRect.Height, Mode=OneWay}"
                        Visibility="{x:Bind ViewModel.IsCaptureAreaVisible, Mode=OneWay}">
                 <Rectangle.RenderTransform>
-                    <TranslateTransform X="{x:Bind ViewModel.X, Mode=OneWay}"
-                                        Y="{x:Bind ViewModel.Y, Mode=OneWay}" />
+                    <TranslateTransform X="{x:Bind ViewModel.CaptureAreaRect.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.CaptureAreaRect.Y, Mode=OneWay}" />
                 </Rectangle.RenderTransform>
             </Rectangle>
 
@@ -69,18 +82,28 @@
             </Border>
         </Canvas>
 
+        <Grid HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Width="{x:Bind ViewModel.KeyDisplayArea.Width, Mode=OneWay}"
+              Height="{x:Bind ViewModel.KeyDisplayArea.Height, Mode=OneWay}">
+            <Grid.RenderTransform>
+                <TranslateTransform X="{x:Bind ViewModel.KeyDisplayArea.X, Mode=OneWay}"
+                                    Y="{x:Bind ViewModel.KeyDisplayArea.Y, Mode=OneWay}" />
+            </Grid.RenderTransform>
+
+
         <Border VerticalAlignment="Bottom"
                 HorizontalAlignment="Center"
                 Margin="0,0,0,100"
                 Background="#AA000000"
                 CornerRadius="8"
                 Padding="20,10"
-                Visibility="{x:Bind ViewModel.IsVisibility(ViewModel.CurrentKeyText), Mode=OneWay}">
+                    Margin="0,0,0,50"
+                    Visibility="{x:Bind utils:StringUtil.StringToVisibility(ViewModel.CurrentKeyText), Mode=OneWay}">
             <TextBlock Text="{x:Bind ViewModel.CurrentKeyText, Mode=OneWay}"
                        Foreground="White"
                        FontSize="28"
-                       FontWeight="Bold"
-                       TextAlignment="Center" />
+                            FontWeight="Bold" />
         </Border>
     </Grid>
 </Window>
