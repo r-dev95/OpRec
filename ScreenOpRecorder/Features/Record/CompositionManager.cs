@@ -1,8 +1,10 @@
-﻿using Microsoft.Graphics.Canvas;
+using System;
+
+using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
 
-using Windows.Graphics.Capture;
+using Windows.Foundation;
 
 namespace ScreenOpRecorder.Features.Record
 {
@@ -10,45 +12,58 @@ namespace ScreenOpRecorder.Features.Record
     {
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
-        private readonly GraphicsCaptureItem _item;
+        private readonly Rect _captureArea;
 
         private readonly FrameZoom _frameZoom;
         private readonly FrameOverlay _frameOverlay;
 
-        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, GraphicsCaptureItem item)
+        public event Action<Rect>? ZoomChanged;
+
+        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, Rect captureArea)
         {
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
-            _item = item;
+            _captureArea = captureArea;
 
-            _frameZoom = new FrameZoom(item.Size.Width, item.Size.Height);
+            _frameZoom = new FrameZoom(_captureArea);
             _frameOverlay = new FrameOverlay();
 
-            _mouseHookService.MouseClicked += (x, y, isDouble) => {
-                if (isDouble)
-                {
-                    _frameZoom.ToggleZoom(x, y);
-                }
+            _frameZoom.ZoomAction += (rect) =>
+            {
+                _frameOverlay.OnZoomAction(rect);
+                ZoomChanged?.Invoke(rect);
             };
 
-            _keyboardHookService.KeyDown += (keyName) => {
+            _mouseHookService.MouseClicked += (x, y, isDouble) =>
+            {
+                float relativeX = (float)(x - _captureArea.X);
+                float relativeY = (float)(y - _captureArea.Y);
+
+                if (isDouble)
+                {
+                    _frameZoom.ToggleZoom(relativeX, relativeY);
+                }
+                _frameOverlay.AddRipple(relativeX, relativeY);
+            };
+
+            _keyboardHookService.KeyDown += (keyName) =>
+            {
                 _frameOverlay.UpdateKey(keyName);
             };
         }
 
         public void ComposeFrame(CanvasRenderTarget renderTarget, CanvasBitmap rawFrame)
         {
-            using (var ds = renderTarget.CreateDrawingSession())
-            {
-                // 画面フレーム描画（ズーム処理あり）
-                _frameZoom.DrawZoomFrame(ds, renderTarget.Size, rawFrame);
+            using var ds = renderTarget.CreateDrawingSession();
 
-                // オーバーレイ描画（キー表示）
-                _frameOverlay.DrawKey(ds, renderTarget.Size);
+            // 画面フレーム描画（ズーム処理あり）
+            _frameZoom.DrawZoomFrame(ds, renderTarget.Size, rawFrame);
 
-                // マウス位置に目印（波紋など）を出す場合はここに追加
-                //_frameOverlay.DrawCircle(ds, renderTarget.Size);
-            }
+            // オーバーレイ描画（キー表示）
+            //_frameOverlay.DrawKey(ds, renderTarget.Size);
+
+            // オーバレイ描画（クリックリップル表示）
+            //_frameOverlay.DrawRipple(ds, renderTarget.Size);
         }
     }
 }

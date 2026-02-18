@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
+
+using CommunityToolkit.Mvvm.Messaging;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
-using ScreenOpRecorder.Features.Overlay;
 
+using Windows.Foundation;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Media.Core;
@@ -19,9 +21,7 @@ namespace ScreenOpRecorder.Features.Record
     public class RecordService : IDisposable
     {
         private readonly ILogger<RecordService> _logger;
-
-        private readonly OverlayViewModel _viewModel;
-
+        private readonly IMessenger _messenger;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
 
@@ -29,6 +29,7 @@ namespace ScreenOpRecorder.Features.Record
 
         private CanvasDevice? _device;
         private GraphicsCaptureItem? _item;
+        private Rect _captureArea;
 
         private Direct3D11CaptureFramePool? _framePool;
         private GraphicsCaptureSession? _session;
@@ -39,7 +40,7 @@ namespace ScreenOpRecorder.Features.Record
         private MediaEncodingProfile? _profile;
 
         private CanvasRenderTarget? _renderTarget;
-        private CanvasRenderTarget? _currentFrame;
+        private CanvasBitmap? _canvasBitmap;
 
         private Task? _recordingTask;
 
@@ -47,32 +48,39 @@ namespace ScreenOpRecorder.Features.Record
 
         private bool _isStopRecord = false;
 
-        public RecordService(ILogger<RecordService> logger, OverlayViewModel viewModel, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
+        public RecordService(ILogger<RecordService> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
-            _viewModel = viewModel;
+            _messenger = messenger;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
         }
 
-        public void Setup(GraphicsCaptureItem item)
+        public void Setup(GraphicsCaptureItem item, Rect captureArea)
         {
             _isStopRecord = false;
 
             _item = item;
+            _captureArea = captureArea;
 
-            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _item);
+            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea);
+            _compositionManager.ZoomChanged += (rect) =>
+            {
+                _messenger.Send(new ScreenOpRecorder.Shared.Messages.ZoomAreaChangedMessage(rect));
+            };
 
             _device = new CanvasDevice();
 
             var videoProperties = VideoEncodingProperties.CreateUncompressed(
                 MediaEncodingSubtypes.Bgra8,
-                (uint)item.Size.Width,
-                (uint)item.Size.Height);
+                (uint)_captureArea.Width,
+                (uint)_captureArea.Height);
             _videoDescriptor = new VideoStreamDescriptor(videoProperties);
 
-            _mediaStreamSource = new MediaStreamSource(_videoDescriptor);
-            _mediaStreamSource.BufferTime = TimeSpan.FromSeconds(0);
+            _mediaStreamSource = new MediaStreamSource(_videoDescriptor)
+            {
+                BufferTime = TimeSpan.FromSeconds(0)
+            };
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
             _profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
@@ -102,14 +110,14 @@ namespace ScreenOpRecorder.Features.Record
 
         public void Dispose()
         {
-            _currentFrame?.Dispose();
-            _currentFrame = null;
-
-            _mediaStreamSource!.SampleRequested -= OnSampleRequested;
+            _mediaStreamSource?.SampleRequested -= OnSampleRequested;
             _mediaStreamSource = null;
 
             _renderTarget?.Dispose();
             _renderTarget = null;
+
+            _canvasBitmap?.Dispose();
+            _canvasBitmap = null;
 
             _framePool?.Dispose();
             _framePool = null;
@@ -132,15 +140,22 @@ namespace ScreenOpRecorder.Features.Record
 
         private void OnSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
         {
-            if (_isStopRecord || _currentFrame == null)
+            if (_isStopRecord || _canvasBitmap == null)
             {
                 args.Request.Sample = null;
                 return;
             }
 
+            if (_renderTarget == null)
+            {
+                _renderTarget = new CanvasRenderTarget(_device, (float)_captureArea.Width, (float)_captureArea.Height, 96);
+            }
+
+            _compositionManager!.ComposeFrame(_renderTarget, _canvasBitmap);
+
             try
             {
-                var surface = (IDirect3DSurface)_currentFrame;
+                var surface = (IDirect3DSurface)_renderTarget;
                 var timeStamp = DateTimeOffset.Now - _startTime;
                 args.Request.Sample = MediaStreamSample.CreateFromDirect3D11Surface(surface, timeStamp);
             }
@@ -158,16 +173,7 @@ namespace ScreenOpRecorder.Features.Record
                 return;
             }
 
-            using var canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
-
-            if (_renderTarget == null)
-            {
-                _renderTarget = new CanvasRenderTarget(_device, (float)canvasBitmap.Size.Width, (float)canvasBitmap.Size.Height, 96);
-            }
-
-            _compositionManager!.ComposeFrame(_renderTarget, canvasBitmap);
-
-            _currentFrame = _renderTarget;
+            _canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
         }
     }
 }

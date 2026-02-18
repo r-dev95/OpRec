@@ -7,6 +7,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:converters="using:ScreenOpRecorder.Shared.Converters"
+    xmlns:utils="using:ScreenOpRecorder.Shared.Utils"
     mc:Ignorable="d"
     Title="OverlayWindow">
 
@@ -16,21 +19,115 @@
 
     <Grid x:Name="RootGrid"
           Background="Transparent">
-        <Canvas x:Name="OverlayCanvas" 
+        <Grid.Resources>
+            <converters:PointerArgsToPointConverter x:Key="PointerArgsToPointConverter" />
+        </Grid.Resources>
+
+        <Canvas x:Name="OverlayCanvas"
                 Background="Transparent" />
 
-        <Border VerticalAlignment="Bottom"
-                HorizontalAlignment="Center"
-                Margin="0,0,0,100"
-                Background="#AA000000"
-                CornerRadius="8"
-                Padding="20,10"
-                Visibility="{x:Bind ViewModel.IsVisibility(ViewModel.CurrentKeyText), Mode=OneWay}">
-            <TextBlock Text="{x:Bind ViewModel.CurrentKeyText, Mode=OneWay}"
-                       Foreground="White"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       TextAlignment="Center" />
-        </Border>
+        <Canvas x:Name="SelectionCanvas"
+                Background="#44000000">
+            <interactivity:Interaction.Behaviors>
+                <interactivity:EventTriggerBehavior EventName="PointerPressed">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerPressedCommand}"
+                                                       InputConverter="{StaticResource PointerArgsToPointConverter}" />
+                </interactivity:EventTriggerBehavior>
+
+                <interactivity:EventTriggerBehavior EventName="PointerMoved">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}"
+                                                       InputConverter="{StaticResource PointerArgsToPointConverter}" />
+                </interactivity:EventTriggerBehavior>
+
+                <interactivity:EventTriggerBehavior EventName="PointerReleased">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerReleasedCommand}" />
+                </interactivity:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+
+            <Path x:Name="MaskPath"
+                  Fill="#88000000">
+                <Path.Data>
+                    <GeometryGroup FillRule="EvenOdd">
+                        <RectangleGeometry x:Name="FullAreaRect" />
+                        <RectangleGeometry Rect="{x:Bind ViewModel.CaptureAreaRect, Mode=OneWay}" />
+                    </GeometryGroup>
+                </Path.Data>
+            </Path>
+
+            <Rectangle x:Name="CaptureArea"
+                       Stroke="Cyan"
+                       StrokeThickness="1"
+                       Fill="Transparent"
+                       Width="{x:Bind ViewModel.CaptureAreaRect.Width, Mode=OneWay}"
+                       Height="{x:Bind ViewModel.CaptureAreaRect.Height, Mode=OneWay}"
+                       Visibility="{x:Bind ViewModel.IsCaptureAreaVisible, Mode=OneWay}">
+                <Rectangle.RenderTransform>
+                    <TranslateTransform X="{x:Bind ViewModel.CaptureAreaRect.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.CaptureAreaRect.Y, Mode=OneWay}" />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+
+            <Border Background="Cyan"
+                    CornerRadius="4"
+                    Padding="6,2"
+                    Visibility="{x:Bind ViewModel.IsSizeTagVisible, Mode=OneWay}">
+                <Border.RenderTransform>
+                    <TranslateTransform X="{x:Bind ViewModel.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.Y, Mode=OneWay}" />
+                </Border.RenderTransform>
+                <TextBlock Text="{x:Bind ViewModel.SizeLabel, Mode=OneWay}"
+                           Foreground="Black"
+                           FontSize="14"
+                           FontWeight="Bold" />
+            </Border>
+        </Canvas>
+
+        <Grid HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Width="{x:Bind ViewModel.KeyDisplayArea.Width, Mode=OneWay}"
+              Height="{x:Bind ViewModel.KeyDisplayArea.Height, Mode=OneWay}">
+            <Grid.RenderTransform>
+                <TranslateTransform X="{x:Bind ViewModel.KeyDisplayArea.X, Mode=OneWay}"
+                                    Y="{x:Bind ViewModel.KeyDisplayArea.Y, Mode=OneWay}" />
+            </Grid.RenderTransform>
+
+
+            <Border VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    Background="#AA000000"
+                    CornerRadius="8"
+                    Padding="20,10"
+                    Margin="0,0,0,50"
+                    Visibility="{x:Bind utils:StringUtil.StringToVisibility(ViewModel.CurrentKeyText), Mode=OneWay}">
+                <TextBlock Text="{x:Bind ViewModel.CurrentKeyText, Mode=OneWay}"
+                            Foreground="White"
+                            FontSize="28"
+                            FontWeight="Bold" />
+            </Border>
+        </Grid>
+
+        <!-- Minimap -->
+        <Grid VerticalAlignment="Top"
+              HorizontalAlignment="Right"
+              Margin="0,10,10,0"
+              Width="{x:Bind ViewModel.MinimapWidth, Mode=OneWay}"
+              Height="{x:Bind ViewModel.MinimapHeight, Mode=OneWay}"
+              Visibility="{x:Bind ViewModel.IsZoomedVisible, Mode=OneWay}">
+
+            <!-- Background (Whole Capture Area) -->
+            <Border Background="#88000000"
+                    BorderBrush="White"
+                    BorderThickness="1" />
+
+            <!-- Viewport Indicator -->
+            <Canvas>
+                 <Border BorderBrush="Red"
+                        BorderThickness="2"
+                        Width="{x:Bind ViewModel.MinimapViewportWidth, Mode=OneWay}"
+                        Height="{x:Bind ViewModel.MinimapViewportHeight, Mode=OneWay}"
+                        Canvas.Left="{x:Bind ViewModel.MinimapViewportX, Mode=OneWay}"
+                        Canvas.Top="{x:Bind ViewModel.MinimapViewportY, Mode=OneWay}" />
+            </Canvas>
+        </Grid>
     </Grid>
 </Window>

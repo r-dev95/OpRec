@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 using Windows.System;
@@ -10,21 +9,6 @@ namespace ScreenOpRecorder.Features.Input
 {
     internal static class InputHelper
     {
-        private const int WH_KEYBOARD_LL = 13;
-        private const int WM_KEYDOWN = 0x0100;
-        private const int WM_KEYUP = 0x0101;
-        private const int WM_SYSKEYDOWN = 0x0104;
-
-        private const int VK_SHIFT = 0x10;
-        private const int VK_CONTROL = 0x11;
-        private const int VK_MENU = 0x12; // Alt
-
-        private const int WH_MOUSE_LL = 14;
-        private const int WM_LBUTTONDOWN = 0x0201;
-
-        private const int SM_CXDOUBLECLK = 36;
-        private const int SM_CYDOUBLECLK = 37;
-
         private static readonly Dictionary<uint, string> SpecialKeys = new()
         {
             { (uint)VirtualKey.Control, "Ctrl" },
@@ -51,52 +35,6 @@ namespace ScreenOpRecorder.Features.Input
         };
 
         public const int dummyVal = -5000;
-
-        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll")]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("user32.dll")]
-        private static extern int GetDoubleClickTime();
-
-        [DllImport("user32.dll")]
-        private static extern int GetSystemMetrics(int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern short GetKeyState(int nVirtKey);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct MSLLHOOKSTRUCT
-        {
-            public POINT pt;
-        }
-
-        public struct POINT
-        {
-            public int x;
-            public int y;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct KBDLLHOOKSTRUCT
-        {
-            public uint vkCode;
-            public uint scanCode;
-            public uint flags;
-            public uint time;
-            public IntPtr dwExtraInfo;
-        }
-
         private static IntPtr SetHook(int num, HookProc proc)
         {
             using var curProcess = Process.GetCurrentProcess();
@@ -197,8 +135,71 @@ namespace ScreenOpRecorder.Features.Input
                     return vkName;
                 }
             }
-            
+
             return dummyVal.ToString();
+        }
+
+        // --------------------------------------------------------------------
+        // Win32 API
+        // --------------------------------------------------------------------
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_KEYUP = 0x0101;
+        private const int WM_SYSKEYDOWN = 0x0104;
+
+        private const int VK_SHIFT = 0x10;
+        private const int VK_CONTROL = 0x11;
+        private const int VK_MENU = 0x12; // Alt
+
+        private const int WH_MOUSE_LL = 14;
+        private const int WM_LBUTTONDOWN = 0x0201;
+
+        private const int SM_CXDOUBLECLK = 36;
+        private const int SM_CYDOUBLECLK = 37;
+
+        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("user32.dll")]
+        private static extern int GetDoubleClickTime();
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
+
+        [DllImport("user32.dll")]
+        private static extern short GetKeyState(int nVirtKey);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MSLLHOOKSTRUCT
+        {
+            public POINT pt;
+        }
+
+        public struct POINT
+        {
+            public int x;
+            public int y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct KBDLLHOOKSTRUCT
+        {
+            public uint vkCode;
+            public uint scanCode;
+            public uint flags;
+            public uint time;
+            public IntPtr dwExtraInfo;
         }
     }
 }

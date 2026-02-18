@@ -1,35 +1,37 @@
-﻿using System;
+using System;
 using System.Numerics;
-using System.Threading;
 
 using Microsoft.Graphics.Canvas;
 
-using ScreenOpRecorder.Features.Input;
-
 using Windows.Foundation;
-using Windows.Graphics.Capture;
 
 namespace ScreenOpRecorder.Features.Record
 {
     public class FrameZoom
     {
-        private Vector2 _targetPos; // ズーム中心位置
-        private Vector2 _originalCameraPos; // 全画面のカメラ位置
+        private const float InterpolationSpeed = 0.01f; // 追従の滑らかさ (0.0～1.0)
+
+        private readonly Rect _captureArea;
+        private readonly Vector2 _originalCameraPos; // 全画面のカメラ位置
         private Vector2 _currentCameraPos; // 現在のカメラ位置
-        private float _interpolationSpeed = 0.10f; // 追従の滑らかさ (0.0～1.0)
+        private Vector2 _targetPos; // ズーム中心位置
 
         private float _currentZoom = 1.0f; // 現在のズーム倍率
         private float _targetZoom = 1.0f;  // 目標のズーム倍率
         private const float ZoomMax = 2.0f;
         private const float ZoomMin = 1.0f;
 
-        public FrameZoom(int width, int height)
+        public Action<Rect>? ZoomAction;
+
+        public FrameZoom(Rect captureArea)
         {
-            _originalCameraPos = new Vector2((float)(width * 0.5), (float)(height * 0.5));
+            _captureArea = captureArea;
+
+            _originalCameraPos = new Vector2((float)(captureArea.Width * 0.5), (float)(captureArea.Height * 0.5));
             _currentCameraPos = _originalCameraPos;
         }
 
-        public void ToggleZoom(int mouseX, int mouseY)
+        public void ToggleZoom(float mouseX, float mouseY)
         {
             if (_targetZoom == ZoomMin) // ズームイン
             {
@@ -44,32 +46,41 @@ namespace ScreenOpRecorder.Features.Record
             }
         }
 
-        public Rect UpdateViewport(Size screenSize)
+        public Rect UpdateViewport(double width, double height)
         {
             // ズーム倍率を滑らかに補間
-            _currentZoom = _currentZoom + (_targetZoom - _currentZoom) * _interpolationSpeed;
+            _currentZoom += (_targetZoom - _currentZoom) * InterpolationSpeed;
 
-            _currentCameraPos = Vector2.Lerp(_currentCameraPos, _targetPos, _interpolationSpeed);
+            _currentCameraPos = Vector2.Lerp(_currentCameraPos, _targetPos, InterpolationSpeed);
 
-            float viewWidth = (float)(screenSize.Width / _currentZoom);
-            float viewHeight = (float)(screenSize.Height / _currentZoom);
+            float viewWidth = (float)(width / _currentZoom);
+            float viewHeight = (float)(height / _currentZoom);
 
             float left = _currentCameraPos.X - (viewWidth / 2);
             float top = _currentCameraPos.Y - (viewHeight / 2);
 
-            left = Math.Clamp(left, 0, (float)screenSize.Width - viewWidth);
-            top = Math.Clamp(top, 0, (float)screenSize.Height - viewHeight);
+            left = Math.Clamp(left, 0, (float)width - viewWidth);
+            top = Math.Clamp(top, 0, (float)height - viewHeight);
 
             return new Rect(left, top, viewWidth, viewHeight);
         }
 
-        public void DrawZoomFrame(CanvasDrawingSession ds, Size screenSize, CanvasBitmap rawFrame)
+        public void DrawZoomFrame(CanvasDrawingSession ds, Size targetSize, CanvasBitmap rawFrame)
         {
-            Rect sourceRect = UpdateViewport(screenSize);
+            Rect zoomRect = UpdateViewport(_captureArea.Width, _captureArea.Height);
 
-            Rect targetRect = new Rect(0, 0, screenSize.Width, screenSize.Height);
+            Rect sourceRect = new(
+                _captureArea.X + zoomRect.X,
+                _captureArea.Y + zoomRect.Y,
+                zoomRect.Width,
+                zoomRect.Height
+            );
+
+            Rect targetRect = new(0, 0, targetSize.Width, targetSize.Height);
 
             ds.DrawImage(rawFrame, targetRect, sourceRect, 1.0f, CanvasImageInterpolation.Linear);
+
+            ZoomAction?.Invoke(sourceRect);
         }
     }
 }

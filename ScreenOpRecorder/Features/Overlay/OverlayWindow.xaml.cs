@@ -8,6 +8,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 
+using ScreenOpRecorder.Shared.Helpers;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -27,20 +29,45 @@ namespace ScreenOpRecorder.Features.Overlay
             _logger = logger;
             ViewModel = viewModel;
 
-            this.ExtendsContentIntoTitleBar = true;
-            OverlayHelper.SetAlwaysOnTop(this, true);
-            OverlayHelper.SetClickThrough(this, true);
-            OverlayHelper.MaximizeWindow(this);
-
-            var scale = OverlayHelper.GetScaleFactor(this);
-            ViewModel.SetScaleFactor(scale);
+            ViewModel.SetRecordingWindow += OnSetRecordingWindow;
+            ViewModel.SetNotRecordingWindow += OnSetNotRecordingWindow;
             ViewModel.RippleRequested += OnRippleRequested;
+
+            ViewModel.SetScaleFactor(WindowHelper.GetScaleFactor(this));
             ViewModel.Start();
+
+            SetWindow();
         }
+
+        private void OnSetRecordingWindow()
+        {
+            WindowHelper.SetAlwaysOnTop(this, true);
+            WindowHelper.SetClickThrough(this, true);
+            //ViewModel.IsCaptureAreaVisible = Visibility.Collapsed;
+            ViewModel.CanSubmit = false;
+            MaskPath.Visibility = Visibility.Collapsed;
+            var offset = CaptureArea.StrokeThickness;
+            ViewModel.CaptureAreaRect = new(
+                ViewModel.X - offset,
+                ViewModel.Y - offset,
+                ViewModel.Width + 2 * offset,
+                ViewModel.Height + 2 * offset);
+        }
+
+        private void OnSetNotRecordingWindow()
+        {
+            WindowHelper.SetAlwaysOnTop(this, false);
+            WindowHelper.SetClickThrough(this, false);
+            ViewModel.IsCaptureAreaVisible = Visibility.Collapsed;
+            ViewModel.CanSubmit = true;
+            MaskPath.Visibility = Visibility.Visible;
+            ViewModel.CaptureAreaRect = new(0, 0, 0, 0);
+        }
+
 
         private void OnRippleRequested(double x, double y, bool isDouble)
         {
-            // HookƒCƒxƒ“ƒg‚Í•ÊƒXƒŒƒbƒh‚©‚ç—ˆ‚é‚½‚ßAUIƒXƒŒƒbƒh‚ÖƒfƒBƒXƒpƒbƒ`
+            // Hookã‚¤ãƒ™ãƒ³ãƒˆã¯åˆ¥ã‚¹ãƒ¬ãƒƒãƒ‰ã‹ã‚‰æ¥ã‚‹ãŸã‚ã€UIã‚¹ãƒ¬ãƒƒãƒ‰ã¸ãƒ‡ã‚£ã‚¹ãƒ‘ãƒƒãƒ
             DispatcherQueue.TryEnqueue(() =>
             {
                 ShowRipple(x, y, isDouble);
@@ -67,10 +94,10 @@ namespace ScreenOpRecorder.Features.Overlay
             Canvas.SetTop(ripple, y - 0.5 * height);
             OverlayCanvas.Children.Add(ripple);
 
-            // ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’è‹`
+            // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®å®šç¾©
             var sb = new Storyboard();
 
-            // ƒXƒP[ƒ‹Šg‘å
+            // ã‚¹ã‚±ãƒ¼ãƒ«æ‹¡å¤§
             var scaleXAnimation = new DoubleAnimation { To = 3, Duration = TimeSpan.FromMilliseconds(duration) };
             Storyboard.SetTarget(scaleXAnimation, ripple.RenderTransform);
             Storyboard.SetTargetProperty(scaleXAnimation, "ScaleX");
@@ -79,7 +106,7 @@ namespace ScreenOpRecorder.Features.Overlay
             Storyboard.SetTarget(scaleYAnimation, ripple.RenderTransform);
             Storyboard.SetTargetProperty(scaleYAnimation, "ScaleY");
 
-            // •s“§–¾“x‚ð‰º‚°‚éiƒtƒF[ƒhƒAƒEƒgj
+            // ä¸é€æ˜Žåº¦ã‚’ä¸‹ã’ã‚‹ï¼ˆãƒ•ã‚§ãƒ¼ãƒ‰ã‚¢ã‚¦ãƒˆï¼‰
             var opacityAnimation = new DoubleAnimation { To = 0, Duration = TimeSpan.FromMilliseconds(duration) };
             Storyboard.SetTarget(opacityAnimation, ripple);
             Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
@@ -90,6 +117,15 @@ namespace ScreenOpRecorder.Features.Overlay
 
             sb.Completed += (s, e) => OverlayCanvas.Children.Remove(ripple);
             sb.Begin();
+        }
+
+        private void SetWindow()
+        {
+            WindowHelper.SetBorderAndTitleBar(this, false, false);
+            WindowHelper.MaximizeWindow(this);
+            var scale = WindowHelper.GetScaleFactor(this);
+            FullAreaRect.Rect = new(0, 0, Bounds.Width * scale, Bounds.Height * scale);
+            ViewModel.SetScreenSize(Bounds.Width, Bounds.Height);
         }
     }
 }
