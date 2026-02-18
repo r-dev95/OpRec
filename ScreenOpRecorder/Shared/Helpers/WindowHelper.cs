@@ -5,6 +5,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
+using Windows.Graphics;
 using Windows.Graphics.Capture;
 
 using WinRT.Interop;
@@ -28,6 +29,12 @@ namespace ScreenOpRecorder.Shared.Helpers
         {
             var windowId = GetWindowId(window);
             return AppWindow.GetFromWindowId(windowId);
+        }
+
+        public static DisplayArea GetDisplayArea(Window window, DisplayAreaFallback displayAreaFallback)
+        {
+            var windowId = GetWindowId(window);
+            return DisplayArea.GetFromWindowId(windowId, displayAreaFallback);
         }
 
         public static void SetAlwaysOnTop(Window window, bool enable)
@@ -69,13 +76,16 @@ namespace ScreenOpRecorder.Shared.Helpers
         public static void SetBorderAndTitleBar(Window window, bool hasBorder, bool hasTitleBar)
         {
             var appWindow = GetAppWindow(window);
-            if (appWindow != null)
+            if (appWindow?.Presenter is OverlappedPresenter presenter)
             {
-                if (appWindow.Presenter is OverlappedPresenter presenter)
-                {
-                    presenter.SetBorderAndTitleBar(hasBorder, hasTitleBar);
-                }
+                presenter.SetBorderAndTitleBar(hasBorder, hasTitleBar);
             }
+        }
+
+        public static void MoveAndResize(Window window, RectInt32 rectInt32)
+        {
+            var appWindow = GetAppWindow(window);
+            appWindow?.MoveAndResize(rectInt32);
         }
 
         public static double GetScaleFactor(Window window)

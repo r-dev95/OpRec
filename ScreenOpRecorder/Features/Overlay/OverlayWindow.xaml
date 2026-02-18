@@ -110,9 +110,9 @@
         <Grid VerticalAlignment="Top"
               HorizontalAlignment="Right"
               Margin="0,10,10,0"
-              Width="{x:Bind ViewModel.MinimapWidth, Mode=OneWay}"
-              Height="{x:Bind ViewModel.MinimapHeight, Mode=OneWay}"
-              Visibility="{x:Bind ViewModel.IsZoomedVisible, Mode=OneWay}">
+              Width="{x:Bind ViewModel.Minimap.Width, Mode=OneWay}"
+              Height="{x:Bind ViewModel.Minimap.Height, Mode=OneWay}"
+              Visibility="{x:Bind ViewModel.Minimap.IsVisible, Mode=OneWay}">
 
             <!-- Background (Whole Capture Area) -->
             <Border Background="#88000000"
@@ -123,10 +123,10 @@
             <Canvas>
                  <Border BorderBrush="Red"
                         BorderThickness="2"
-                        Width="{x:Bind ViewModel.MinimapViewportWidth, Mode=OneWay}"
-                        Height="{x:Bind ViewModel.MinimapViewportHeight, Mode=OneWay}"
-                        Canvas.Left="{x:Bind ViewModel.MinimapViewportX, Mode=OneWay}"
-                        Canvas.Top="{x:Bind ViewModel.MinimapViewportY, Mode=OneWay}" />
+                        Width="{x:Bind ViewModel.Minimap.ViewportWidth, Mode=OneWay}"
+                        Height="{x:Bind ViewModel.Minimap.ViewportHeight, Mode=OneWay}"
+                        Canvas.Left="{x:Bind ViewModel.Minimap.ViewportX, Mode=OneWay}"
+                        Canvas.Top="{x:Bind ViewModel.Minimap.ViewportY, Mode=OneWay}" />
             </Canvas>
         </Grid>
     </Grid>

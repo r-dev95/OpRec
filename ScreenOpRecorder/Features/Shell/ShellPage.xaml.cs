@@ -70,25 +70,16 @@ namespace ScreenOpRecorder.Features.Shell
 
             RootPage.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             _logger.LogDebug("RootPage desired size width: {}, height: {}", RootPage.DesiredSize.Width, RootPage.DesiredSize.Height);
-
             var scalingFactor = WindowHelper.GetScaleFactor(_mainWindow);
             var width = (int)(RootPage.DesiredSize.Width * scalingFactor);
             var height = (int)(RootPage.DesiredSize.Height * scalingFactor);
             _logger.LogDebug("Calculated window size width: {}, height: {}", width, height);
 
-            var windowId = WindowHelper.GetWindowId(_mainWindow);
-            var appWindow = WindowHelper.GetAppWindow(_mainWindow);
-            if (appWindow != null)
-            {
-                var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
-                var screenBounds = displayArea.WorkArea;
-
-                int x = screenBounds.X + (screenBounds.Width - width) / 2;
-                int y = screenBounds.Y + 20;
-
-                appWindow.MoveAndResize(new RectInt32(x, y, width, height));
-
-            }
+            var displayArea = WindowHelper.GetDisplayArea(_mainWindow, DisplayAreaFallback.Nearest);
+            var screenBounds = displayArea.WorkArea;
+            int x = screenBounds.X + (screenBounds.Width - width) / 2;
+            int y = screenBounds.Y + 20;
+            WindowHelper.MoveAndResize(_mainWindow, new RectInt32(x, y, width, height));
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Logging;
 
@@ -33,27 +34,28 @@ namespace ScreenOpRecorder.Features.Input
                 return;
             }
 
-            _hookId = InputHelper.SetMouseHook(_hookProc);
+            _hookId = InputHelper.SetHook(_hookProc, InputHelper.WH_MOUSE_LL);
 
-            _doubleClickTime = InputHelper.GetDoubleClkTime();
-            _doubleClickX = InputHelper.GetDoubleClkX();
-            _doubleClickY = InputHelper.GetDoubleClkY();
+            _doubleClickTime = InputHelper.GetDoubleClickTime();
+            _doubleClickX = InputHelper.GetSystemMetrics(InputHelper.SM_CXDOUBLECLK);
+            _doubleClickY = InputHelper.GetSystemMetrics(InputHelper.SM_CYDOUBLECLK);
         }
 
         public void Dispose()
         {
             if (_hookId != IntPtr.Zero)
             {
-                InputHelper.UnHook(_hookId);
+                InputHelper.UnhookWindowsHookEx(_hookId);
                 _hookId = IntPtr.Zero;
             }
         }
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            var pt = InputHelper.GetCursorPos(nCode, wParam, lParam);
-            if (pt.x != InputHelper.dummyVal && pt.y != InputHelper.dummyVal)
+            //var pt = InputHelper.GetCursorPos(nCode, wParam, lParam);
+            if (nCode >= 0 && wParam == InputHelper.WM_LBUTTONDOWN)
             {
+                var pt = Marshal.PtrToStructure<InputHelper.MSLLHOOKSTRUCT>(lParam).pt;
                 DateTime now = DateTime.Now;
                 bool isDouble = IsDoubleClick(pt, now);
                 MouseClicked?.Invoke(pt.x, pt.y, isDouble);
@@ -63,7 +65,7 @@ namespace ScreenOpRecorder.Features.Input
                 _lastClickPoint = pt;
             }
 
-            return InputHelper.CallNextHook(_hookId, nCode, wParam, lParam);
+            return InputHelper.CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
         private bool IsDoubleClick(InputHelper.POINT current, DateTime now)

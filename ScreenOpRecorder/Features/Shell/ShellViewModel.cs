@@ -11,12 +11,11 @@ using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Record;
 using ScreenOpRecorder.Shared.Helpers;
+using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
 using Windows.Storage;
-
-using static ScreenOpRecorder.Features.Overlay.OverlayViewModel;
 
 namespace ScreenOpRecorder.Features.Shell
 {
@@ -34,9 +33,6 @@ namespace ScreenOpRecorder.Features.Shell
 
         public event Action? StartRecord;
         public event Action? StopRecord;
-
-        public record StartRecordMessage();
-        public record StopRecordMessage();
 
         [ObservableProperty]
         public partial bool StartReady { get; set; } = false;

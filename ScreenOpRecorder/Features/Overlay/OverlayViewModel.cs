@@ -14,8 +14,6 @@ using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
 
-using static ScreenOpRecorder.Features.Shell.ShellViewModel;
-
 namespace ScreenOpRecorder.Features.Overlay
 {
     public partial class OverlayViewModel : ObservableObject
@@ -87,7 +85,6 @@ namespace ScreenOpRecorder.Features.Overlay
 
         private Point _startPoint;
         private bool _isSelecting = false;
-        public record SelectionCompletedMessage(Rect captureRect);
 
         public event Action? SetRecordingWindow;
         public event Action? SetNotRecordingWindow;
@@ -134,7 +131,7 @@ namespace ScreenOpRecorder.Features.Overlay
                 SetNotRecordingWindow?.Invoke();
                 _isRecording = false;
                 UpdateKeyDisplayArea();
-                IsZoomedVisible = Visibility.Collapsed;
+                Minimap.Reset();
             });
 
             _messenger.Register<ZoomAreaChangedMessage>(this, (r, m) =>
@@ -151,68 +148,15 @@ namespace ScreenOpRecorder.Features.Overlay
 
                         KeyDisplayArea = new Rect(x, y, w, h);
 
-                        // ズーム判定
-                        bool isZoomed = w < (CaptureAreaRect.Width - 1.0);
-                        IsZoomedVisible = isZoomed ? Visibility.Visible : Visibility.Collapsed;
-
-                        if (isZoomed)
-                        {
-                            UpdateMinimap(KeyDisplayArea);
-                        }
+                        // ズーム判定とミニマップ更新を MinimapViewModel に委譲
+                        Minimap.Update(CaptureAreaRect, KeyDisplayArea);
                     });
                 }
             });
         }
 
         [ObservableProperty]
-        public partial Visibility IsZoomedVisible { get; set; } = Visibility.Collapsed;
-
-        [ObservableProperty]
-        public partial double MinimapWidth { get; set; } = 150;
-
-        [ObservableProperty]
-        public partial double MinimapHeight
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial double MinimapViewportX
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial double MinimapViewportY
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial double MinimapViewportWidth
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial double MinimapViewportHeight
-        {
-            get; set;
-        }
-
-        private void UpdateMinimap(Rect currentViewport)
-        {
-            if (CaptureAreaRect.Width == 0 || CaptureAreaRect.Height == 0)
-                return;
-
-            double scale = MinimapWidth / CaptureAreaRect.Width;
-            MinimapHeight = CaptureAreaRect.Height * scale;
-
-            MinimapViewportX = (currentViewport.X - CaptureAreaRect.X) * scale;
-            MinimapViewportY = (currentViewport.Y - CaptureAreaRect.Y) * scale;
-            MinimapViewportWidth = currentViewport.Width * scale;
-            MinimapViewportHeight = currentViewport.Height * scale;
-        }
+        public partial MinimapViewModel Minimap { get; set; } = new();
 
         public void Start()
         {
