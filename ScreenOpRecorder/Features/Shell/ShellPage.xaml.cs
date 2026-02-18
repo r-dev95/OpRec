@@ -71,8 +71,8 @@ namespace ScreenOpRecorder.Features.Shell
             RootPage.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             _logger.LogDebug("RootPage desired size width: {}, height: {}", RootPage.DesiredSize.Width, RootPage.DesiredSize.Height);
             var scalingFactor = WindowHelper.GetScaleFactor(_mainWindow);
-            var width = (int)(RootPage.DesiredSize.Width * scalingFactor);
-            var height = (int)(RootPage.DesiredSize.Height * scalingFactor);
+            var width = DpiHelper.ToPhysicalInt(RootPage.DesiredSize.Width, scalingFactor);
+            var height = DpiHelper.ToPhysicalInt(RootPage.DesiredSize.Height, scalingFactor);
             _logger.LogDebug("Calculated window size width: {}, height: {}", width, height);
 
             var displayArea = WindowHelper.GetDisplayArea(_mainWindow, DisplayAreaFallback.Nearest);

@@ -124,7 +124,8 @@ namespace ScreenOpRecorder.Features.Overlay
             WindowHelper.SetBorderAndTitleBar(this, false, false);
             WindowHelper.MaximizeWindow(this);
             var scale = WindowHelper.GetScaleFactor(this);
-            FullAreaRect.Rect = new(0, 0, Bounds.Width * scale, Bounds.Height * scale);
+            var physicalBounds = DpiHelper.ToPhysical(new Windows.Foundation.Size(Bounds.Width, Bounds.Height), scale);
+            FullAreaRect.Rect = new(0, 0, physicalBounds.Width, physicalBounds.Height);
             ViewModel.SetScreenSize(Bounds.Width, Bounds.Height);
         }
     }

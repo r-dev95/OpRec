@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Input;
+using ScreenOpRecorder.Shared.Helpers;
 using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
@@ -141,12 +142,7 @@ namespace ScreenOpRecorder.Features.Overlay
                     _dispatcherQueue?.TryEnqueue(() =>
                     {
                         // ZoomRectは物理ピクセルなので、論理ピクセルに変換する
-                        double x = m.ZoomRect.X / _scaleFactor;
-                        double y = m.ZoomRect.Y / _scaleFactor;
-                        double w = m.ZoomRect.Width / _scaleFactor;
-                        double h = m.ZoomRect.Height / _scaleFactor;
-
-                        KeyDisplayArea = new Rect(x, y, w, h);
+                        KeyDisplayArea = DpiHelper.ToLogical(m.ZoomRect, _scaleFactor);
 
                         // ズーム判定とミニマップ更新を MinimapViewModel に委譲
                         Minimap.Update(CaptureAreaRect, KeyDisplayArea);
@@ -200,15 +196,14 @@ namespace ScreenOpRecorder.Features.Overlay
             }
         }
 
-        public Rect GetCaptureRect() => new(X * _scaleFactor, Y * _scaleFactor, Width * _scaleFactor, Height * _scaleFactor);
+        public Rect GetCaptureRect() => DpiHelper.ToPhysical(new Rect(X, Y, Width, Height), _scaleFactor);
 
         private void OnMouseClicked(int x, int y, bool isDouble)
         {
             // DPIを考慮した座標変換 (物理ピクセル -> 論理ピクセル)
-            double logicalX = x / _scaleFactor;
-            double logicalY = y / _scaleFactor;
+            var logicalPoint = DpiHelper.ToLogical(new Point(x, y), _scaleFactor);
 
-            RippleRequested?.Invoke(logicalX, logicalY, isDouble);
+            RippleRequested?.Invoke(logicalPoint.X, logicalPoint.Y, isDouble);
         }
 
         private async void OnKeyDown(string keyName)
