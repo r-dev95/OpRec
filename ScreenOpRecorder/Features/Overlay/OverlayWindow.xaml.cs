@@ -29,39 +29,48 @@ namespace ScreenOpRecorder.Features.Overlay
             _logger = logger;
             ViewModel = viewModel;
 
+            SetWindow();
+
             ViewModel.SetRecordingWindow += OnSetRecordingWindow;
             ViewModel.SetNotRecordingWindow += OnSetNotRecordingWindow;
             ViewModel.RippleRequested += OnRippleRequested;
-
             ViewModel.SetScaleFactor(WindowHelper.GetScaleFactor(this));
             ViewModel.Start();
+        }
 
-            SetWindow();
+        public void Stop()
+        {
+            ViewModel?.SetRecordingWindow -= OnSetRecordingWindow;
+            ViewModel?.SetNotRecordingWindow -= OnSetNotRecordingWindow;
+            ViewModel?.RippleRequested -= OnRippleRequested;
+            ViewModel?.Stop();
         }
 
         private void OnSetRecordingWindow()
         {
             WindowHelper.SetAlwaysOnTop(this, true);
             WindowHelper.SetClickThrough(this, true);
+            MaskPath.Visibility = Visibility.Collapsed;
             //ViewModel.IsCaptureAreaVisible = Visibility.Collapsed;
             ViewModel.CanSubmit = false;
-            MaskPath.Visibility = Visibility.Collapsed;
             var offset = CaptureArea.StrokeThickness;
-            ViewModel.CaptureAreaRect = new(
-                ViewModel.X - offset,
-                ViewModel.Y - offset,
-                ViewModel.Width + 2 * offset,
-                ViewModel.Height + 2 * offset);
+            ViewModel.Selection.CaptureAreaRect = new(
+                ViewModel.Selection.X - offset,
+                ViewModel.Selection.Y - offset,
+                ViewModel.Selection.Width + 2 * offset,
+                ViewModel.Selection.Height + 2 * offset);
+            ViewModel.InputFeedback.SetRecordingState(true, ViewModel.Selection.CaptureAreaRect);
         }
 
         private void OnSetNotRecordingWindow()
         {
             WindowHelper.SetAlwaysOnTop(this, false);
             WindowHelper.SetClickThrough(this, false);
-            ViewModel.IsCaptureAreaVisible = Visibility.Collapsed;
-            ViewModel.CanSubmit = true;
             MaskPath.Visibility = Visibility.Visible;
-            ViewModel.CaptureAreaRect = new(0, 0, 0, 0);
+            ViewModel.Selection.IsCaptureAreaVisible = Visibility.Collapsed;
+            ViewModel.CanSubmit = true;
+            ViewModel.Selection.CaptureAreaRect = new(0, 0, 0, 0);
+            ViewModel.InputFeedback.SetRecordingState(false, ViewModel.Selection.CaptureAreaRect);
         }
 
 

@@ -49,7 +49,7 @@
                 <Path.Data>
                     <GeometryGroup FillRule="EvenOdd">
                         <RectangleGeometry x:Name="FullAreaRect" />
-                        <RectangleGeometry Rect="{x:Bind ViewModel.CaptureAreaRect, Mode=OneWay}" />
+                        <RectangleGeometry Rect="{x:Bind ViewModel.Selection.CaptureAreaRect, Mode=OneWay}" />
                     </GeometryGroup>
                 </Path.Data>
             </Path>
@@ -58,24 +58,24 @@
                        Stroke="Cyan"
                        StrokeThickness="1"
                        Fill="Transparent"
-                       Width="{x:Bind ViewModel.CaptureAreaRect.Width, Mode=OneWay}"
-                       Height="{x:Bind ViewModel.CaptureAreaRect.Height, Mode=OneWay}"
-                       Visibility="{x:Bind ViewModel.IsCaptureAreaVisible, Mode=OneWay}">
+                       Width="{x:Bind ViewModel.Selection.CaptureAreaRect.Width, Mode=OneWay}"
+                       Height="{x:Bind ViewModel.Selection.CaptureAreaRect.Height, Mode=OneWay}"
+                       Visibility="{x:Bind ViewModel.Selection.IsCaptureAreaVisible, Mode=OneWay}">
                 <Rectangle.RenderTransform>
-                    <TranslateTransform X="{x:Bind ViewModel.CaptureAreaRect.X, Mode=OneWay}"
-                                        Y="{x:Bind ViewModel.CaptureAreaRect.Y, Mode=OneWay}" />
+                    <TranslateTransform X="{x:Bind ViewModel.Selection.CaptureAreaRect.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.Selection.CaptureAreaRect.Y, Mode=OneWay}" />
                 </Rectangle.RenderTransform>
             </Rectangle>
 
             <Border Background="Cyan"
                     CornerRadius="4"
                     Padding="6,2"
-                    Visibility="{x:Bind ViewModel.IsSizeTagVisible, Mode=OneWay}">
-                <Border.RenderTransform>
-                    <TranslateTransform X="{x:Bind ViewModel.X, Mode=OneWay}"
-                                        Y="{x:Bind ViewModel.Y, Mode=OneWay}" />
+                    Visibility="{x:Bind ViewModel.Selection.IsSizeTagVisible, Mode=OneWay}">
+                    <Border.RenderTransform>
+                    <TranslateTransform X="{x:Bind ViewModel.Selection.X, Mode=OneWay}"
+                                        Y="{x:Bind ViewModel.Selection.Y, Mode=OneWay}" />
                 </Border.RenderTransform>
-                <TextBlock Text="{x:Bind ViewModel.SizeLabel, Mode=OneWay}"
+                <TextBlock Text="{x:Bind ViewModel.Selection.SizeLabel, Mode=OneWay}"
                            Foreground="Black"
                            FontSize="14"
                            FontWeight="Bold" />
@@ -84,11 +84,11 @@
 
         <Grid HorizontalAlignment="Left"
               VerticalAlignment="Top"
-              Width="{x:Bind ViewModel.KeyDisplayArea.Width, Mode=OneWay}"
-              Height="{x:Bind ViewModel.KeyDisplayArea.Height, Mode=OneWay}">
+              Width="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.Width, Mode=OneWay}"
+              Height="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.Height, Mode=OneWay}">
             <Grid.RenderTransform>
-                <TranslateTransform X="{x:Bind ViewModel.KeyDisplayArea.X, Mode=OneWay}"
-                                    Y="{x:Bind ViewModel.KeyDisplayArea.Y, Mode=OneWay}" />
+                <TranslateTransform X="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.X, Mode=OneWay}"
+                                    Y="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.Y, Mode=OneWay}" />
             </Grid.RenderTransform>
 
 
@@ -98,8 +98,8 @@
                     CornerRadius="8"
                     Padding="20,10"
                     Margin="0,0,0,50"
-                    Visibility="{x:Bind utils:StringUtil.StringToVisibility(ViewModel.CurrentKeyText), Mode=OneWay}">
-                <TextBlock Text="{x:Bind ViewModel.CurrentKeyText, Mode=OneWay}"
+                    Visibility="{x:Bind utils:StringUtil.StringToVisibility(ViewModel.InputFeedback.CurrentKeyText), Mode=OneWay}">
+                <TextBlock Text="{x:Bind ViewModel.InputFeedback.CurrentKeyText, Mode=OneWay}"
                             Foreground="White"
                             FontSize="28"
                             FontWeight="Bold" />

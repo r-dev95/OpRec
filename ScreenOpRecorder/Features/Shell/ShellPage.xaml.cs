@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -37,9 +35,14 @@ namespace ScreenOpRecorder.Features.Shell
             SetWindow();
         }
 
-        public async Task StopRecordingAsync()
+        private async void OnClickClose(object sender, RoutedEventArgs args)
         {
             await ViewModel.StopRecordingAsync();
+
+            ViewModel.StartRecord -= OnStartRecord;
+            ViewModel.StopRecord -= OnStopRecord;
+
+            _mainWindow.Close();
         }
 
         private void OnStartRecord()
@@ -54,11 +57,6 @@ namespace ScreenOpRecorder.Features.Shell
             WindowHelper.SetAlwaysOnTop(_mainWindow, true);
             RecordingButton.Icon = new SymbolIcon(Symbol.Video);
             RecordingButton.Label = "Recording";
-        }
-
-        private void OnClickClose(object sender, RoutedEventArgs args)
-        {
-            _mainWindow.Close();
         }
 
         private void SetWindow()

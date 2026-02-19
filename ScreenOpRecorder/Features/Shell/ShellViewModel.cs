@@ -56,18 +56,19 @@ namespace ScreenOpRecorder.Features.Shell
         public ShellViewModel(ILogger<ShellViewModel> logger, IMessenger messenger, RecordService recordService)
         {
             _logger = logger;
-            _recordService = recordService;
-
             _messenger = messenger;
-            _messenger.Register<SelectionCompletedMessage>(this, (r, m) =>
-            {
-                SetCaptureItem(m.captureRect);
-            });
+            _recordService = recordService;
 
             _stopWatch = new();
             _timer = new();
             _timer.Interval = TimeSpan.FromSeconds(1);
             _timer.Tick += (s, e) => UpdateTime();
+
+            _messenger.Register<SelectionCompletedMessage>(this, (r, m) =>
+            {
+                SetCaptureItem(m.captureRect);
+            });
+
         }
 
         public void SetCaptureItem(Rect captureArea)

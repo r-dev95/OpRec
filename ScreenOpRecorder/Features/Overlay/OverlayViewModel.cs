@@ -1,13 +1,10 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Shared.Helpers;
@@ -23,150 +20,101 @@ namespace ScreenOpRecorder.Features.Overlay
         private readonly IMessenger _messenger;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
+        private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
-        [ObservableProperty]
-        public partial double X
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial double Y
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial double Width
-        {
-            get; set;
-        }
-
-        partial void OnWidthChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
-
-        [ObservableProperty]
-        public partial double Height
-        {
-            get; set;
-        }
-
-        partial void OnHeightChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
-
-        [ObservableProperty]
-        public partial Rect CaptureAreaRect
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial Visibility IsCaptureAreaVisible
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial Visibility IsSizeTagVisible
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial string CurrentKeyText { get; set; } = "";
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(PointerPressedCommand))]
-        [NotifyCanExecuteChangedFor(nameof(PointerMovedCommand))]
-        [NotifyCanExecuteChangedFor(nameof(PointerReleasedCommand))]
-        public partial bool CanSubmit
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial Rect KeyDisplayArea
-        {
-            get; set;
-        }
-
-        [ObservableProperty]
-        public partial MinimapViewModel Minimap { get; set; } = new();
-
-        public string SizeLabel => $"{(int)Width} x {(int)Height}";
+        private double _scaleFactor = 1.0;
+        private bool _isRecording;
 
         public event Action? SetRecordingWindow;
         public event Action? SetNotRecordingWindow;
         public event Action<double, double, bool>? RippleRequested;
 
-        private Point _startPoint;
-        private bool _isSelecting = false;
-        private CancellationTokenSource? _cts;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(PointerPressedCommand))]
+        [NotifyCanExecuteChangedFor(nameof(PointerMovedCommand))]
+        [NotifyCanExecuteChangedFor(nameof(PointerReleasedCommand))]
+        public partial bool CanSubmit { get; set; }
 
-        private double _scaleFactor = 1.0;
+        [ObservableProperty]
+        public partial SelectionRegionModel Selection { get; set; } = new();
 
-        private Size _screenSize;
-        private bool _isRecording;
-        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
+        [ObservableProperty]
+        public partial InputFeedbackModel InputFeedback { get; set; } = new();
+
+        [ObservableProperty]
+        public partial MinimapModel Minimap { get; set; } = new();
 
         public OverlayViewModel(ILogger<OverlayViewModel> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
+            _logger = logger;
+            _messenger = messenger;
+            _mouseHookService = mouseHookService;
+            _keyboardHookService = keyboardHookService;
+
             try
             {
                 _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
             }
-            catch { }
-
-            _logger = logger;
-            _messenger = messenger;
-            _mouseHookService = mouseHookService;
-            _mouseHookService.MouseClicked += OnMouseClicked;
-            _keyboardHookService = keyboardHookService;
-            _keyboardHookService.KeyDown += OnKeyDown;
+            catch
+            {
+            }
 
             _messenger.Register<StartRecordMessage>(this, (r, m) =>
             {
                 SetRecordingWindow?.Invoke();
                 _isRecording = true;
-                UpdateKeyDisplayArea();
+                InputFeedback.SetRecordingState(true, Selection.CaptureAreaRect);
             });
 
             _messenger.Register<StopRecordMessage>(this, (r, m) =>
             {
                 SetNotRecordingWindow?.Invoke();
                 _isRecording = false;
-                UpdateKeyDisplayArea();
+                InputFeedback.SetRecordingState(false, Selection.CaptureAreaRect);
                 Minimap.Reset();
             });
 
             _messenger.Register<ZoomAreaChangedMessage>(this, (r, m) =>
             {
-                if (_isRecording)
+                if (!_isRecording)
                 {
-                    _dispatcherQueue?.TryEnqueue(() =>
-                    {
-                        // ZoomRectは物理ピクセルなので、論理ピクセルに変換する
-                        KeyDisplayArea = DpiHelper.ToLogical(m.ZoomRect, _scaleFactor);
-
-                        // ズーム判定とミニマップ更新を MinimapViewModel に委譲
-                        Minimap.Update(CaptureAreaRect, KeyDisplayArea);
-                    });
+                    return;
                 }
+
+                _dispatcherQueue?.TryEnqueue(() =>
+                {
+                    var logicalRect = DpiHelper.ToLogical(m.ZoomRect, _scaleFactor);
+                    InputFeedback.SetZoomArea(logicalRect);
+                    Minimap.Update(Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
+                });
             });
         }
 
         public void Start()
         {
+            _mouseHookService.MouseClicked += OnMouseClicked;
+            _keyboardHookService.KeyDown += OnKeyDown;
+
             _mouseHookService.Start();
             _keyboardHookService.Start();
 
             CanSubmit = true;
-            IsCaptureAreaVisible = Visibility.Collapsed;
-            IsSizeTagVisible = Visibility.Collapsed;
+            Selection.ClearSelection();
+        }
+
+        public void Stop()
+        {
+            _mouseHookService.MouseClicked -= OnMouseClicked;
+            _keyboardHookService.KeyDown -= OnKeyDown;
+
+            _mouseHookService.Dispose();
+            _keyboardHookService.Dispose();
         }
 
         public void SetScreenSize(double width, double height)
         {
-            _screenSize = new Size(width, height);
-            UpdateKeyDisplayArea();
+            InputFeedback.SetScreenSize(width, height);
+            InputFeedback.SetRecordingState(_isRecording, Selection.CaptureAreaRect);
         }
 
         public void SetScaleFactor(double scaleFactor)
@@ -175,77 +123,39 @@ namespace ScreenOpRecorder.Features.Overlay
             _logger.LogDebug("OverlayViewModel initialized with scale factor: {Scale}", _scaleFactor);
         }
 
-        public void SetCaptureRect(Point startPoint, Point currentPoint)
-        {
-            X = Math.Min(startPoint.X, currentPoint.X);
-            Y = Math.Min(startPoint.Y, currentPoint.Y);
-            Width = Math.Abs(startPoint.X - currentPoint.X);
-            Height = Math.Abs(startPoint.Y - currentPoint.Y);
-        }
-
-        private void UpdateKeyDisplayArea()
-        {
-            if (_isRecording)
-            {
-                KeyDisplayArea = CaptureAreaRect;
-            }
-            else
-            {
-                KeyDisplayArea = new Rect(0, 0, _screenSize.Width, _screenSize.Height);
-            }
-        }
-
-        public Rect GetCaptureRect() => DpiHelper.ToPhysical(new Rect(X, Y, Width, Height), _scaleFactor);
+        public Rect GetCaptureRect() => DpiHelper.ToPhysical(Selection.GetSelectionRect(), _scaleFactor);
 
         private void OnMouseClicked(int x, int y, bool isDouble)
         {
-            // DPIを考慮した座標変換 (物理ピクセル -> 論理ピクセル)
             var logicalPoint = DpiHelper.ToLogical(new Point(x, y), _scaleFactor);
-
             RippleRequested?.Invoke(logicalPoint.X, logicalPoint.Y, isDouble);
         }
 
         private async void OnKeyDown(string keyName)
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-
-            CurrentKeyText += keyName + " ";
-
-            try
-            {
-                await Task.Delay(1500, _cts.Token);
-                CurrentKeyText = "";
-            }
-            catch { }
+            await InputFeedback.ShowKeyAsync(keyName);
         }
 
         [RelayCommand(CanExecute = nameof(CanSubmit))]
         private void OnPointerPressed(Point position)
         {
-            _isSelecting = true;
-            _startPoint = position;
-            IsCaptureAreaVisible = Visibility.Visible;
-            IsSizeTagVisible = Visibility.Visible;
+            Selection.BeginSelection(position);
         }
 
         [RelayCommand(CanExecute = nameof(CanSubmit))]
         private void OnPointerMoved(Point currentPoint)
         {
-            if (!_isSelecting)
-            {
-                return;
-            }
-            SetCaptureRect(_startPoint, currentPoint);
-            CaptureAreaRect = new(X, Y, Width, Height);
+            Selection.UpdateSelection(currentPoint);
         }
 
         [RelayCommand(CanExecute = nameof(CanSubmit))]
         private void OnPointerReleased()
         {
-            _isSelecting = false;
-            IsSizeTagVisible = Visibility.Collapsed;
-            _messenger.Send(new SelectionCompletedMessage(GetCaptureRect()));
+            Selection.EndSelection();
+            if (Selection.HasSelection)
+            {
+                _messenger.Send(new SelectionCompletedMessage(GetCaptureRect()));
+            }
         }
     }
 }

@@ -4,23 +4,40 @@ namespace ScreenOpRecorder.Shared.Helpers
 {
     internal static class DpiHelper
     {
-        public static double ToPhysical(double logical, double scaleFactor) => logical * scaleFactor;
+        public static double ToPhysical(double logical, double scaleFactor)
+        {
+            return logical * scaleFactor;
+        }
 
-        public static double ToLogical(double physical, double scaleFactor) => physical / scaleFactor;
+        public static double ToLogical(double physical, double scaleFactor)
+        {
+            return physical / scaleFactor;
+        }
 
-        public static int ToPhysicalInt(double logical, double scaleFactor) => (int)ToPhysical(logical, scaleFactor);
+        public static int ToPhysicalInt(double logical, double scaleFactor)
+        {
+            return (int)ToPhysical(logical, scaleFactor);
+        }
 
         public static Point ToPhysical(Point logicalPoint, double scaleFactor)
-            => new(ToPhysical(logicalPoint.X, scaleFactor), ToPhysical(logicalPoint.Y, scaleFactor));
+        {
+            return new(ToPhysical(logicalPoint.X, scaleFactor), ToPhysical(logicalPoint.Y, scaleFactor));
+        }
 
         public static Point ToLogical(Point physicalPoint, double scaleFactor)
-            => new(ToLogical(physicalPoint.X, scaleFactor), ToLogical(physicalPoint.Y, scaleFactor));
+        {
+            return new(ToLogical(physicalPoint.X, scaleFactor), ToLogical(physicalPoint.Y, scaleFactor));
+        }
 
         public static Size ToPhysical(Size logicalSize, double scaleFactor)
-            => new(ToPhysical(logicalSize.Width, scaleFactor), ToPhysical(logicalSize.Height, scaleFactor));
+        {
+            return new(ToPhysical(logicalSize.Width, scaleFactor), ToPhysical(logicalSize.Height, scaleFactor));
+        }
 
         public static Size ToLogical(Size physicalSize, double scaleFactor)
-            => new(ToLogical(physicalSize.Width, scaleFactor), ToLogical(physicalSize.Height, scaleFactor));
+        {
+            return new(ToLogical(physicalSize.Width, scaleFactor), ToLogical(physicalSize.Height, scaleFactor));
+        }
 
         public static Rect ToPhysical(Rect logicalRect, double scaleFactor)
         {

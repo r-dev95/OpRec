@@ -92,9 +92,9 @@ namespace ScreenOpRecorder
             _overlayWindow = GetService<OverlayWindow>();
             _overlayWindow.Activate();
 
-            _mainWindow.Closed += async (_, _) =>
+            _mainWindow.Closed += (_, _) =>
             {
-                await shellPage.StopRecordingAsync();
+                _overlayWindow.Stop();
                 _overlayWindow.Close();
             };
         }

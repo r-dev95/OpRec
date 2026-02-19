@@ -1,10 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using Windows.Foundation;
+
 using Microsoft.UI.Xaml;
+
+using Windows.Foundation;
 
 namespace ScreenOpRecorder.Features.Overlay
 {
-    public partial class MinimapViewModel : ObservableObject
+    public partial class MinimapModel : ObservableObject
     {
         [ObservableProperty]
         public partial double Width { get; set; } = 150;
