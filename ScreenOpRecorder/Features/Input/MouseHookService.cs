@@ -52,7 +52,6 @@ namespace ScreenOpRecorder.Features.Input
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            //var pt = InputHelper.GetCursorPos(nCode, wParam, lParam);
             if (nCode >= 0 && wParam == InputHelper.WM_LBUTTONDOWN)
             {
                 var pt = Marshal.PtrToStructure<InputHelper.MSLLHOOKSTRUCT>(lParam).pt;

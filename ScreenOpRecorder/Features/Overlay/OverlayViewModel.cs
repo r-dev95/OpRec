@@ -82,24 +82,26 @@ namespace ScreenOpRecorder.Features.Overlay
             get; set;
         }
 
-        public string SizeLabel => $"{(int)Width} x {(int)Height}";
-
-        private Point _startPoint;
-        private bool _isSelecting = false;
-
-        public event Action? SetRecordingWindow;
-        public event Action? SetNotRecordingWindow;
-        public event Action<double, double, bool>? RippleRequested;
-
-        private CancellationTokenSource? _cts;
-
-        private double _scaleFactor = 1.0;
-
         [ObservableProperty]
         public partial Rect KeyDisplayArea
         {
             get; set;
         }
+
+        [ObservableProperty]
+        public partial MinimapViewModel Minimap { get; set; } = new();
+
+        public string SizeLabel => $"{(int)Width} x {(int)Height}";
+
+        public event Action? SetRecordingWindow;
+        public event Action? SetNotRecordingWindow;
+        public event Action<double, double, bool>? RippleRequested;
+
+        private Point _startPoint;
+        private bool _isSelecting = false;
+        private CancellationTokenSource? _cts;
+
+        private double _scaleFactor = 1.0;
 
         private Size _screenSize;
         private bool _isRecording;
@@ -150,9 +152,6 @@ namespace ScreenOpRecorder.Features.Overlay
                 }
             });
         }
-
-        [ObservableProperty]
-        public partial MinimapViewModel Minimap { get; set; } = new();
 
         public void Start()
         {

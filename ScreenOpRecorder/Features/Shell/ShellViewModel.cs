@@ -140,7 +140,7 @@ namespace ScreenOpRecorder.Features.Shell
 
         public async Task StopRecordingAsync()
         {
-            if (_state != UiRecordingState.Recording)
+            if (_state is not (UiRecordingState.Starting or UiRecordingState.Recording))
             {
                 return;
             }
