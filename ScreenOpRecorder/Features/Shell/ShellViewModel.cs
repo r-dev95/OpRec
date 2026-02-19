@@ -15,7 +15,6 @@ using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
-using Windows.Storage;
 
 namespace ScreenOpRecorder.Features.Shell
 {
@@ -117,12 +116,8 @@ namespace ScreenOpRecorder.Features.Shell
 
             try
             {
-                StorageFolder localFolder = KnownFolders.VideosLibrary;
-                string fileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
-                StorageFile file = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
-
                 _recordService.Setup(_captureItem, _captureArea);
-                await _recordService.StartAsync(file);
+                await _recordService.StartAsync();
 
                 RecordingTime = "00:00:00";
                 _stopWatch.Restart();

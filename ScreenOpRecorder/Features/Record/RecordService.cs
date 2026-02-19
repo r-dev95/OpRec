@@ -103,9 +103,13 @@ namespace ScreenOpRecorder.Features.Record
             TransitionTo(RecordState.Prepared);
         }
 
-        public async Task StartAsync(StorageFile file)
+        public async Task StartAsync()
         {
             ThrowIfDisposed();
+
+            var localFolder = KnownFolders.VideosLibrary;
+            var fileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
+            var file = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
 
             if (_state != RecordState.Prepared)
             {
