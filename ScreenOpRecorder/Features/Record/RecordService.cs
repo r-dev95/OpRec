@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
+using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
@@ -20,6 +21,15 @@ namespace ScreenOpRecorder.Features.Record
 {
     public class RecordService : IDisposable
     {
+        private enum RecordState
+        {
+            Idle,
+            Prepared,
+            Recording,
+            Stopping,
+            Disposed
+        }
+
         private readonly ILogger<RecordService> _logger;
         private readonly IMessenger _messenger;
         private readonly MouseHookService _mouseHookService;
@@ -43,10 +53,9 @@ namespace ScreenOpRecorder.Features.Record
         private CanvasBitmap? _canvasBitmap;
 
         private Task? _recordingTask;
-
         private DateTimeOffset _startTime;
-
-        private bool _isStopRecord = false;
+        private bool _isStopRecord = true;
+        private RecordState _state = RecordState.Idle;
 
         public RecordService(ILogger<RecordService> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
@@ -58,16 +67,21 @@ namespace ScreenOpRecorder.Features.Record
 
         public void Setup(GraphicsCaptureItem item, Rect captureArea)
         {
-            _isStopRecord = false;
+            ThrowIfDisposed();
 
+            if (_state is RecordState.Recording or RecordState.Stopping)
+            {
+                throw new InvalidOperationException($"Setup is not allowed while state is {_state}.");
+            }
+
+            ReleaseResources();
+
+            _isStopRecord = false;
             _item = item;
             _captureArea = captureArea;
 
             _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea);
-            _compositionManager.ZoomChanged += (rect) =>
-            {
-                _messenger.Send(new ScreenOpRecorder.Shared.Messages.ZoomAreaChangedMessage(rect));
-            };
+            _compositionManager.ZoomChanged += OnZoomChanged;
 
             _device = new CanvasDevice();
 
@@ -84,34 +98,117 @@ namespace ScreenOpRecorder.Features.Record
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
             _profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
-
             _transcoder = new MediaTranscoder();
+
+            TransitionTo(RecordState.Prepared);
         }
 
         public async Task StartAsync(StorageFile file)
         {
-            _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
-                _device,
-                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
-                2,
-                _item!.Size);
+            ThrowIfDisposed();
 
-            _framePool.FrameArrived += OnFrameArrived;
+            if (_state != RecordState.Prepared)
+            {
+                throw new InvalidOperationException($"StartAsync requires Prepared state. Current: {_state}.");
+            }
 
-            _session = _framePool.CreateCaptureSession(_item);
-            _session.StartCapture();
+            try
+            {
+                _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
+                    _device,
+                    Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                    2,
+                    _item!.Size);
+                _framePool.FrameArrived += OnFrameArrived;
 
-            _startTime = DateTimeOffset.Now;
+                _session = _framePool.CreateCaptureSession(_item);
+                _session.StartCapture();
 
-            var fileOp = await file.OpenAsync(FileAccessMode.ReadWrite);
-            var prepareOp = await _transcoder!.PrepareMediaStreamSourceTranscodeAsync(_mediaStreamSource, fileOp, _profile);
-            _recordingTask = prepareOp.TranscodeAsync().AsTask();
+                _startTime = DateTimeOffset.Now;
+
+                var fileOp = await file.OpenAsync(FileAccessMode.ReadWrite);
+                var prepareOp = await _transcoder!.PrepareMediaStreamSourceTranscodeAsync(_mediaStreamSource, fileOp, _profile);
+                _recordingTask = prepareOp.TranscodeAsync().AsTask();
+
+                TransitionTo(RecordState.Recording);
+            }
+            catch
+            {
+                ReleaseResources();
+                TransitionTo(RecordState.Idle);
+                throw;
+            }
+        }
+
+        public async Task StopAsync()
+        {
+            ThrowIfDisposed();
+
+            if (_state == RecordState.Idle)
+            {
+                return;
+            }
+
+            if (_state == RecordState.Prepared)
+            {
+                ReleaseResources();
+                TransitionTo(RecordState.Idle);
+                return;
+            }
+
+            if (_state != RecordState.Recording)
+            {
+                return;
+            }
+
+            TransitionTo(RecordState.Stopping);
+            _isStopRecord = true;
+
+            try
+            {
+                if (_recordingTask != null)
+                {
+                    await _recordingTask;
+                }
+            }
+            finally
+            {
+                ReleaseResources();
+                TransitionTo(RecordState.Idle);
+            }
         }
 
         public void Dispose()
         {
+            if (_state == RecordState.Disposed)
+            {
+                return;
+            }
+
+            _isStopRecord = true;
+            ReleaseResources();
+            TransitionTo(RecordState.Disposed);
+        }
+
+        private void ReleaseResources()
+        {
             _mediaStreamSource?.SampleRequested -= OnSampleRequested;
             _mediaStreamSource = null;
+            _videoDescriptor = null;
+
+            _compositionManager?.ZoomChanged -= OnZoomChanged;
+            _compositionManager?.Dispose();
+            _compositionManager = null;
+
+            if (_framePool != null)
+            {
+                _framePool.FrameArrived -= OnFrameArrived;
+                _framePool.Dispose();
+                _framePool = null;
+            }
+
+            _session?.Dispose();
+            _session = null;
 
             _renderTarget?.Dispose();
             _renderTarget = null;
@@ -119,23 +216,11 @@ namespace ScreenOpRecorder.Features.Record
             _canvasBitmap?.Dispose();
             _canvasBitmap = null;
 
-            _framePool?.Dispose();
-            _framePool = null;
-
-            _session?.Dispose();
-            _session = null;
-        }
-
-        public async Task StopAsync()
-        {
-            _isStopRecord = true;
-
-            if (_recordingTask != null)
-            {
-                await _recordingTask;
-            }
-
-            Dispose();
+            _transcoder = null;
+            _profile = null;
+            _device = null;
+            _item = null;
+            _recordingTask = null;
         }
 
         private void OnSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
@@ -174,6 +259,30 @@ namespace ScreenOpRecorder.Features.Record
             }
 
             _canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
+        }
+
+        private void OnZoomChanged(Rect rect)
+        {
+            _messenger.Send(new ZoomAreaChangedMessage(rect));
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_state == RecordState.Disposed)
+            {
+                throw new ObjectDisposedException(nameof(RecordService));
+            }
+        }
+
+        private void TransitionTo(RecordState next)
+        {
+            if (_state == next)
+            {
+                return;
+            }
+
+            _logger.LogDebug("RecordService state: {From} -> {To}", _state, next);
+            _state = next;
         }
     }
 }
