@@ -1,7 +1,6 @@
 using System;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -9,6 +8,8 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 
 using ScreenOpRecorder.Shared.Helpers;
+
+using Windows.UI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -84,22 +85,30 @@ namespace ScreenOpRecorder.Features.Overlay
 
         private void ShowRipple(double x, double y, bool isDouble)
         {
-            const int width = 20;
-            const int height = 20;
+            if (!ViewModel.EnableClickHighlight)
+            {
+                return;
+            }
+
+            var size = Math.Max(8, ViewModel.ClickHighlightSize);
+            var stroke = isDouble
+                ? Color.FromArgb(255, 255, 69, 0)
+                : ParseColor(ViewModel.ClickHighlightColor, Color.FromArgb(255, 0, 255, 255));
+            var strokeThickness = Math.Max(1.0, size / 10.0);
             const int duration = 500;
 
             var ripple = new Ellipse
             {
-                Width = width,
-                Height = height,
-                Stroke = new SolidColorBrush(isDouble ? Colors.OrangeRed : Colors.Cyan),
-                StrokeThickness = 2,
+                Width = size,
+                Height = size,
+                Stroke = new SolidColorBrush(stroke),
+                StrokeThickness = strokeThickness,
                 RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
                 RenderTransform = new ScaleTransform { ScaleX = 1, ScaleY = 1 }
             };
 
-            Canvas.SetLeft(ripple, x - 0.5 * width);
-            Canvas.SetTop(ripple, y - 0.5 * height);
+            Canvas.SetLeft(ripple, x - 0.5 * size);
+            Canvas.SetTop(ripple, y - 0.5 * size);
             OverlayCanvas.Children.Add(ripple);
 
             // アニメーションの定義
@@ -127,6 +136,29 @@ namespace ScreenOpRecorder.Features.Overlay
             sb.Begin();
         }
 
+        private static Color ParseColor(string value, Color fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return fallback;
+            }
+
+            var hex = value.Trim().TrimStart('#');
+            try
+            {
+                return hex.Length switch
+                {
+                    6 => Color.FromArgb(255, Convert.ToByte(hex[0..2], 16), Convert.ToByte(hex[2..4], 16), Convert.ToByte(hex[4..6], 16)),
+                    8 => Color.FromArgb(Convert.ToByte(hex[0..2], 16), Convert.ToByte(hex[2..4], 16), Convert.ToByte(hex[4..6], 16), Convert.ToByte(hex[6..8], 16)),
+                    _ => fallback
+                };
+            }
+            catch
+            {
+                return fallback;
+            }
+        }
+
         private void SetWindow()
         {
             WindowHelper.SetBorderAndTitleBar(this, false, false);
@@ -139,4 +171,5 @@ namespace ScreenOpRecorder.Features.Overlay
         }
     }
 }
+
 

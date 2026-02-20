@@ -9,23 +9,24 @@ namespace ScreenOpRecorder.Features.Record
 {
     public class FrameZoom
     {
-        private const float InterpolationSpeed = 0.01f; // 追従の滑らかさ (0.0～1.0)
+        private const float InterpolationSpeed = 0.01f;
 
         private readonly Rect _captureArea;
-        private readonly Vector2 _originalCameraPos; // 全画面のカメラ位置
-        private Vector2 _currentCameraPos; // 現在のカメラ位置
-        private Vector2 _targetPos; // ズーム中心位置
+        private readonly Vector2 _originalCameraPos;
+        private readonly float _zoomMax;
+        private Vector2 _currentCameraPos;
+        private Vector2 _targetPos;
 
-        private float _currentZoom = 1.0f; // 現在のズーム倍率
-        private float _targetZoom = 1.0f;  // 目標のズーム倍率
-        private const float ZoomMax = 2.0f;
+        private float _currentZoom = 1.0f;
+        private float _targetZoom = 1.0f;
         private const float ZoomMin = 1.0f;
 
         public Action<Rect>? ZoomAction;
 
-        public FrameZoom(Rect captureArea)
+        public FrameZoom(Rect captureArea, double zoomMax = 2.0)
         {
             _captureArea = captureArea;
+            _zoomMax = (float)Math.Clamp(zoomMax, 1.1, 4.0);
 
             _originalCameraPos = new Vector2((float)(captureArea.Width * 0.5), (float)(captureArea.Height * 0.5));
             _currentCameraPos = _originalCameraPos;
@@ -33,13 +34,13 @@ namespace ScreenOpRecorder.Features.Record
 
         public void ToggleZoom(float mouseX, float mouseY)
         {
-            if (_targetZoom == ZoomMin) // ズームイン
+            if (_targetZoom == ZoomMin)
             {
-                _targetZoom = ZoomMax;
+                _targetZoom = _zoomMax;
                 _currentCameraPos = _originalCameraPos;
                 _targetPos = new Vector2(mouseX, mouseY);
             }
-            else // ズームアウト
+            else
             {
                 _targetZoom = ZoomMin;
                 _targetPos = new Vector2(_originalCameraPos.X, _originalCameraPos.Y);
@@ -48,9 +49,7 @@ namespace ScreenOpRecorder.Features.Record
 
         public Rect UpdateViewport(double width, double height)
         {
-            // ズーム倍率を滑らかに補間
             _currentZoom += (_targetZoom - _currentZoom) * InterpolationSpeed;
-
             _currentCameraPos = Vector2.Lerp(_currentCameraPos, _targetPos, InterpolationSpeed);
 
             float viewWidth = (float)(width / _currentZoom);
@@ -73,13 +72,11 @@ namespace ScreenOpRecorder.Features.Record
                 _captureArea.X + zoomRect.X,
                 _captureArea.Y + zoomRect.Y,
                 zoomRect.Width,
-                zoomRect.Height
-            );
+                zoomRect.Height);
 
             Rect targetRect = new(0, 0, targetSize.Width, targetSize.Height);
 
             ds.DrawImage(rawFrame, targetRect, sourceRect, 1.0f, CanvasImageInterpolation.Linear);
-
             ZoomAction?.Invoke(sourceRect);
         }
     }

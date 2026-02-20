@@ -34,7 +34,8 @@
                               IsEnabled="{x:Bind ViewModel.StartReady, Mode=OneWay}" />
                 <AppBarSeparator />
                 <AppBarButton Icon="Setting"
-                              Label="Setting" />
+                              Label="Setting"
+                              Click="OnClickSetting" />
                 <AppBarButton Icon="Cancel"
                               Label="Close"
                               Click="OnClickClose" />

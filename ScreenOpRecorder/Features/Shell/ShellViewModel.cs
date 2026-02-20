@@ -8,8 +8,10 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
+using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Record;
 using ScreenOpRecorder.Features.Record.State;
+using ScreenOpRecorder.Features.Settings;
 
 namespace ScreenOpRecorder.Features.Shell
 {
@@ -27,11 +29,16 @@ namespace ScreenOpRecorder.Features.Shell
         private readonly ILogger<ShellViewModel> _logger;
         private readonly IRecordingDomainService _recordingDomainService;
         private readonly IRecordingStateStore _stateStore;
+        private readonly IUserSettingsService _settingsService;
+        private readonly KeyboardHookService _keyboardHookService;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private UiRecordingState _state = UiRecordingState.WaitingForSelection;
         private readonly Stopwatch _stopWatch;
         private readonly DispatcherTimer _timer;
+        private bool _isHotkeyHandling;
+        private bool _isStarted;
+        private string _toggleHotkey = "CTRL+SHIFT+R";
 
         public event Action? StartRecord;
         public event Action? StopRecord;
@@ -45,13 +52,18 @@ namespace ScreenOpRecorder.Features.Shell
         [ObservableProperty]
         public partial string RecordingTime { get; set; } = "00:00:00";
 
-        public ShellViewModel(ILogger<ShellViewModel> logger, IRecordingDomainService recordingDomainService, IRecordingStateStore stateStore)
+        public ShellViewModel(
+            ILogger<ShellViewModel> logger,
+            IRecordingDomainService recordingDomainService,
+            IRecordingStateStore stateStore,
+            IUserSettingsService settingsService,
+            KeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _recordingDomainService = recordingDomainService;
             _stateStore = stateStore;
-
-            _stateStore.StateChanged += OnRecordingStateChanged;
+            _settingsService = settingsService;
+            _keyboardHookService = keyboardHookService;
 
             try
             {
@@ -68,7 +80,34 @@ namespace ScreenOpRecorder.Features.Shell
             };
             _timer.Tick += (s, e) => UpdateTime();
 
+            ApplySettings(_settingsService.Current);
             ApplyState(_stateStore.Current);
+        }
+
+        public void Start()
+        {
+            if (_isStarted)
+            {
+                return;
+            }
+
+            _stateStore.StateChanged += OnRecordingStateChanged;
+            _settingsService.SettingsChanged += OnSettingsChanged;
+            _keyboardHookService.KeyDown += OnGlobalKeyDown;
+            _isStarted = true;
+        }
+
+        public void Stop()
+        {
+            if (!_isStarted)
+            {
+                return;
+            }
+
+            _keyboardHookService.KeyDown -= OnGlobalKeyDown;
+            _settingsService.SettingsChanged -= OnSettingsChanged;
+            _stateStore.StateChanged -= OnRecordingStateChanged;
+            _isStarted = false;
         }
 
         [RelayCommand]
@@ -130,16 +169,70 @@ namespace ScreenOpRecorder.Features.Shell
             }
             finally
             {
-                _stateStore.StateChanged -= OnRecordingStateChanged;
                 _stopWatch.Stop();
                 _timer.Stop();
                 StopRecord?.Invoke();
                 TransitionTo(UiRecordingState.WaitingForSelection);
             }
         }
+
         private void OnRecordingStateChanged(RecordingState state)
         {
-            _dispatcherQueue?.TryEnqueue(() => ApplyState(state));
+            if (_dispatcherQueue != null)
+            {
+                _dispatcherQueue.TryEnqueue(() => ApplyState(state));
+            }
+            else
+            {
+                ApplyState(state);
+            }
+        }
+
+        private void OnSettingsChanged(UserSettings settings)
+        {
+            if (_dispatcherQueue != null)
+            {
+                _dispatcherQueue.TryEnqueue(() => ApplySettings(settings));
+            }
+            else
+            {
+                ApplySettings(settings);
+            }
+        }
+
+        private void ApplySettings(UserSettings settings)
+        {
+            _toggleHotkey = NormalizeHotkey(settings.ToggleRecordingHotkey);
+        }
+
+        private async void OnGlobalKeyDown(string keyName)
+        {
+            if (_isHotkeyHandling || string.IsNullOrWhiteSpace(_toggleHotkey))
+            {
+                return;
+            }
+
+            if (!string.Equals(NormalizeHotkey(keyName), _toggleHotkey, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _isHotkeyHandling = true;
+            try
+            {
+                if (_dispatcherQueue != null)
+                {
+                    _dispatcherQueue.TryEnqueue(async () => await RecordingAsync());
+                }
+                else
+                {
+                    await RecordingAsync();
+                }
+            }
+            finally
+            {
+                _isHotkeyHandling = false;
+            }
         }
 
         private void ApplyState(RecordingState state)
@@ -186,6 +279,13 @@ namespace ScreenOpRecorder.Features.Shell
 
             StartReady = next is UiRecordingState.ReadyToRecord or UiRecordingState.Recording;
             IsRecording = next is UiRecordingState.Recording or UiRecordingState.Stopping;
+        }
+
+        private static string NormalizeHotkey(string value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? ""
+                : value.Replace(" ", "", StringComparison.Ordinal).ToUpperInvariant();
         }
     }
 }

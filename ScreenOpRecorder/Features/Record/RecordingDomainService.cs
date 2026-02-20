@@ -1,15 +1,19 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
 using ScreenOpRecorder.Features.Record.Events;
 using ScreenOpRecorder.Features.Record.State;
+using ScreenOpRecorder.Features.Settings;
 using ScreenOpRecorder.Shared.Events;
 using ScreenOpRecorder.Shared.Helpers;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
+using Windows.Storage;
+using Windows.System;
 
 namespace ScreenOpRecorder.Features.Record
 {
@@ -18,16 +22,18 @@ namespace ScreenOpRecorder.Features.Record
         private readonly ILogger<RecordingDomainService> _logger;
         private readonly RecordService _recordService;
         private readonly IRecordingStateStore _stateStore;
+        private readonly IUserSettingsService _settingsService;
         private readonly IDisposable _zoomSubscription;
 
         private GraphicsCaptureItem? _captureItem;
         private Rect _captureArea;
 
-        public RecordingDomainService(ILogger<RecordingDomainService> logger, RecordService recordService, IRecordingStateStore stateStore, IEventBus eventBus)
+        public RecordingDomainService(ILogger<RecordingDomainService> logger, RecordService recordService, IRecordingStateStore stateStore, IUserSettingsService settingsService, IEventBus eventBus)
         {
             _logger = logger;
             _recordService = recordService;
             _stateStore = stateStore;
+            _settingsService = settingsService;
             _zoomSubscription = eventBus.Subscribe<ZoomAreaChangedEvent>(OnZoomAreaChanged);
         }
 
@@ -70,6 +76,11 @@ namespace ScreenOpRecorder.Features.Record
             await _recordService.StopAsync();
             _stateStore.ClearSelection();
             _captureItem = null;
+
+            if (_settingsService.Current.OpenOutputFolderAfterRecording)
+            {
+                await OpenOutputFolderAsync();
+            }
         }
 
         public void Dispose()
@@ -80,6 +91,25 @@ namespace ScreenOpRecorder.Features.Record
         private void OnZoomAreaChanged(ZoomAreaChangedEvent evt)
         {
             _stateStore.SetZoomArea(evt.ZoomRect);
+        }
+
+        private async Task OpenOutputFolderAsync()
+        {
+            var path = _recordService.LastOutputFolderPath;
+            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            {
+                return;
+            }
+
+            try
+            {
+                var folder = await StorageFolder.GetFolderFromPathAsync(path);
+                await Launcher.LaunchFolderAsync(folder);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to open output folder: {Path}", path);
+            }
         }
     }
 }

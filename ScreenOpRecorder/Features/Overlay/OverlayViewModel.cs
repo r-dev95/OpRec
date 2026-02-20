@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Record;
 using ScreenOpRecorder.Features.Record.State;
+using ScreenOpRecorder.Features.Settings;
 using ScreenOpRecorder.Shared.Helpers;
 
 using Windows.Foundation;
@@ -19,12 +20,18 @@ namespace ScreenOpRecorder.Features.Overlay
         private readonly ILogger<OverlayViewModel> _logger;
         private readonly IRecordingDomainService _recordingDomainService;
         private readonly IRecordingStateStore _stateStore;
+        private readonly IUserSettingsService _settingsService;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private double _scaleFactor = 1.0;
         private bool _isRecording;
+        private bool _isSettingsSubscribed;
+
+        public bool EnableClickHighlight { get; private set; } = true;
+        public string ClickHighlightColor { get; private set; } = "#00FFFF";
+        public double ClickHighlightSize { get; private set; } = 20;
 
         public event Action? SetRecordingWindow;
         public event Action? SetNotRecordingWindow;
@@ -49,12 +56,14 @@ namespace ScreenOpRecorder.Features.Overlay
             ILogger<OverlayViewModel> logger,
             IRecordingDomainService recordingDomainService,
             IRecordingStateStore stateStore,
+            IUserSettingsService settingsService,
             MouseHookService mouseHookService,
             KeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _recordingDomainService = recordingDomainService;
             _stateStore = stateStore;
+            _settingsService = settingsService;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
 
@@ -65,11 +74,18 @@ namespace ScreenOpRecorder.Features.Overlay
             catch
             {
             }
+
+            ApplySettings(_settingsService.Current);
         }
 
         public void Start()
         {
             _stateStore.StateChanged += OnRecordingStateChanged;
+            if (!_isSettingsSubscribed)
+            {
+                _settingsService.SettingsChanged += OnSettingsChanged;
+                _isSettingsSubscribed = true;
+            }
             _mouseHookService.MouseClicked += OnMouseClicked;
             _keyboardHookService.KeyDown += OnKeyDown;
 
@@ -83,6 +99,11 @@ namespace ScreenOpRecorder.Features.Overlay
         public void Stop()
         {
             _stateStore.StateChanged -= OnRecordingStateChanged;
+            if (_isSettingsSubscribed)
+            {
+                _settingsService.SettingsChanged -= OnSettingsChanged;
+                _isSettingsSubscribed = false;
+            }
             _mouseHookService.MouseClicked -= OnMouseClicked;
             _keyboardHookService.KeyDown -= OnKeyDown;
 
@@ -160,8 +181,32 @@ namespace ScreenOpRecorder.Features.Overlay
 
                 var logicalRect = DpiHelper.ToLogical(state.ZoomArea, _scaleFactor);
                 InputFeedback.SetZoomArea(logicalRect);
-                Minimap.Update(Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
+                if (_settingsService.Current.EnableMinimap)
+                {
+                    Minimap.Update(Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
+                }
+                else
+                {
+                    Minimap.Reset();
+                }
             });
+        }
+
+        private void OnSettingsChanged(UserSettings settings)
+        {
+            _dispatcherQueue?.TryEnqueue(() => ApplySettings(settings));
+        }
+
+        private void ApplySettings(UserSettings settings)
+        {
+            EnableClickHighlight = settings.EnableClickHighlight;
+            ClickHighlightColor = settings.ClickHighlightColor;
+            ClickHighlightSize = settings.ClickHighlightSize;
+            InputFeedback.ApplySettings(settings);
+            if (!settings.EnableMinimap)
+            {
+                Minimap.Reset();
+            }
         }
     }
 }

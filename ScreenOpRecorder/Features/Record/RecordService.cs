@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Record.Events;
+using ScreenOpRecorder.Features.Settings;
 using ScreenOpRecorder.Shared.Events;
 
 using Windows.Foundation;
@@ -31,6 +33,7 @@ namespace ScreenOpRecorder.Features.Record
 
         private readonly ILogger<RecordService> _logger;
         private readonly IEventBus _eventBus;
+        private readonly IUserSettingsService _settingsService;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
 
@@ -55,11 +58,13 @@ namespace ScreenOpRecorder.Features.Record
         private DateTimeOffset _startTime;
         private bool _isStopRecord = true;
         private RecordState _state = RecordState.Idle;
+        public string? LastOutputFolderPath { get; private set; }
 
-        public RecordService(ILogger<RecordService> logger, IEventBus eventBus, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
+        public RecordService(ILogger<RecordService> logger, IEventBus eventBus, IUserSettingsService settingsService, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _eventBus = eventBus;
+            _settingsService = settingsService;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
         }
@@ -79,7 +84,7 @@ namespace ScreenOpRecorder.Features.Record
             _item = item;
             _captureArea = captureArea;
 
-            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea);
+            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea, _settingsService.Current.ZoomFactor);
             _compositionManager.ZoomChanged += OnZoomChanged;
 
             _device = new CanvasDevice();
@@ -96,7 +101,9 @@ namespace ScreenOpRecorder.Features.Record
             };
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
-            _profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
+            _profile = MediaEncodingProfile.CreateMp4(ToVideoQuality(_settingsService.Current.QualityPreset));
+            _profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.RecordingFps;
+            _profile.Video.FrameRate.Denominator = 1;
             _transcoder = new MediaTranscoder();
 
             TransitionTo(RecordState.Prepared);
@@ -108,9 +115,16 @@ namespace ScreenOpRecorder.Features.Record
 
             Setup(item, captureArea);
 
-            var localFolder = KnownFolders.VideosLibrary;
+            string outputFolderPath = _settingsService.Current.OutputFolderPath;
+            if (string.IsNullOrWhiteSpace(outputFolderPath))
+            {
+                outputFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+            }
+            Directory.CreateDirectory(outputFolderPath);
+            var localFolder = await StorageFolder.GetFolderFromPathAsync(outputFolderPath);
             var fileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
             var file = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+            LastOutputFolderPath = localFolder.Path;
 
             if (_state != RecordState.Prepared)
             {
@@ -288,6 +302,16 @@ namespace ScreenOpRecorder.Features.Record
 
             _logger.LogDebug("RecordService state: {From} -> {To}", _state, next);
             _state = next;
+        }
+
+        private static VideoEncodingQuality ToVideoQuality(QualityPreset preset)
+        {
+            return preset switch
+            {
+                QualityPreset.Low => VideoEncodingQuality.Wvga,
+                QualityPreset.Medium => VideoEncodingQuality.HD720p,
+                _ => VideoEncodingQuality.HD1080p
+            };
         }
     }
 }

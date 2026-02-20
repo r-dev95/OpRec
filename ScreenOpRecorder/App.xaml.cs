@@ -12,6 +12,7 @@ using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Overlay;
 using ScreenOpRecorder.Features.Record;
 using ScreenOpRecorder.Features.Record.State;
+using ScreenOpRecorder.Features.Settings;
 using ScreenOpRecorder.Features.Shell;
 using ScreenOpRecorder.Shared.Events;
 
@@ -53,6 +54,8 @@ namespace ScreenOpRecorder
                     services.AddSingleton<ShellViewModel>();
                     services.AddSingleton<OverlayWindow>();
                     services.AddSingleton<OverlayViewModel>();
+                    services.AddTransient<SettingsWindow>();
+                    services.AddTransient<SettingsViewModel>();
 
                     // Input Hook Services
                     services.AddSingleton<MouseHookService>();
@@ -61,6 +64,7 @@ namespace ScreenOpRecorder
                     services.AddSingleton<IEventBus, EventBus>();
                     services.AddSingleton<IRecordingStateStore, RecordingStateStore>();
                     services.AddSingleton<IRecordingDomainService, RecordingDomainService>();
+                    services.AddSingleton<IUserSettingsService, UserSettingsService>();
 
                 })
                 .Build();

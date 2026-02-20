@@ -9,7 +9,6 @@
     xmlns:winuiex="using:WinUIEx"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:converters="using:ScreenOpRecorder.Shared.Converters"
-    xmlns:utils="using:ScreenOpRecorder.Shared.Utils"
     mc:Ignorable="d"
     Title="OverlayWindow">
 
@@ -92,13 +91,13 @@
             </Grid.RenderTransform>
 
 
-            <Border VerticalAlignment="Bottom"
-                    HorizontalAlignment="Center"
+            <Border HorizontalAlignment="{x:Bind ViewModel.InputFeedback.KeyHorizontalAlignment, Mode=OneWay}"
+                    VerticalAlignment="{x:Bind ViewModel.InputFeedback.KeyVerticalAlignment, Mode=OneWay}"
                     Background="#AA000000"
                     CornerRadius="8"
                     Padding="20,10"
-                    Margin="0,0,0,50"
-                    Visibility="{x:Bind utils:StringUtil.StringToVisibility(ViewModel.InputFeedback.CurrentKeyText), Mode=OneWay}">
+                    Margin="{x:Bind ViewModel.InputFeedback.KeyMargin, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.InputFeedback.KeyVisibility, Mode=OneWay}">
                 <TextBlock Text="{x:Bind ViewModel.InputFeedback.CurrentKeyText, Mode=OneWay}"
                             Foreground="White"
                             FontSize="28"

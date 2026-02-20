@@ -1,8 +1,12 @@
+using System;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
+using ScreenOpRecorder.Features.Settings;
 using ScreenOpRecorder.Shared.Helpers;
 
 using Windows.Foundation;
@@ -21,16 +25,19 @@ namespace ScreenOpRecorder.Features.Shell
         private readonly ILogger<ShellPage> _logger;
         private readonly ShellViewModel ViewModel;
         private readonly MainWindow _mainWindow;
+        private readonly IServiceProvider _services;
 
-        public ShellPage(ILogger<ShellPage> logger, ShellViewModel viewModel, MainWindow mainWindow)
+        public ShellPage(ILogger<ShellPage> logger, ShellViewModel viewModel, MainWindow mainWindow, IServiceProvider services)
         {
             InitializeComponent();
             _logger = logger;
             ViewModel = viewModel;
             _mainWindow = mainWindow;
+            _services = services;
 
             ViewModel.StartRecord += OnStartRecord;
             ViewModel.StopRecord += OnStopRecord;
+            ViewModel.Start();
 
             SetWindow();
         }
@@ -38,11 +45,18 @@ namespace ScreenOpRecorder.Features.Shell
         private async void OnClickClose(object sender, RoutedEventArgs args)
         {
             await ViewModel.StopRecordingAsync();
+            ViewModel.Stop();
 
             ViewModel.StartRecord -= OnStartRecord;
             ViewModel.StopRecord -= OnStopRecord;
 
             _mainWindow.Close();
+        }
+
+        private void OnClickSetting(object sender, RoutedEventArgs args)
+        {
+            var settingsWindow = _services.GetRequiredService<SettingsWindow>();
+            settingsWindow.Activate();
         }
 
         private void OnStartRecord()

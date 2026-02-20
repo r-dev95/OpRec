@@ -19,13 +19,13 @@ namespace ScreenOpRecorder.Features.Record
 
         public event Action<Rect>? ZoomChanged;
 
-        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, Rect captureArea)
+        public CompositionManager(MouseHookService mouseHookService, KeyboardHookService keyboardHookService, Rect captureArea, double zoomFactor)
         {
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
             _captureArea = captureArea;
 
-            _frameZoom = new FrameZoom(_captureArea);
+            _frameZoom = new FrameZoom(_captureArea, zoomFactor);
             _frameOverlay = new FrameOverlay();
 
             _frameZoom.ZoomAction += OnZoomAction;
