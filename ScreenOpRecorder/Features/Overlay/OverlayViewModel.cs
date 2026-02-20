@@ -58,8 +58,6 @@ namespace ScreenOpRecorder.Features.Overlay
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
 
-            _stateStore.StateChanged += OnRecordingStateChanged;
-
             try
             {
                 _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
@@ -71,6 +69,7 @@ namespace ScreenOpRecorder.Features.Overlay
 
         public void Start()
         {
+            _stateStore.StateChanged += OnRecordingStateChanged;
             _mouseHookService.MouseClicked += OnMouseClicked;
             _keyboardHookService.KeyDown += OnKeyDown;
 
@@ -83,6 +82,7 @@ namespace ScreenOpRecorder.Features.Overlay
 
         public void Stop()
         {
+            _stateStore.StateChanged -= OnRecordingStateChanged;
             _mouseHookService.MouseClicked -= OnMouseClicked;
             _keyboardHookService.KeyDown -= OnKeyDown;
 

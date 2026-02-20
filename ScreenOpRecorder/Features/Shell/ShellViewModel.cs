@@ -86,27 +86,6 @@ namespace ScreenOpRecorder.Features.Shell
             }
         }
 
-        public async Task StopRecordingAsync()
-        {
-            if (_state is not (UiRecordingState.Starting or UiRecordingState.Recording))
-            {
-                return;
-            }
-
-            TransitionTo(UiRecordingState.Stopping);
-            try
-            {
-                await _recordingDomainService.StopAsync();
-            }
-            finally
-            {
-                _stopWatch.Stop();
-                _timer.Stop();
-                StopRecord?.Invoke();
-                TransitionTo(UiRecordingState.WaitingForSelection);
-            }
-        }
-
         private async Task StartRecordingAsync()
         {
             if (_state != UiRecordingState.ReadyToRecord)
@@ -137,6 +116,27 @@ namespace ScreenOpRecorder.Features.Shell
             }
         }
 
+        public async Task StopRecordingAsync()
+        {
+            if (_state is not (UiRecordingState.Starting or UiRecordingState.Recording))
+            {
+                return;
+            }
+
+            TransitionTo(UiRecordingState.Stopping);
+            try
+            {
+                await _recordingDomainService.StopAsync();
+            }
+            finally
+            {
+                _stateStore.StateChanged -= OnRecordingStateChanged;
+                _stopWatch.Stop();
+                _timer.Stop();
+                StopRecord?.Invoke();
+                TransitionTo(UiRecordingState.WaitingForSelection);
+            }
+        }
         private void OnRecordingStateChanged(RecordingState state)
         {
             _dispatcherQueue?.TryEnqueue(() => ApplyState(state));

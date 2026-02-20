@@ -93,7 +93,7 @@ namespace ScreenOpRecorder.Features.Overlay
                 Width = width,
                 Height = height,
                 Stroke = new SolidColorBrush(isDouble ? Colors.OrangeRed : Colors.Cyan),
-                StrokeThickness = 3,
+                StrokeThickness = 2,
                 RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
                 RenderTransform = new ScaleTransform { ScaleX = 1, ScaleY = 1 }
             };
