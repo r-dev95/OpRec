@@ -1,13 +1,12 @@
 using System;
 using System.Threading.Tasks;
 
-using CommunityToolkit.Mvvm.Messaging;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Features.Input;
-using ScreenOpRecorder.Shared.Messages;
+using ScreenOpRecorder.Features.Record.Events;
+using ScreenOpRecorder.Shared.Events;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
@@ -31,7 +30,7 @@ namespace ScreenOpRecorder.Features.Record
         }
 
         private readonly ILogger<RecordService> _logger;
-        private readonly IMessenger _messenger;
+        private readonly IEventBus _eventBus;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
 
@@ -57,10 +56,10 @@ namespace ScreenOpRecorder.Features.Record
         private bool _isStopRecord = true;
         private RecordState _state = RecordState.Idle;
 
-        public RecordService(ILogger<RecordService> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
+        public RecordService(ILogger<RecordService> logger, IEventBus eventBus, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
-            _messenger = messenger;
+            _eventBus = eventBus;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
         }
@@ -103,9 +102,11 @@ namespace ScreenOpRecorder.Features.Record
             TransitionTo(RecordState.Prepared);
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(GraphicsCaptureItem item, Rect captureArea)
         {
             ThrowIfDisposed();
+
+            Setup(item, captureArea);
 
             var localFolder = KnownFolders.VideosLibrary;
             var fileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
@@ -267,7 +268,7 @@ namespace ScreenOpRecorder.Features.Record
 
         private void OnZoomChanged(Rect rect)
         {
-            _messenger.Send(new ZoomAreaChangedMessage(rect));
+            _eventBus.Publish(new ZoomAreaChangedEvent(rect));
         }
 
         private void ThrowIfDisposed()

@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace ScreenOpRecorder.Features.Overlay
 {
-    public partial class SelectionRegionModel : ObservableObject
+    public partial class SelectionRegionState : ObservableObject
     {
         [ObservableProperty]
         public partial double X { get; set; }

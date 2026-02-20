@@ -51,7 +51,6 @@ namespace ScreenOpRecorder.Features.Overlay
             WindowHelper.SetAlwaysOnTop(this, true);
             WindowHelper.SetClickThrough(this, true);
             MaskPath.Visibility = Visibility.Collapsed;
-            //ViewModel.IsCaptureAreaVisible = Visibility.Collapsed;
             ViewModel.CanSubmit = false;
             var offset = CaptureArea.StrokeThickness;
             ViewModel.Selection.CaptureAreaRect = new(
@@ -135,7 +134,8 @@ namespace ScreenOpRecorder.Features.Overlay
             var scale = WindowHelper.GetScaleFactor(this);
             var physicalBounds = DpiHelper.ToPhysical(new Windows.Foundation.Size(Bounds.Width, Bounds.Height), scale);
             FullAreaRect.Rect = new(0, 0, physicalBounds.Width, physicalBounds.Height);
-            ViewModel.SetScreenSize(Bounds.Width, Bounds.Height);
+            ViewModel.InputFeedback.SetScreenSize(Bounds.Width, Bounds.Height);
+            ViewModel.InputFeedback.SetRecordingState(false, ViewModel.Selection.CaptureAreaRect);
         }
     }
 }

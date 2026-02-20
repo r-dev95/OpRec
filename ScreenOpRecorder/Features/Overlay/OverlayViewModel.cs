@@ -2,13 +2,13 @@ using System;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 
 using Microsoft.Extensions.Logging;
 
 using ScreenOpRecorder.Features.Input;
+using ScreenOpRecorder.Features.Record;
+using ScreenOpRecorder.Features.Record.State;
 using ScreenOpRecorder.Shared.Helpers;
-using ScreenOpRecorder.Shared.Messages;
 
 using Windows.Foundation;
 
@@ -17,7 +17,8 @@ namespace ScreenOpRecorder.Features.Overlay
     public partial class OverlayViewModel : ObservableObject
     {
         private readonly ILogger<OverlayViewModel> _logger;
-        private readonly IMessenger _messenger;
+        private readonly IRecordingDomainService _recordingDomainService;
+        private readonly IRecordingStateStore _stateStore;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
@@ -36,20 +37,28 @@ namespace ScreenOpRecorder.Features.Overlay
         public partial bool CanSubmit { get; set; }
 
         [ObservableProperty]
-        public partial SelectionRegionModel Selection { get; set; } = new();
+        public partial SelectionRegionState Selection { get; set; } = new();
 
         [ObservableProperty]
-        public partial InputFeedbackModel InputFeedback { get; set; } = new();
+        public partial InputFeedbackState InputFeedback { get; set; } = new();
 
         [ObservableProperty]
-        public partial MinimapModel Minimap { get; set; } = new();
+        public partial MinimapState Minimap { get; set; } = new();
 
-        public OverlayViewModel(ILogger<OverlayViewModel> logger, IMessenger messenger, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
+        public OverlayViewModel(
+            ILogger<OverlayViewModel> logger,
+            IRecordingDomainService recordingDomainService,
+            IRecordingStateStore stateStore,
+            MouseHookService mouseHookService,
+            KeyboardHookService keyboardHookService)
         {
             _logger = logger;
-            _messenger = messenger;
+            _recordingDomainService = recordingDomainService;
+            _stateStore = stateStore;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
+
+            _stateStore.StateChanged += OnRecordingStateChanged;
 
             try
             {
@@ -58,36 +67,6 @@ namespace ScreenOpRecorder.Features.Overlay
             catch
             {
             }
-
-            _messenger.Register<StartRecordMessage>(this, (r, m) =>
-            {
-                SetRecordingWindow?.Invoke();
-                _isRecording = true;
-                InputFeedback.SetRecordingState(true, Selection.CaptureAreaRect);
-            });
-
-            _messenger.Register<StopRecordMessage>(this, (r, m) =>
-            {
-                SetNotRecordingWindow?.Invoke();
-                _isRecording = false;
-                InputFeedback.SetRecordingState(false, Selection.CaptureAreaRect);
-                Minimap.Reset();
-            });
-
-            _messenger.Register<ZoomAreaChangedMessage>(this, (r, m) =>
-            {
-                if (!_isRecording)
-                {
-                    return;
-                }
-
-                _dispatcherQueue?.TryEnqueue(() =>
-                {
-                    var logicalRect = DpiHelper.ToLogical(m.ZoomRect, _scaleFactor);
-                    InputFeedback.SetZoomArea(logicalRect);
-                    Minimap.Update(Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
-                });
-            });
         }
 
         public void Start()
@@ -109,12 +88,6 @@ namespace ScreenOpRecorder.Features.Overlay
 
             _mouseHookService.Dispose();
             _keyboardHookService.Dispose();
-        }
-
-        public void SetScreenSize(double width, double height)
-        {
-            InputFeedback.SetScreenSize(width, height);
-            InputFeedback.SetRecordingState(_isRecording, Selection.CaptureAreaRect);
         }
 
         public void SetScaleFactor(double scaleFactor)
@@ -152,10 +125,43 @@ namespace ScreenOpRecorder.Features.Overlay
         private void OnPointerReleased()
         {
             Selection.EndSelection();
-            if (Selection.HasSelection)
+            if (!Selection.HasSelection)
             {
-                _messenger.Send(new SelectionCompletedMessage(GetCaptureRect()));
+                return;
             }
+
+            _recordingDomainService.SelectCaptureArea(GetCaptureRect());
+        }
+
+        private void OnRecordingStateChanged(RecordingState state)
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                if (_isRecording != state.IsRecording)
+                {
+                    _isRecording = state.IsRecording;
+                    if (_isRecording)
+                    {
+                        SetRecordingWindow?.Invoke();
+                        InputFeedback.SetRecordingState(true, Selection.CaptureAreaRect);
+                    }
+                    else
+                    {
+                        SetNotRecordingWindow?.Invoke();
+                        InputFeedback.SetRecordingState(false, Selection.CaptureAreaRect);
+                        Minimap.Reset();
+                    }
+                }
+
+                if (!_isRecording)
+                {
+                    return;
+                }
+
+                var logicalRect = DpiHelper.ToLogical(state.ZoomArea, _scaleFactor);
+                InputFeedback.SetZoomArea(logicalRect);
+                Minimap.Update(Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
+            });
         }
     }
 }

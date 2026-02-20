@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace ScreenOpRecorder.Features.Overlay
 {
-    public partial class MinimapModel : ObservableObject
+    public partial class MinimapState : ObservableObject
     {
         [ObservableProperty]
         public partial double Width { get; set; } = 150;

@@ -4,17 +4,12 @@ using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Features.Record;
-using ScreenOpRecorder.Shared.Helpers;
-using ScreenOpRecorder.Shared.Messages;
-
-using Windows.Foundation;
-using Windows.Graphics.Capture;
+using ScreenOpRecorder.Features.Record.State;
 
 namespace ScreenOpRecorder.Features.Shell
 {
@@ -30,13 +25,11 @@ namespace ScreenOpRecorder.Features.Shell
         }
 
         private readonly ILogger<ShellViewModel> _logger;
-        private readonly IMessenger _messenger;
-        private readonly RecordService _recordService;
+        private readonly IRecordingDomainService _recordingDomainService;
+        private readonly IRecordingStateStore _stateStore;
+        private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
-        private Rect _captureArea;
-        private GraphicsCaptureItem? _captureItem;
         private UiRecordingState _state = UiRecordingState.WaitingForSelection;
-
         private readonly Stopwatch _stopWatch;
         private readonly DispatcherTimer _timer;
 
@@ -44,50 +37,38 @@ namespace ScreenOpRecorder.Features.Shell
         public event Action? StopRecord;
 
         [ObservableProperty]
-        public partial bool StartReady { get; set; } = false;
+        public partial bool StartReady { get; set; }
 
         [ObservableProperty]
-        public partial bool IsRecording { get; set; } = false;
+        public partial bool IsRecording { get; set; }
 
         [ObservableProperty]
         public partial string RecordingTime { get; set; } = "00:00:00";
 
-        public ShellViewModel(ILogger<ShellViewModel> logger, IMessenger messenger, RecordService recordService)
+        public ShellViewModel(ILogger<ShellViewModel> logger, IRecordingDomainService recordingDomainService, IRecordingStateStore stateStore)
         {
             _logger = logger;
-            _messenger = messenger;
-            _recordService = recordService;
+            _recordingDomainService = recordingDomainService;
+            _stateStore = stateStore;
+
+            _stateStore.StateChanged += OnRecordingStateChanged;
+
+            try
+            {
+                _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            }
+            catch
+            {
+            }
 
             _stopWatch = new();
-            _timer = new();
-            _timer.Interval = TimeSpan.FromSeconds(1);
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             _timer.Tick += (s, e) => UpdateTime();
 
-            _messenger.Register<SelectionCompletedMessage>(this, (r, m) =>
-            {
-                SetCaptureItem(m.captureRect);
-            });
-
-        }
-
-        public void SetCaptureItem(Rect captureArea)
-        {
-            if (_state is UiRecordingState.Starting or UiRecordingState.Recording or UiRecordingState.Stopping)
-            {
-                return;
-            }
-
-            _captureArea = captureArea;
-            _captureItem = WindowHelper.CreateForMonitor(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
-            if (_captureItem == null)
-            {
-                return;
-            }
-
-            TransitionTo(UiRecordingState.ReadyToRecord);
-
-            _logger.LogDebug("selectedRect: {} x {} - {} x {}", captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
-            _logger.LogDebug("selected item: {}, {} x {}", _captureItem.DisplayName, _captureItem.Size.Width, _captureItem.Size.Height);
+            ApplyState(_stateStore.Current);
         }
 
         [RelayCommand]
@@ -105,35 +86,6 @@ namespace ScreenOpRecorder.Features.Shell
             }
         }
 
-        private async Task StartRecordingAsync()
-        {
-            if (_state != UiRecordingState.ReadyToRecord || _captureItem == null)
-            {
-                return;
-            }
-
-            TransitionTo(UiRecordingState.Starting);
-
-            try
-            {
-                _recordService.Setup(_captureItem, _captureArea);
-                await _recordService.StartAsync();
-
-                RecordingTime = "00:00:00";
-                _stopWatch.Restart();
-                _timer.Start();
-
-                StartRecord?.Invoke();
-                _messenger.Send(new StartRecordMessage());
-                TransitionTo(UiRecordingState.Recording);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to start recording.");
-                TransitionTo(UiRecordingState.ReadyToRecord);
-            }
-        }
-
         public async Task StopRecordingAsync()
         {
             if (_state is not (UiRecordingState.Starting or UiRecordingState.Recording))
@@ -142,20 +94,76 @@ namespace ScreenOpRecorder.Features.Shell
             }
 
             TransitionTo(UiRecordingState.Stopping);
-
             try
             {
-                await _recordService.StopAsync();
+                await _recordingDomainService.StopAsync();
             }
             finally
             {
                 _stopWatch.Stop();
                 _timer.Stop();
-
                 StopRecord?.Invoke();
-                _messenger.Send(new StopRecordMessage());
+                TransitionTo(UiRecordingState.WaitingForSelection);
+            }
+        }
 
-                _captureItem = null;
+        private async Task StartRecordingAsync()
+        {
+            if (_state != UiRecordingState.ReadyToRecord)
+            {
+                return;
+            }
+
+            TransitionTo(UiRecordingState.Starting);
+            try
+            {
+                var started = await _recordingDomainService.StartAsync();
+                if (!started)
+                {
+                    TransitionTo(UiRecordingState.ReadyToRecord);
+                    return;
+                }
+
+                RecordingTime = "00:00:00";
+                _stopWatch.Restart();
+                _timer.Start();
+                StartRecord?.Invoke();
+                TransitionTo(UiRecordingState.Recording);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to start recording.");
+                ApplyState(_stateStore.Current);
+            }
+        }
+
+        private void OnRecordingStateChanged(RecordingState state)
+        {
+            _dispatcherQueue?.TryEnqueue(() => ApplyState(state));
+        }
+
+        private void ApplyState(RecordingState state)
+        {
+            if (state.IsRecording)
+            {
+                if (_state is not (UiRecordingState.Recording or UiRecordingState.Starting))
+                {
+                    TransitionTo(UiRecordingState.Recording);
+                }
+                return;
+            }
+
+            if (state.HasSelection)
+            {
+                if (_state is not (UiRecordingState.Starting or UiRecordingState.Stopping))
+                {
+                    TransitionTo(UiRecordingState.ReadyToRecord);
+                }
+                return;
+            }
+
+            if (_state is not (UiRecordingState.Starting or UiRecordingState.Stopping))
+            {
                 TransitionTo(UiRecordingState.WaitingForSelection);
             }
         }

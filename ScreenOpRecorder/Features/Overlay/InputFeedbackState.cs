@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace ScreenOpRecorder.Features.Overlay
 {
-    public partial class InputFeedbackModel : ObservableObject
+    public partial class InputFeedbackState : ObservableObject
     {
         [ObservableProperty]
         public partial string CurrentKeyText { get; set; } = "";

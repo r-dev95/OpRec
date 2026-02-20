@@ -1,7 +1,5 @@
 using System;
 
-using CommunityToolkit.Mvvm.Messaging;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,7 +11,9 @@ using NLog.Extensions.Logging;
 using ScreenOpRecorder.Features.Input;
 using ScreenOpRecorder.Features.Overlay;
 using ScreenOpRecorder.Features.Record;
+using ScreenOpRecorder.Features.Record.State;
 using ScreenOpRecorder.Features.Shell;
+using ScreenOpRecorder.Shared.Events;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -48,8 +48,6 @@ namespace ScreenOpRecorder
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
-
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<ShellPage>();
                     services.AddSingleton<ShellViewModel>();
@@ -60,6 +58,9 @@ namespace ScreenOpRecorder
                     services.AddSingleton<MouseHookService>();
                     services.AddSingleton<KeyboardHookService>();
                     services.AddSingleton<RecordService>();
+                    services.AddSingleton<IEventBus, EventBus>();
+                    services.AddSingleton<IRecordingStateStore, RecordingStateStore>();
+                    services.AddSingleton<IRecordingDomainService, RecordingDomainService>();
 
                 })
                 .Build();
