@@ -26,6 +26,7 @@ namespace ScreenOpRecorder.Features.Shell
         private readonly ShellViewModel ViewModel;
         private readonly MainWindow _mainWindow;
         private readonly IServiceProvider _services;
+        private SettingsWindow? _settingsWindow;
 
         public ShellPage(ILogger<ShellPage> logger, ShellViewModel viewModel, MainWindow mainWindow, IServiceProvider services)
         {
@@ -46,6 +47,7 @@ namespace ScreenOpRecorder.Features.Shell
         {
             await ViewModel.StopRecordingAsync();
             ViewModel.Stop();
+            CloseSettingsWindow();
 
             ViewModel.StartRecord -= OnStartRecord;
             ViewModel.StopRecord -= OnStopRecord;
@@ -55,8 +57,34 @@ namespace ScreenOpRecorder.Features.Shell
 
         private void OnClickSetting(object sender, RoutedEventArgs args)
         {
-            var settingsWindow = _services.GetRequiredService<SettingsWindow>();
-            settingsWindow.Activate();
+            if (_settingsWindow == null)
+            {
+                _settingsWindow = _services.GetRequiredService<SettingsWindow>();
+                _settingsWindow.Closed += OnSettingsWindowClosed;
+            }
+
+            _settingsWindow.Activate();
+        }
+
+        public void CloseSettingsWindow()
+        {
+            if (_settingsWindow == null)
+            {
+                return;
+            }
+
+            _settingsWindow.Closed -= OnSettingsWindowClosed;
+            _settingsWindow.Close();
+            _settingsWindow = null;
+        }
+
+        private void OnSettingsWindowClosed(object sender, WindowEventArgs args)
+        {
+            if (_settingsWindow != null)
+            {
+                _settingsWindow.Closed -= OnSettingsWindowClosed;
+                _settingsWindow = null;
+            }
         }
 
         private void OnStartRecord()

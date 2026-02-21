@@ -69,7 +69,7 @@ namespace ScreenOpRecorder.Features.Record
             _keyboardHookService = keyboardHookService;
         }
 
-        public void Setup(GraphicsCaptureItem item, Rect captureArea)
+        private void Setup(GraphicsCaptureItem item, Rect captureArea)
         {
             ThrowIfDisposed();
 

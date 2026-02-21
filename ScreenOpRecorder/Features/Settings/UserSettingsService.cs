@@ -25,8 +25,7 @@ namespace ScreenOpRecorder.Features.Settings
         {
             _logger = logger;
 
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var appPath = Path.Combine(appDataPath, "ScreenOpRecorder");
+            var appPath = AppContext.BaseDirectory;
             Directory.CreateDirectory(appPath);
 
             _settingsPath = Path.Combine(appPath, "usersettings.json");

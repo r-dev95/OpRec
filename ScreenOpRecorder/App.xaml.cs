@@ -99,6 +99,7 @@ namespace ScreenOpRecorder
 
             _mainWindow.Closed += (_, _) =>
             {
+                shellPage.CloseSettingsWindow();
                 _overlayWindow.Stop();
                 _overlayWindow.Close();
             };
