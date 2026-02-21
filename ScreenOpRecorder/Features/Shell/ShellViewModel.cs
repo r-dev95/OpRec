@@ -97,16 +97,18 @@ namespace ScreenOpRecorder.Features.Shell
             _isStarted = true;
         }
 
-        public void Stop()
+        public async Task StopAsync()
         {
             if (!_isStarted)
             {
                 return;
             }
 
-            _keyboardHookService.KeyDown -= OnGlobalKeyDown;
-            _settingsService.SettingsChanged -= OnSettingsChanged;
+            await StopRecordingAsync();
+
             _stateStore.StateChanged -= OnRecordingStateChanged;
+            _settingsService.SettingsChanged -= OnSettingsChanged;
+            _keyboardHookService.KeyDown -= OnGlobalKeyDown;
             _isStarted = false;
         }
 
@@ -155,7 +157,7 @@ namespace ScreenOpRecorder.Features.Shell
             }
         }
 
-        public async Task StopRecordingAsync()
+        private async Task StopRecordingAsync()
         {
             if (_state is not (UiRecordingState.Starting or UiRecordingState.Recording))
             {

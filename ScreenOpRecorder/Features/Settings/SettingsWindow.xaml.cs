@@ -25,11 +25,16 @@ namespace ScreenOpRecorder.Features.Settings
             _logger = logger;
             ViewModel = viewModel;
 
+            Closed += OnClosed;
             ViewModel.CloseRequested += OnCloseRequested;
 
-            Closed += (_, _) => ViewModel.CloseRequested -= OnCloseRequested;
-
             SetWindow();
+        }
+
+        private void OnClosed(object sender, WindowEventArgs args)
+        {
+            Closed -= OnClosed;
+            ViewModel.CloseRequested -= OnCloseRequested;
         }
 
         private void OnCloseRequested()
@@ -37,11 +42,11 @@ namespace ScreenOpRecorder.Features.Settings
             Close();
         }
 
-        private async void OnClickBrowseFolder(object sender, RoutedEventArgs e)
+        private async void OnClickBrowseFolder(object sender, RoutedEventArgs args)
         {
             var picker = new FolderPicker();
             picker.FileTypeFilter.Add("*");
-            var hwnd = WindowNative.GetWindowHandle(this);
+            var hwnd = WindowHelper.GetHwnd(this);
             InitializeWithWindow.Initialize(picker, hwnd);
 
             var folder = await picker.PickSingleFolderAsync();

@@ -55,13 +55,12 @@ namespace ScreenOpRecorder.Features.Input
             if (nCode >= 0 && wParam == InputHelper.WM_LBUTTONDOWN)
             {
                 var pt = Marshal.PtrToStructure<InputHelper.MSLLHOOKSTRUCT>(lParam).pt;
-                DateTime now = DateTime.Now;
-                bool isDouble = IsDoubleClick(pt, now);
+                var now = DateTime.Now;
+                var isDouble = IsDoubleClick(pt, now);
                 MouseClicked?.Invoke(pt.x, pt.y, isDouble);
-                _logger.LogDebug("Mouse Event: {} at ({}, {})", wParam, pt.x, pt.y);
 
-                _lastClickTime = now;
-                _lastClickPoint = pt;
+                _logger.LogDebug("nCode[{}], wParam[{}], lParam[{}]", nCode, wParam, lParam);
+                _logger.LogDebug("pt.x[{}], pt.y[{}]), isDouble[{}]", pt.x, pt.y, isDouble);
             }
 
             return InputHelper.CallNextHookEx(_hookId, nCode, wParam, lParam);
@@ -69,23 +68,27 @@ namespace ScreenOpRecorder.Features.Input
 
         private bool IsDoubleClick(InputHelper.POINT current, DateTime now)
         {
-            var timeDiff = (now - _lastClickTime).TotalMilliseconds;
-            if (timeDiff > _doubleClickTime)
+            var isDoubleClick = true;
+
+            if ((now - _lastClickTime).TotalMilliseconds > _doubleClickTime)
             {
-                return false;
+                isDoubleClick = false;
             }
 
             if (Math.Abs(current.x - _lastClickPoint.x) > _doubleClickX / 2)
             {
-                return false;
+                isDoubleClick = false;
             }
 
             if (Math.Abs(current.y - _lastClickPoint.y) > _doubleClickY / 2)
             {
-                return false;
+                isDoubleClick = false;
             }
-            _logger.LogDebug("Double Click Detected.");
-            return true;
+
+            _lastClickTime = now;
+            _lastClickPoint = current;
+
+            return isDoubleClick;
         }
     }
 }

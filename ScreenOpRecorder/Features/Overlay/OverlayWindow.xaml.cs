@@ -37,10 +37,13 @@ namespace ScreenOpRecorder.Features.Overlay
             ViewModel.RippleRequested += OnRippleRequested;
             ViewModel.SetScaleFactor(WindowHelper.GetScaleFactor(this));
             ViewModel.Start();
+
+            Closed += OnClosed;
         }
 
-        public void Stop()
+        private void OnClosed(object sender, WindowEventArgs args)
         {
+            Closed -= OnClosed;
             ViewModel?.SetRecordingWindow -= OnSetRecordingWindow;
             ViewModel?.SetNotRecordingWindow -= OnSetNotRecordingWindow;
             ViewModel?.RippleRequested -= OnRippleRequested;

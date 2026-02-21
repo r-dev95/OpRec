@@ -19,12 +19,8 @@ namespace ScreenOpRecorder.Features.Overlay
         [ObservableProperty]
         public partial double Width { get; set; }
 
-        partial void OnWidthChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
-
         [ObservableProperty]
         public partial double Height { get; set; }
-
-        partial void OnHeightChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
 
         [ObservableProperty]
         public partial Rect CaptureAreaRect { get; set; }
@@ -35,13 +31,14 @@ namespace ScreenOpRecorder.Features.Overlay
         [ObservableProperty]
         public partial Visibility IsSizeTagVisible { get; set; } = Visibility.Collapsed;
 
-        private Point _startPoint;
-        private bool _isSelecting;
-
         public string SizeLabel => $"{(int)Width} x {(int)Height}";
+        partial void OnWidthChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
+        partial void OnHeightChanged(double value) => OnPropertyChanged(nameof(SizeLabel));
 
         public bool HasSelection => Width > 0 && Height > 0;
 
+        private Point _startPoint;
+        private bool _isSelecting;
         public void BeginSelection(Point startPoint)
         {
             _isSelecting = true;

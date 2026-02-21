@@ -16,16 +16,13 @@
         <winuiex:TransparentTintBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid x:Name="RootGrid"
-          Background="Transparent">
+    <Grid Background="Transparent">
         <Grid.Resources>
             <converters:PointerArgsToPointConverter x:Key="PointerArgsToPointConverter" />
         </Grid.Resources>
 
+        <!-- Overlay Canvas -->
         <Canvas x:Name="OverlayCanvas"
-                Background="Transparent" />
-
-        <Canvas x:Name="SelectionCanvas"
                 Background="#44000000">
             <interactivity:Interaction.Behaviors>
                 <interactivity:EventTriggerBehavior EventName="PointerPressed">
@@ -43,6 +40,7 @@
                 </interactivity:EventTriggerBehavior>
             </interactivity:Interaction.Behaviors>
 
+            <!-- Selection Area Mask -->
             <Path x:Name="MaskPath"
                   Fill="#88000000">
                 <Path.Data>
@@ -53,6 +51,7 @@
                 </Path.Data>
             </Path>
 
+            <!-- Capture Area Rect -->
             <Rectangle x:Name="CaptureArea"
                        Stroke="Cyan"
                        StrokeThickness="1"
@@ -66,6 +65,7 @@
                 </Rectangle.RenderTransform>
             </Rectangle>
 
+            <!-- Capture Area Size Tag -->
             <Border Background="Cyan"
                     CornerRadius="4"
                     Padding="6,2"
@@ -81,6 +81,7 @@
             </Border>
         </Canvas>
 
+        <!-- Key Display -->
         <Grid HorizontalAlignment="Left"
               VerticalAlignment="Top"
               Width="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.Width, Mode=OneWay}"
@@ -89,7 +90,6 @@
                 <TranslateTransform X="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.X, Mode=OneWay}"
                                     Y="{x:Bind ViewModel.InputFeedback.KeyDisplayArea.Y, Mode=OneWay}" />
             </Grid.RenderTransform>
-
 
             <Border HorizontalAlignment="{x:Bind ViewModel.InputFeedback.KeyHorizontalAlignment, Mode=OneWay}"
                     VerticalAlignment="{x:Bind ViewModel.InputFeedback.KeyVerticalAlignment, Mode=OneWay}"
@@ -113,12 +113,10 @@
               Height="{x:Bind ViewModel.Minimap.Height, Mode=OneWay}"
               Visibility="{x:Bind ViewModel.Minimap.IsVisible, Mode=OneWay}">
 
-            <!-- Background (Whole Capture Area) -->
             <Border Background="#88000000"
                     BorderBrush="White"
                     BorderThickness="1" />
 
-            <!-- Viewport Indicator -->
             <Canvas>
                  <Border BorderBrush="Red"
                         BorderThickness="2"

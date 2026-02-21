@@ -14,7 +14,7 @@ namespace ScreenOpRecorder.Shared.Helpers
 {
     internal static class WindowHelper
     {
-        private static IntPtr GetHwnd(Window window)
+        public static IntPtr GetHwnd(Window window)
         {
             return WindowNative.GetWindowHandle(window);
         }

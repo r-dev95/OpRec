@@ -57,7 +57,7 @@ namespace ScreenOpRecorder
                     services.AddTransient<SettingsWindow>();
                     services.AddTransient<SettingsViewModel>();
 
-                    // Input Hook Services
+                    // Services
                     services.AddSingleton<MouseHookService>();
                     services.AddSingleton<KeyboardHookService>();
                     services.AddSingleton<RecordService>();
@@ -70,39 +70,26 @@ namespace ScreenOpRecorder
                 .Build();
         }
 
-        public static T GetService<T>()
-            where T : class
-        {
-            if ((Current as App)!._host.Services.GetService(typeof(T)) is not T service)
-            {
-                string msg = $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.";
-                throw new ArgumentException(msg);
-            }
-
-            return service;
-        }
-
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            var shellPage = GetService<ShellPage>();
-
-            _mainWindow = GetService<MainWindow>();
-            _mainWindow.Content = shellPage;
+            _mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            _mainWindow.Content = _host.Services.GetRequiredService<ShellPage>();
             _mainWindow.Activate();
 
-            _overlayWindow = GetService<OverlayWindow>();
+            _overlayWindow = _host.Services.GetRequiredService<OverlayWindow>();
             _overlayWindow.Activate();
 
-            _mainWindow.Closed += (_, _) =>
-            {
-                shellPage.CloseSettingsWindow();
-                _overlayWindow.Stop();
-                _overlayWindow.Close();
-            };
+            _mainWindow.Closed += OnMainWindowClosed;
+        }
+
+        private void OnMainWindowClosed(object sender, WindowEventArgs args)
+        {
+            _mainWindow?.Closed -= OnMainWindowClosed;
+            _overlayWindow?.Close();
         }
     }
 }

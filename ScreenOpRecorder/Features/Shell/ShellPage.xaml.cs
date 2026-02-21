@@ -23,18 +23,18 @@ namespace ScreenOpRecorder.Features.Shell
     public sealed partial class ShellPage : Page
     {
         private readonly ILogger<ShellPage> _logger;
+        private readonly IServiceProvider _services;
         private readonly ShellViewModel ViewModel;
         private readonly MainWindow _mainWindow;
-        private readonly IServiceProvider _services;
         private SettingsWindow? _settingsWindow;
 
-        public ShellPage(ILogger<ShellPage> logger, ShellViewModel viewModel, MainWindow mainWindow, IServiceProvider services)
+        public ShellPage(ILogger<ShellPage> logger, IServiceProvider services, ShellViewModel viewModel, MainWindow mainWindow)
         {
             InitializeComponent();
             _logger = logger;
+            _services = services;
             ViewModel = viewModel;
             _mainWindow = mainWindow;
-            _services = services;
 
             ViewModel.StartRecord += OnStartRecord;
             ViewModel.StopRecord += OnStopRecord;
@@ -45,13 +45,12 @@ namespace ScreenOpRecorder.Features.Shell
 
         private async void OnClickClose(object sender, RoutedEventArgs args)
         {
-            await ViewModel.StopRecordingAsync();
-            ViewModel.Stop();
-            CloseSettingsWindow();
+            await ViewModel.StopAsync();
 
             ViewModel.StartRecord -= OnStartRecord;
             ViewModel.StopRecord -= OnStopRecord;
 
+            _settingsWindow?.Close();
             _mainWindow.Close();
         }
 
@@ -64,18 +63,6 @@ namespace ScreenOpRecorder.Features.Shell
             }
 
             _settingsWindow.Activate();
-        }
-
-        public void CloseSettingsWindow()
-        {
-            if (_settingsWindow == null)
-            {
-                return;
-            }
-
-            _settingsWindow.Closed -= OnSettingsWindowClosed;
-            _settingsWindow.Close();
-            _settingsWindow = null;
         }
 
         private void OnSettingsWindowClosed(object sender, WindowEventArgs args)

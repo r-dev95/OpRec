@@ -35,16 +35,15 @@ namespace ScreenOpRecorder.Features.Overlay
         [ObservableProperty]
         public partial double KeyDisplayDurationSeconds { get; set; } = 1.5;
 
-        private CancellationTokenSource? _cts;
-        private bool _isRecording;
-        private Size _screenSize;
-
         public Visibility KeyVisibility => EnableKeyDisplay && !string.IsNullOrWhiteSpace(CurrentKeyText)
             ? Visibility.Visible
             : Visibility.Collapsed;
-
         partial void OnCurrentKeyTextChanged(string value) => OnPropertyChanged(nameof(KeyVisibility));
         partial void OnEnableKeyDisplayChanged(bool value) => OnPropertyChanged(nameof(KeyVisibility));
+
+        private CancellationTokenSource? _cts;
+        private bool _isRecording;
+        private Size _screenSize;
 
         public void SetScreenSize(double width, double height)
         {

@@ -44,24 +44,25 @@ namespace ScreenOpRecorder.Features.Input
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0)
+            if (nCode >= 0 && (wParam == InputHelper.WM_KEYDOWN || wParam == InputHelper.WM_SYSKEYDOWN))
             {
                 var kbd = Marshal.PtrToStructure<InputHelper.KBDLLHOOKSTRUCT>(lParam);
-                if (!InputHelper.ExcludeKeys.TryGetValue(kbd.vkCode, out var vkName))
+                _logger.LogDebug("nCode[{}], wParam[{}], lParam[{}]", nCode, wParam, lParam);
+                _logger.LogDebug("kbd.vkCode[{}]", kbd.vkCode);
+
+                if (!InputHelper.ExcludeKeys.TryGetValue(kbd.vkCode, out _))
                 {
-                    if (!InputHelper.ConvertKeys.TryGetValue(kbd.vkCode, out vkName))
+                    if (!InputHelper.ConvertKeys.TryGetValue(kbd.vkCode, out var vkName))
                     {
                         vkName = ((VirtualKey)kbd.vkCode).ToString();
                     }
-                    _logger.LogDebug("kbd.vkCode: {}, {}, {}", kbd.vkCode, (VirtualKey)kbd.vkCode, vkName);
+                    _logger.LogDebug("(VirtualKey)kbd.vkCode[{}], vkName[{}]", (VirtualKey)kbd.vkCode, vkName);
 
-                    if (wParam == InputHelper.WM_KEYDOWN || wParam == InputHelper.WM_SYSKEYDOWN)
-                    {
-                        vkName = GetModifierCombinedKey(vkName);
+                    vkName = GetModifierCombinedKey(vkName);
 
-                        KeyDown?.Invoke(vkName);
-                        _logger.LogDebug("Keyboard Event: {} at ({})", wParam, vkName);
-                    }
+                    KeyDown?.Invoke(vkName);
+
+                    _logger.LogDebug("vkName[{}]", vkName);
                 }
             }
 
@@ -74,15 +75,15 @@ namespace ScreenOpRecorder.Features.Input
             var result = new List<string>();
             if ((InputHelper.GetKeyState(InputHelper.VK_CONTROL) & 0x8000) != 0)
             {
-                result.Add("Ctrl");
+                result.Add(InputHelper.ExcludeKeys[(uint)VirtualKey.Control]);
             }
             if ((InputHelper.GetKeyState(InputHelper.VK_SHIFT) & 0x8000) != 0)
             {
-                result.Add("Shift");
+                result.Add(InputHelper.ExcludeKeys[(uint)VirtualKey.Shift]);
             }
             if ((InputHelper.GetKeyState(InputHelper.VK_MENU) & 0x8000) != 0)
             {
-                result.Add("Alt");
+                result.Add(InputHelper.ExcludeKeys[(uint)VirtualKey.Menu]);
             }
             result.Add(vkName);
 
