@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:settings="using:ScreenOpRecorder.Features.Settings"
     mc:Ignorable="d"
     Title="Settings">
 
@@ -72,8 +73,8 @@
                         <controls:SettingsCard Header="Zoom factor"
                                                Description="Zoom amount for double-click zoom mode.">
                             <NumberBox Value="{x:Bind ViewModel.ZoomFactor, Mode=TwoWay}"
-                                       Minimum="1.1"
-                                       Maximum="4.0"
+                                       Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomFactor, Mode=OneWay}"
+                                       Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomFactor, Mode=OneWay}"
                                        SmallChange="0.1"
                                        SpinButtonPlacementMode="Inline" />
                         </controls:SettingsCard>
@@ -89,8 +90,8 @@
 
                         <controls:SettingsCard Header="Click highlight size">
                             <NumberBox Value="{x:Bind ViewModel.ClickHighlightSize, Mode=TwoWay}"
-                                       Minimum="8"
-                                       Maximum="120"
+                                       Minimum="{x:Bind settings:UserSettingsConstraints.MinClickHighlightSize, Mode=OneWay}"
+                                       Maximum="{x:Bind settings:UserSettingsConstraints.MaxClickHighlightSize, Mode=OneWay}"
                                        SmallChange="1"
                                        SpinButtonPlacementMode="Inline" />
                         </controls:SettingsCard>
@@ -106,8 +107,8 @@
 
                         <controls:SettingsCard Header="Key display duration (seconds)">
                             <NumberBox Value="{x:Bind ViewModel.KeyDisplayDurationSeconds, Mode=TwoWay}"
-                                       Minimum="0.5"
-                                       Maximum="10"
+                                       Minimum="{x:Bind settings:UserSettingsConstraints.MinKeyDisplayDurationSeconds, Mode=OneWay}"
+                                       Maximum="{x:Bind settings:UserSettingsConstraints.MaxKeyDisplayDurationSeconds, Mode=OneWay}"
                                        SmallChange="0.1"
                                        SpinButtonPlacementMode="Inline" />
                         </controls:SettingsCard>

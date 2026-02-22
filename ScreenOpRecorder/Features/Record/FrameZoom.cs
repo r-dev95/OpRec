@@ -25,7 +25,7 @@ namespace ScreenOpRecorder.Features.Record
         public FrameZoom(Rect captureArea, double zoomMax = 2.0)
         {
             _captureArea = captureArea;
-            _zoomMax = (float)Math.Clamp(zoomMax, 1.1, 4.0);
+            _zoomMax = (float)zoomMax;
 
             _originalPos = new Vector2((float)(captureArea.Width * 0.5), (float)(captureArea.Height * 0.5));
             _currentPos = _originalPos;

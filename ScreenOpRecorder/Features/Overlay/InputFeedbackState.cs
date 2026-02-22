@@ -33,7 +33,7 @@ namespace ScreenOpRecorder.Features.Overlay
         public partial Thickness KeyMargin { get; set; } = new(0, 0, 0, 50);
 
         [ObservableProperty]
-        public partial double KeyDisplayDurationSeconds { get; set; } = 1.5;
+        public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
 
         public Visibility KeyVisibility => EnableKeyDisplay && !string.IsNullOrWhiteSpace(CurrentKeyText)
             ? Visibility.Visible

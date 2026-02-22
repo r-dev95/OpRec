@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,7 +12,7 @@ namespace ScreenOpRecorder.Features.Settings
 
         public event Action? CloseRequested;
 
-        public int[] FpsOptions { get; } = [15, 30, 60];
+        public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
         public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
         public KeyDisplayPosition[] KeyDisplayPositionOptions { get; } = Enum.GetValues<KeyDisplayPosition>();
 
@@ -21,7 +20,7 @@ namespace ScreenOpRecorder.Features.Settings
         public partial string OutputFolderPath { get; set; } = "";
 
         [ObservableProperty]
-        public partial int RecordingFps { get; set; } = 30;
+        public partial int RecordingFps { get; set; } = UserSettingsConstraints.Fps30;
 
         [ObservableProperty]
         public partial QualityPreset QualityPreset { get; set; } = QualityPreset.High;
@@ -30,10 +29,10 @@ namespace ScreenOpRecorder.Features.Settings
         public partial bool EnableClickHighlight { get; set; } = true;
 
         [ObservableProperty]
-        public partial string ClickHighlightColor { get; set; } = "#00FFFF";
+        public partial string ClickHighlightColor { get; set; } = UserSettingsConstraints.DefaultClickHighlightColor;
 
         [ObservableProperty]
-        public partial double ClickHighlightSize { get; set; } = 20;
+        public partial double ClickHighlightSize { get; set; } = UserSettingsConstraints.DefaultClickHighlightSize;
 
         [ObservableProperty]
         public partial bool EnableKeyDisplay { get; set; } = true;
@@ -42,16 +41,16 @@ namespace ScreenOpRecorder.Features.Settings
         public partial KeyDisplayPosition KeyDisplayPosition { get; set; } = KeyDisplayPosition.BottomCenter;
 
         [ObservableProperty]
-        public partial double KeyDisplayDurationSeconds { get; set; } = 1.5;
+        public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
 
         [ObservableProperty]
         public partial bool EnableMinimap { get; set; } = true;
 
         [ObservableProperty]
-        public partial double ZoomFactor { get; set; } = 2.0;
+        public partial double ZoomFactor { get; set; } = UserSettingsConstraints.DefaultZoomFactor;
 
         [ObservableProperty]
-        public partial string ToggleRecordingHotkey { get; set; } = "Ctrl+Shift+R";
+        public partial string ToggleRecordingHotkey { get; set; } = UserSettingsConstraints.DefaultHotkey;
 
         [ObservableProperty]
         public partial bool OpenOutputFolderAfterRecording { get; set; }
@@ -65,12 +64,10 @@ namespace ScreenOpRecorder.Features.Settings
         [RelayCommand]
         private async Task SaveAsync()
         {
-            var fps = FpsOptions.Contains(RecordingFps) ? RecordingFps : 30;
-
             var settings = new UserSettings
             {
                 OutputFolderPath = OutputFolderPath,
-                RecordingFps = fps,
+                RecordingFps = RecordingFps,
                 QualityPreset = QualityPreset,
                 EnableClickHighlight = EnableClickHighlight,
                 ClickHighlightColor = ClickHighlightColor,

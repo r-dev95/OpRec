@@ -30,8 +30,8 @@ namespace ScreenOpRecorder.Features.Overlay
         private bool _isSettingsSubscribed;
 
         public bool EnableClickHighlight { get; private set; } = true;
-        public string ClickHighlightColor { get; private set; } = "#00FFFF";
-        public double ClickHighlightSize { get; private set; } = 20;
+        public string ClickHighlightColor { get; private set; } = UserSettingsConstraints.DefaultClickHighlightColor;
+        public double ClickHighlightSize { get; private set; } = UserSettingsConstraints.DefaultClickHighlightSize;
 
         public event Action? SetRecordingWindow;
         public event Action? SetNotRecordingWindow;

@@ -88,35 +88,38 @@ namespace ScreenOpRecorder.Features.Settings
             }
 
             int fps = settings.RecordingFps;
-            if (fps != 15 && fps != 30 && fps != 60)
+            if (Array.IndexOf(UserSettingsConstraints.FpsOptions, fps) < 0)
             {
-                fps = 30;
+                fps = UserSettingsConstraints.Fps30;
             }
 
             var keySeconds = settings.KeyDisplayDurationSeconds;
-            if (keySeconds < 0.5 || keySeconds > 10)
+            if (keySeconds < UserSettingsConstraints.MinKeyDisplayDurationSeconds
+                || keySeconds > UserSettingsConstraints.MaxKeyDisplayDurationSeconds)
             {
-                keySeconds = 1.5;
+                keySeconds = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
             }
 
             var zoom = settings.ZoomFactor;
-            if (zoom < 1.1 || zoom > 4.0)
+            if (zoom < UserSettingsConstraints.MinZoomFactor
+                || zoom > UserSettingsConstraints.MaxZoomFactor)
             {
-                zoom = 2.0;
+                zoom = UserSettingsConstraints.DefaultZoomFactor;
             }
 
             var clickSize = settings.ClickHighlightSize;
-            if (clickSize < 8 || clickSize > 120)
+            if (clickSize < UserSettingsConstraints.MinClickHighlightSize
+                || clickSize > UserSettingsConstraints.MaxClickHighlightSize)
             {
-                clickSize = 20;
+                clickSize = UserSettingsConstraints.DefaultClickHighlightSize;
             }
 
             var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
-                ? "Ctrl+Shift+R"
+                ? UserSettingsConstraints.DefaultHotkey
                 : settings.ToggleRecordingHotkey.Trim();
 
             var color = string.IsNullOrWhiteSpace(settings.ClickHighlightColor)
-                ? "#00FFFF"
+                ? UserSettingsConstraints.DefaultClickHighlightColor
                 : settings.ClickHighlightColor.Trim();
 
             return new UserSettings

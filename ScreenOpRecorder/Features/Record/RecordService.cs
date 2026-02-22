@@ -116,10 +116,6 @@ namespace ScreenOpRecorder.Features.Record
             Setup(item, captureArea);
 
             string outputFolderPath = _settingsService.Current.OutputFolderPath;
-            if (string.IsNullOrWhiteSpace(outputFolderPath))
-            {
-                outputFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
-            }
             Directory.CreateDirectory(outputFolderPath);
             var localFolder = await StorageFolder.GetFolderFromPathAsync(outputFolderPath);
             var fileName = $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";

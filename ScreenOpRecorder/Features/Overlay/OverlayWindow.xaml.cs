@@ -93,7 +93,7 @@ namespace ScreenOpRecorder.Features.Overlay
                 return;
             }
 
-            var size = Math.Max(8, ViewModel.ClickHighlightSize);
+            var size = ViewModel.ClickHighlightSize;
             var stroke = isDouble
                 ? Color.FromArgb(255, 255, 69, 0)
                 : ParseColor(ViewModel.ClickHighlightColor, Color.FromArgb(255, 0, 255, 255));
