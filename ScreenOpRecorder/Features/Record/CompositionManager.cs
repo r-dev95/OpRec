@@ -13,9 +13,8 @@ namespace ScreenOpRecorder.Features.Record
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
         private readonly Rect _captureArea;
-
         private readonly FrameZoom _frameZoom;
-        private readonly FrameOverlay _frameOverlay;
+        //private readonly FrameOverlay _frameOverlay;
 
         public event Action<Rect>? ZoomChanged;
 
@@ -26,18 +25,18 @@ namespace ScreenOpRecorder.Features.Record
             _captureArea = captureArea;
 
             _frameZoom = new FrameZoom(_captureArea, zoomFactor);
-            _frameOverlay = new FrameOverlay();
+            //_frameOverlay = new FrameOverlay();
 
             _frameZoom.ZoomAction += OnZoomAction;
             _mouseHookService.MouseClicked += OnMouseClicked;
-            _keyboardHookService.KeyDown += OnKeyDown;
+            //_keyboardHookService.KeyDown += OnKeyDown;
         }
 
         public void Dispose()
         {
             _frameZoom?.ZoomAction -= OnZoomAction;
             _mouseHookService?.MouseClicked -= OnMouseClicked;
-            _keyboardHookService?.KeyDown -= OnKeyDown;
+            //_keyboardHookService?.KeyDown -= OnKeyDown;
         }
 
         public void ComposeFrame(CanvasRenderTarget renderTarget, CanvasBitmap rawFrame)
@@ -53,7 +52,7 @@ namespace ScreenOpRecorder.Features.Record
 
         private void OnZoomAction(Rect rect)
         {
-            _frameOverlay.OnZoomAction(rect);
+            //_frameOverlay.OnZoomAction(rect);
             ZoomChanged?.Invoke(rect);
         }
 
@@ -66,12 +65,12 @@ namespace ScreenOpRecorder.Features.Record
             {
                 _frameZoom.ToggleZoom(relativeX, relativeY);
             }
-            _frameOverlay.AddRipple(relativeX, relativeY);
+            //_frameOverlay.AddRipple(relativeX, relativeY);
         }
 
-        private void OnKeyDown(string keyName)
-        {
-            _frameOverlay.UpdateKey(keyName);
-        }
+        //private void OnKeyDown(string keyName)
+        //{
+        //    _frameOverlay.UpdateKey(keyName);
+        //}
     }
 }

@@ -20,9 +20,9 @@ namespace ScreenOpRecorder.Features.Record
     public class RecordingDomainService : IRecordingDomainService, IDisposable
     {
         private readonly ILogger<RecordingDomainService> _logger;
-        private readonly RecordService _recordService;
-        private readonly IRecordingStateStore _stateStore;
         private readonly IUserSettingsService _settingsService;
+        private readonly IRecordingStateStore _stateStore;
+        private readonly RecordService _recordService;
         private readonly IDisposable _zoomSubscription;
 
         private GraphicsCaptureItem? _captureItem;

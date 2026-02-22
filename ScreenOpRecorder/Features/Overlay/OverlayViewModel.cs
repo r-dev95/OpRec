@@ -18,9 +18,9 @@ namespace ScreenOpRecorder.Features.Overlay
     public partial class OverlayViewModel : ObservableObject
     {
         private readonly ILogger<OverlayViewModel> _logger;
-        private readonly IRecordingDomainService _recordingDomainService;
-        private readonly IRecordingStateStore _stateStore;
         private readonly IUserSettingsService _settingsService;
+        private readonly IRecordingStateStore _stateStore;
+        private readonly IRecordingDomainService _recordingDomainService;
         private readonly MouseHookService _mouseHookService;
         private readonly KeyboardHookService _keyboardHookService;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
@@ -52,13 +52,7 @@ namespace ScreenOpRecorder.Features.Overlay
         [ObservableProperty]
         public partial MinimapState Minimap { get; set; } = new();
 
-        public OverlayViewModel(
-            ILogger<OverlayViewModel> logger,
-            IRecordingDomainService recordingDomainService,
-            IRecordingStateStore stateStore,
-            IUserSettingsService settingsService,
-            MouseHookService mouseHookService,
-            KeyboardHookService keyboardHookService)
+        public OverlayViewModel(ILogger<OverlayViewModel> logger, IUserSettingsService settingsService, IRecordingStateStore stateStore, IRecordingDomainService recordingDomainService, MouseHookService mouseHookService, KeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _recordingDomainService = recordingDomainService;
