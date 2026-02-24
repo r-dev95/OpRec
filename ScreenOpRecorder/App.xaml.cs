@@ -8,13 +8,18 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
-using ScreenOpRecorder.Features.Input;
-using ScreenOpRecorder.Features.Overlay;
-using ScreenOpRecorder.Features.Record;
-using ScreenOpRecorder.Features.Record.State;
-using ScreenOpRecorder.Features.Settings;
-using ScreenOpRecorder.Features.Shell;
-using ScreenOpRecorder.Shared.Events;
+using ScreenOpRecorder.Common.Events;
+using ScreenOpRecorder.Core.Recording.Ports;
+using ScreenOpRecorder.Core.Recording.State;
+using ScreenOpRecorder.Core.Recording.UseCases;
+using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Infrastructure.Input;
+using ScreenOpRecorder.Infrastructure.Recording;
+using ScreenOpRecorder.Infrastructure.Settings;
+using ScreenOpRecorder.Infrastructure.System;
+using ScreenOpRecorder.Presentation.Overlay;
+using ScreenOpRecorder.Presentation.Settings;
+using ScreenOpRecorder.Presentation.Shell;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -49,6 +54,7 @@ namespace ScreenOpRecorder
                 })
                 .ConfigureServices((context, services) =>
                 {
+                    // Presentation
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<ShellPage>();
                     services.AddSingleton<ShellViewModel>();
@@ -57,15 +63,29 @@ namespace ScreenOpRecorder
                     services.AddTransient<SettingsWindow>();
                     services.AddTransient<SettingsViewModel>();
 
-                    // Services
+                    // Core
+                    services.AddSingleton<IRecordingCommandUseCase, RecordingCommandUseCase>();
+                    services.AddSingleton<IRecordingWorkflowService, RecordingWorkflowService>();
+                    services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
+
+                    // Infrastructure.Input
                     services.AddSingleton<MouseHookService>();
                     services.AddSingleton<KeyboardHookService>();
-                    services.AddSingleton<RecordService>();
-                    services.AddSingleton<IEventBus, EventBus>();
-                    services.AddSingleton<IRecordingStateStore, RecordingStateStore>();
-                    services.AddSingleton<IRecordingDomainService, RecordingDomainService>();
+                    services.AddSingleton<IGlobalMouseHook>(sp => sp.GetRequiredService<MouseHookService>());
+                    services.AddSingleton<IGlobalKeyboardHook>(sp => sp.GetRequiredService<KeyboardHookService>());
+
+                    // Infrastructure.Recording
+                    services.AddSingleton<IAudioCaptureService, AudioCaptureService>();
+                    services.AddSingleton<IRecordingOutputCoordinator, RecordingOutputCoordinator>();
+                    services.AddSingleton<IMediaFileMerger, MediaFileMerger>();
+                    services.AddSingleton<IRecordingEngine, WindowsRecordingEngine>();
+
+                    // Infrastructure.System / Settings
+                    services.AddSingleton<IOutputFolderOpener, WindowsOutputFolderOpener>();
                     services.AddSingleton<IUserSettingsService, UserSettingsService>();
 
+                    // Common.Events
+                    services.AddSingleton<IEventBus, EventBus>();
                 })
                 .Build();
         }
