@@ -10,7 +10,7 @@ using Windows.System;
 
 namespace ScreenOpRecorder.Infrastructure.Input
 {
-    public class KeyboardHookService : IGlobalKeyboardHook, IDisposable
+    public class KeyboardHookService : IKeyboardHookService, IDisposable
     {
         private readonly ILogger<KeyboardHookService> _logger;
 

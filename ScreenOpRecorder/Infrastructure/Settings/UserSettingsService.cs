@@ -5,20 +5,20 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Core.Settings.Ports;
 
 namespace ScreenOpRecorder.Infrastructure.Settings
 {
     public class UserSettingsService : IUserSettingsService
     {
+        private readonly ILogger<UserSettingsService> _logger;
+        private readonly string _settingsPath;
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true
         };
-
-        private readonly ILogger<UserSettingsService> _logger;
-        private readonly string _settingsPath;
 
         public UserSettings Current { get; private set; }
 

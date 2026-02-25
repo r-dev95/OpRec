@@ -7,7 +7,7 @@ using ScreenOpRecorder.Core.Recording.Ports;
 
 namespace ScreenOpRecorder.Infrastructure.Input
 {
-    public class MouseHookService : IGlobalMouseHook, IDisposable
+    public class MouseHookService : IMouseHookService, IDisposable
     {
         private readonly ILogger<MouseHookService> _logger;
 

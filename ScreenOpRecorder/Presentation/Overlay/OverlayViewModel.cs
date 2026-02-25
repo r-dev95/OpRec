@@ -6,12 +6,12 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
+using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Core.Recording.Ports;
-using ScreenOpRecorder.Core.Settings.Ports;
-using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Recording.UseCases;
-using ScreenOpRecorder.Common.Helpers;
+using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
 
 using Windows.Foundation;
@@ -22,10 +22,10 @@ namespace ScreenOpRecorder.Presentation.Overlay
     {
         private readonly ILogger<OverlayViewModel> _logger;
         private readonly IUserSettingsService _settingsService;
+        private readonly IMouseHookService _mouseHookService;
+        private readonly IKeyboardHookService _keyboardHookService;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IRecordingCommandUseCase _recordingCommandUseCase;
-        private readonly IGlobalMouseHook _mouseHookService;
-        private readonly IGlobalKeyboardHook _keyboardHookService;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private double _scaleFactor = 1.0;
@@ -55,14 +55,20 @@ namespace ScreenOpRecorder.Presentation.Overlay
         [ObservableProperty]
         public partial MinimapState Minimap { get; set; } = new();
 
-        public OverlayViewModel(ILogger<OverlayViewModel> logger, IUserSettingsService settingsService, IRecordingSessionStore stateStore, IRecordingCommandUseCase recordingCommandUseCase, IGlobalMouseHook mouseHookService, IGlobalKeyboardHook keyboardHookService)
+        public OverlayViewModel(
+            ILogger<OverlayViewModel> logger,
+            IUserSettingsService settingsService,
+            IMouseHookService mouseHookService,
+            IKeyboardHookService keyboardHookService,
+            IRecordingSessionStore stateStore,
+            IRecordingCommandUseCase recordingCommandUseCase)
         {
             _logger = logger;
-            _recordingCommandUseCase = recordingCommandUseCase;
             _stateStore = stateStore;
             _settingsService = settingsService;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
+            _recordingCommandUseCase = recordingCommandUseCase;
 
             try
             {

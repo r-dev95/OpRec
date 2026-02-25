@@ -4,7 +4,7 @@ using ScreenOpRecorder.Domain.ValueObjects;
 
 namespace ScreenOpRecorder.Core.Recording.Ports
 {
-    public interface IRecordingEngine
+    public interface IRecordingService
     {
         string? LastOutputFolderPath { get; }
 

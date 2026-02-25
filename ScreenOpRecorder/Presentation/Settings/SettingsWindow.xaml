@@ -12,8 +12,8 @@
     Title="Settings">
 
     <Grid x:Name="RootGrid"
-          MinWidth="700"
-          MinHeight="500">
+          MinWidth="750"
+          MinHeight="600">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />

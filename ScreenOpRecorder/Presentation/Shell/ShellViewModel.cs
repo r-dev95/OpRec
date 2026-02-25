@@ -31,7 +31,7 @@ namespace ScreenOpRecorder.Presentation.Shell
         private readonly IRecordingCommandUseCase _recordingCommandUseCase;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IUserSettingsService _settingsService;
-        private readonly IGlobalKeyboardHook _keyboardHookService;
+        private readonly IKeyboardHookService _keyboardHookService;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private UiRecordingState _state = UiRecordingState.WaitingForSelection;
@@ -58,7 +58,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             IRecordingCommandUseCase recordingCommandUseCase,
             IRecordingSessionStore stateStore,
             IUserSettingsService settingsService,
-            IGlobalKeyboardHook keyboardHookService)
+            IKeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _recordingCommandUseCase = recordingCommandUseCase;

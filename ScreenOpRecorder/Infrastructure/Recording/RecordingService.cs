@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
+using ScreenOpRecorder.Common.Events;
+using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Core.Recording.Events;
 using ScreenOpRecorder.Core.Recording.Ports;
-using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Core.Settings.Models;
-using ScreenOpRecorder.Common.Helpers;
-using ScreenOpRecorder.Common.Events;
+using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
 
 using Windows.Foundation;
@@ -22,7 +22,7 @@ using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public class WindowsRecordingEngine : IRecordingEngine, IDisposable
+    public class RecordingService : IRecordingService, IDisposable
     {
         private enum RecordState
         {
@@ -33,14 +33,14 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             Disposed
         }
 
-        private readonly ILogger<WindowsRecordingEngine> _logger;
-        private readonly IEventBus _eventBus;
+        private readonly ILogger<RecordingService> _logger;
         private readonly IUserSettingsService _settingsService;
+        private readonly IMouseHookService _mouseHookService;
+        private readonly IKeyboardHookService _keyboardHookService;
         private readonly IAudioCaptureService _audioCaptureService;
-        private readonly IGlobalMouseHook _mouseHookService;
-        private readonly IGlobalKeyboardHook _keyboardHookService;
         private readonly IRecordingOutputCoordinator _outputCoordinator;
         private readonly IMediaFileMerger _mediaFileMerger;
+        private readonly IEventBus _eventBus;
 
         private CompositionManager? _compositionManager;
 
@@ -66,16 +66,24 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         private RecordState _state = RecordState.Idle;
         public string? LastOutputFolderPath => _outputCoordinator.LastOutputFolderPath;
 
-        public WindowsRecordingEngine(ILogger<WindowsRecordingEngine> logger, IEventBus eventBus, IUserSettingsService settingsService, IAudioCaptureService audioCaptureService, IGlobalMouseHook mouseHookService, IGlobalKeyboardHook keyboardHookService, IRecordingOutputCoordinator outputCoordinator, IMediaFileMerger mediaFileMerger)
+        public RecordingService(
+            ILogger<RecordingService> logger,
+            IUserSettingsService settingsService,
+            IMouseHookService mouseHookService,
+            IKeyboardHookService keyboardHookService,
+            IAudioCaptureService audioCaptureService,
+            IRecordingOutputCoordinator outputCoordinator,
+            IMediaFileMerger mediaFileMerger,
+            IEventBus eventBus)
         {
             _logger = logger;
-            _eventBus = eventBus;
             _settingsService = settingsService;
-            _audioCaptureService = audioCaptureService;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
+            _audioCaptureService = audioCaptureService;
             _outputCoordinator = outputCoordinator;
             _mediaFileMerger = mediaFileMerger;
+            _eventBus = eventBus;
         }
 
         private void Setup(GraphicsCaptureItem item)
@@ -313,7 +321,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         {
             if (_state == RecordState.Disposed)
             {
-                throw new ObjectDisposedException(nameof(WindowsRecordingEngine));
+                throw new ObjectDisposedException(nameof(RecordingService));
             }
         }
 

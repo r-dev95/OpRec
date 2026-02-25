@@ -10,15 +10,15 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 {
     public class CompositionManager : IDisposable
     {
-        private readonly IGlobalMouseHook _mouseHookService;
-        private readonly IGlobalKeyboardHook _keyboardHookService;
+        private readonly IMouseHookService _mouseHookService;
+        private readonly IKeyboardHookService _keyboardHookService;
         private readonly Rect _captureArea;
         private readonly FrameZoom _frameZoom;
         //private readonly FrameOverlay _frameOverlay;
 
         public event Action<Rect>? ZoomChanged;
 
-        public CompositionManager(IGlobalMouseHook mouseHookService, IGlobalKeyboardHook keyboardHookService, Rect captureArea, double zoomFactor)
+        public CompositionManager(IMouseHookService mouseHookService, IKeyboardHookService keyboardHookService, Rect captureArea, double zoomFactor)
         {
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;

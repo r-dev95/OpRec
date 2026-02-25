@@ -69,20 +69,20 @@ namespace ScreenOpRecorder
                     services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
 
                     // Infrastructure.Input
-                    services.AddSingleton<MouseHookService>();
-                    services.AddSingleton<KeyboardHookService>();
-                    services.AddSingleton<IGlobalMouseHook>(sp => sp.GetRequiredService<MouseHookService>());
-                    services.AddSingleton<IGlobalKeyboardHook>(sp => sp.GetRequiredService<KeyboardHookService>());
+                    services.AddSingleton<IMouseHookService, MouseHookService>();
+                    services.AddSingleton<IKeyboardHookService, KeyboardHookService>();
 
                     // Infrastructure.Recording
+                    services.AddSingleton<IRecordingService, RecordingService>();
                     services.AddSingleton<IAudioCaptureService, AudioCaptureService>();
                     services.AddSingleton<IRecordingOutputCoordinator, RecordingOutputCoordinator>();
                     services.AddSingleton<IMediaFileMerger, MediaFileMerger>();
-                    services.AddSingleton<IRecordingEngine, WindowsRecordingEngine>();
 
-                    // Infrastructure.System / Settings
-                    services.AddSingleton<IOutputFolderOpener, WindowsOutputFolderOpener>();
+                    // Infrastructure.Settings
                     services.AddSingleton<IUserSettingsService, UserSettingsService>();
+
+                    // Infrastructure.System
+                    services.AddSingleton<IFolderOpenService, FolderOpenService>();
 
                     // Common.Events
                     services.AddSingleton<IEventBus, EventBus>();

@@ -11,11 +11,11 @@ using Windows.System;
 
 namespace ScreenOpRecorder.Infrastructure.System
 {
-    public sealed class WindowsOutputFolderOpener : IOutputFolderOpener
+    public sealed class FolderOpenService : IFolderOpenService
     {
-        private readonly ILogger<WindowsOutputFolderOpener> _logger;
+        private readonly ILogger<FolderOpenService> _logger;
 
-        public WindowsOutputFolderOpener(ILogger<WindowsOutputFolderOpener> logger)
+        public FolderOpenService(ILogger<FolderOpenService> logger)
         {
             _logger = logger;
         }
@@ -34,7 +34,7 @@ namespace ScreenOpRecorder.Infrastructure.System
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to open output folder: {Path}", folderPath);
+                _logger.LogWarning(ex, "Failed to open folder: {Path}", folderPath);
             }
         }
     }

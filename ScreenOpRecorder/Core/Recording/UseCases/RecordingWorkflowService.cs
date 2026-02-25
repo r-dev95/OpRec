@@ -3,12 +3,11 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using ScreenOpRecorder.Common.Events;
 using ScreenOpRecorder.Core.Recording.Events;
 using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Settings.Ports;
-using ScreenOpRecorder.Common.Events;
 using ScreenOpRecorder.Domain.ValueObjects;
 
 namespace ScreenOpRecorder.Core.Recording.UseCases
@@ -18,23 +17,23 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
         private readonly ILogger<RecordingWorkflowService> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly IRecordingSessionStore _stateStore;
-        private readonly IRecordingEngine _recordingEngine;
-        private readonly IOutputFolderOpener _outputFolderOpener;
+        private readonly IRecordingService _recordingEngine;
+        private readonly IFolderOpenService _outputFolderOpener;
         private readonly IDisposable _zoomSubscription;
 
         public RecordingWorkflowService(
             ILogger<RecordingWorkflowService> logger,
-            IRecordingEngine recordingEngine,
-            IOutputFolderOpener outputFolderOpener,
-            IRecordingSessionStore stateStore,
             IUserSettingsService settingsService,
+            IRecordingSessionStore stateStore,
+            IRecordingService recordingEngine,
+            IFolderOpenService outputFolderOpener,
             IEventBus eventBus)
         {
             _logger = logger;
+            _settingsService = settingsService;
+            _stateStore = stateStore;
             _recordingEngine = recordingEngine;
             _outputFolderOpener = outputFolderOpener;
-            _stateStore = stateStore;
-            _settingsService = settingsService;
             _zoomSubscription = eventBus.Subscribe<ZoomAreaChangedEvent>(OnZoomAreaChanged);
         }
 
@@ -53,7 +52,7 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
 
             _stateStore.SetSelection(captureArea);
 
-            _logger.LogDebug("selectedRect: {} x {} - {} x {}", captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
+            _logger.LogDebug("Selected Rect: {} x {} - {} x {}", captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
             return true;
         }
 
