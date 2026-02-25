@@ -4,20 +4,14 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Core.Settings.Ports;
 
 namespace ScreenOpRecorder.Presentation.Settings
 {
     public partial class SettingsViewModel : ObservableObject
     {
         private readonly IUserSettingsService _settingsService;
-
-        public event Action? CloseRequested;
-
-        public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
-        public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
-        public KeyDisplayPosition[] KeyDisplayPositionOptions { get; } = Enum.GetValues<KeyDisplayPosition>();
 
         [ObservableProperty]
         public partial string OutputFolderPath { get; set; } = "";
@@ -61,10 +55,24 @@ namespace ScreenOpRecorder.Presentation.Settings
         [ObservableProperty]
         public partial bool OpenOutputFolderAfterRecording { get; set; }
 
+        public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
+        public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
+        public KeyDisplayPosition[] KeyDisplayPositionOptions { get; } = Enum.GetValues<KeyDisplayPosition>();
+
+        public event Action? CloseRequested;
+
         public SettingsViewModel(IUserSettingsService settingsService)
         {
             _settingsService = settingsService;
             Load(_settingsService.Current);
+        }
+
+        public void SetOutputFolderPath(string path)
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                OutputFolderPath = path;
+            }
         }
 
         [RelayCommand]
@@ -97,14 +105,6 @@ namespace ScreenOpRecorder.Presentation.Settings
         {
             Load(_settingsService.Current);
             CloseRequested?.Invoke();
-        }
-
-        public void SetOutputFolderPath(string path)
-        {
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                OutputFolderPath = path;
-            }
         }
 
         private void Load(UserSettings settings)

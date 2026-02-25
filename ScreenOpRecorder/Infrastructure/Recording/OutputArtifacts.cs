@@ -2,7 +2,7 @@ using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public sealed class RecordingOutputArtifacts
+    public sealed class OutputArtifacts
     {
         public bool CaptureAudio { get; set; }
         public StorageFile? VideoOutputFile { get; set; }

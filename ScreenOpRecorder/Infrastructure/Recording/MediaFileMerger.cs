@@ -21,7 +21,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             _logger = logger;
         }
 
-        public async Task MergeIfNeededAsync(RecordingOutputArtifacts artifacts, QualityPreset qualityPreset, int recordingFps)
+        public async Task MergeIfNeededAsync(OutputArtifacts artifacts, QualityPreset qualityPreset, int recordingFps)
         {
             if (!artifacts.CaptureAudio)
             {
