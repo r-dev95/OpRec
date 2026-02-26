@@ -16,12 +16,19 @@ namespace ScreenOpRecorder.Presentation.Shell
 {
     public partial class ShellViewModel : ObservableObject
     {
-        private enum UiRecordingState
+        private enum UiState
         {
-            WaitingForSelection,
-            ReadyToRecord,
+            Waiting,
+            Ready,
             Starting,
             Recording,
+            Stopping
+        }
+
+        private enum PendingAction
+        {
+            None,
+            Starting,
             Stopping
         }
 
@@ -32,37 +39,30 @@ namespace ScreenOpRecorder.Presentation.Shell
         private readonly IRecordingUseCase _recordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
-        private UiRecordingState _state = UiRecordingState.WaitingForSelection;
-        private readonly Stopwatch _stopWatch;
-        private readonly DispatcherTimer _timer;
-        private bool _isHotkeyHandling;
+        private UiState _state = UiState.Waiting;
+        private PendingAction _pendingAction = PendingAction.None;
+
         private bool _isStarted;
+        private bool _isHotkeyHandling;
         private string _toggleHotkey = UserSettingsConstraints.DefaultHotkey;
 
-        public event Action? StartRecord;
-        public event Action? StopRecord;
+        [ObservableProperty]
+        public partial TimeState TimeState { get; set; } = new();
 
         [ObservableProperty]
         public partial bool StartReady { get; set; }
-
-        [ObservableProperty]
-        public partial bool IsRecording { get; set; }
 
         public event Action? StartRecord;
         public event Action? StopRecord;
 
         public ShellViewModel(
             ILogger<ShellViewModel> logger,
-            IRecordingCommandUseCase recordingCommandUseCase,
-            IRecordingSessionStore stateStore,
             IUserSettingsService settingsService,
             IKeyboardHookService keyboardHookService,
             IRecordingSessionStore stateStore,
             IRecordingUseCase recordingUseCase)
         {
             _logger = logger;
-            _recordingCommandUseCase = recordingCommandUseCase;
-            _stateStore = stateStore;
             _settingsService = settingsService;
             _keyboardHookService = keyboardHookService;
             _stateStore = stateStore;
@@ -76,15 +76,8 @@ namespace ScreenOpRecorder.Presentation.Shell
             {
             }
 
-            _stopWatch = new();
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += (s, e) => UpdateTime();
-
             ApplySettings(_settingsService.Current);
-            ApplyState(_stateStore.Current);
+            ChangeState(_stateStore.Current);
         }
 
         public void Start()
@@ -120,13 +113,13 @@ namespace ScreenOpRecorder.Presentation.Shell
         [RelayCommand]
         private async Task RecordingAsync()
         {
-            if (_state == UiRecordingState.ReadyToRecord)
+            if (_state == UiState.Ready)
             {
                 await StartRecordingAsync();
                 return;
             }
 
-            if (_state == UiRecordingState.Recording)
+            if (_state == UiState.Recording)
             {
                 await StopRecordingAsync();
             }
@@ -134,52 +127,55 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         private async Task StartRecordingAsync()
         {
-            if (_state != UiRecordingState.ReadyToRecord)
+            if (_state != UiState.Ready)
             {
                 return;
             }
 
-            TransitionTo(UiRecordingState.Starting);
+            _pendingAction = PendingAction.Starting;
+            ChangeState(_stateStore.Current);
+
             try
             {
                 var started = await _recordingUseCase.StartAsync();
                 if (!started)
                 {
-                    TransitionTo(UiRecordingState.ReadyToRecord);
+                    _pendingAction = PendingAction.None;
+                    ChangeState(_stateStore.Current);
                     return;
                 }
 
-                RecordingTime = "00:00:00";
-                _stopWatch.Restart();
-                _timer.Start();
+                TimeState.Start();
                 StartRecord?.Invoke();
-                TransitionTo(UiRecordingState.Recording);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to start recording.");
-                ApplyState(_stateStore.Current);
+                _pendingAction = PendingAction.None;
+                ChangeState(_stateStore.Current);
             }
         }
 
         private async Task StopRecordingAsync()
         {
-            if (_state is not (UiRecordingState.Starting or UiRecordingState.Recording))
+            if (_state is not (UiState.Starting or UiState.Recording))
             {
                 return;
             }
 
-            TransitionTo(UiRecordingState.Stopping);
+            _pendingAction = PendingAction.Stopping;
+            ChangeState(_stateStore.Current);
+
             try
             {
-                await _recordingCommandUseCase.StopAsync();
+                await _recordingUseCase.StopAsync();
             }
             finally
             {
-                _stopWatch.Stop();
-                _timer.Stop();
+                TimeState.Stop();
                 StopRecord?.Invoke();
-                TransitionTo(UiRecordingState.WaitingForSelection);
+                _pendingAction = PendingAction.None;
+                ChangeState(_stateStore.Current);
             }
         }
 
@@ -187,12 +183,40 @@ namespace ScreenOpRecorder.Presentation.Shell
         {
             if (_dispatcherQueue != null)
             {
-                _dispatcherQueue.TryEnqueue(() => ApplyState(state));
+                _dispatcherQueue.TryEnqueue(() => ChangeState(state));
             }
             else
             {
-                ApplyState(state);
+                ChangeState(state);
             }
+        }
+
+        private void ChangeState(RecordingSessionState session)
+        {
+            UiState next;
+
+            if (session.IsRecording)
+            {
+                next = _pendingAction == PendingAction.Stopping ? UiState.Stopping : UiState.Recording;
+            }
+            else if (session.HasSelection)
+            {
+                next = _pendingAction == PendingAction.Starting ? UiState.Starting : UiState.Ready;
+            }
+            else
+            {
+                next = UiState.Waiting;
+            }
+
+            if (_state == next)
+            {
+                return;
+            }
+
+            _logger.LogDebug("Shell UI state: {From} -> {To}", _state, next);
+            _state = next;
+
+            StartReady = next is UiState.Ready or UiState.Recording;
         }
 
         private void OnSettingsChanged(UserSettings settings)
@@ -240,52 +264,6 @@ namespace ScreenOpRecorder.Presentation.Shell
             {
                 _isHotkeyHandling = false;
             }
-        }
-
-        private void ApplyState(RecordingSessionState state)
-        {
-            if (state.IsRecording)
-            {
-                if (_state is not (UiRecordingState.Recording or UiRecordingState.Starting))
-                {
-                    TransitionTo(UiRecordingState.Recording);
-                }
-                return;
-            }
-
-            if (state.HasSelection)
-            {
-                if (_state is not (UiRecordingState.Starting or UiRecordingState.Stopping))
-                {
-                    TransitionTo(UiRecordingState.ReadyToRecord);
-                }
-                return;
-            }
-
-            if (_state is not (UiRecordingState.Starting or UiRecordingState.Stopping))
-            {
-                TransitionTo(UiRecordingState.WaitingForSelection);
-            }
-        }
-
-        private void UpdateTime()
-        {
-            var ts = _stopWatch.Elapsed;
-            RecordingTime = ts.ToString(@"hh\:mm\:ss");
-        }
-
-        private void TransitionTo(UiRecordingState next)
-        {
-            if (_state == next)
-            {
-                return;
-            }
-
-            _logger.LogDebug("Shell state: {From} -> {To}", _state, next);
-            _state = next;
-
-            StartReady = next is UiRecordingState.ReadyToRecord or UiRecordingState.Recording;
-            IsRecording = next is UiRecordingState.Recording or UiRecordingState.Stopping;
         }
 
         private static string NormalizeHotkey(string value)
