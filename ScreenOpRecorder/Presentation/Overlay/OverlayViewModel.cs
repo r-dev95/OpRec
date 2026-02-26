@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Common.Helpers;
+using ScreenOpRecorder.Core.Recording;
 using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Recording.UseCases;
 using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
@@ -25,7 +25,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
         private readonly IMouseHookService _mouseHookService;
         private readonly IKeyboardHookService _keyboardHookService;
         private readonly IRecordingSessionStore _stateStore;
-        private readonly IRecordingCommandUseCase _recordingCommandUseCase;
+        private readonly IRecordingUseCase _recordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private double _scaleFactor = 1.0;
@@ -61,14 +61,14 @@ namespace ScreenOpRecorder.Presentation.Overlay
             IMouseHookService mouseHookService,
             IKeyboardHookService keyboardHookService,
             IRecordingSessionStore stateStore,
-            IRecordingCommandUseCase recordingCommandUseCase)
+            IRecordingUseCase recordingUseCase)
         {
             _logger = logger;
             _stateStore = stateStore;
             _settingsService = settingsService;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
-            _recordingCommandUseCase = recordingCommandUseCase;
+            _recordingUseCase = recordingUseCase;
 
             try
             {
@@ -178,7 +178,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 return;
             }
 
-            _recordingCommandUseCase.SelectCaptureArea(GetCaptureRect());
+            _recordingUseCase.SelectCaptureArea(GetCaptureRect());
         }
 
         private void OnRecordingStateChanged(RecordingSessionState state)
@@ -239,3 +239,4 @@ namespace ScreenOpRecorder.Presentation.Overlay
         }
     }
 }
+

@@ -9,9 +9,9 @@ using Microsoft.UI.Xaml;
 using NLog.Extensions.Logging;
 
 using ScreenOpRecorder.Common.Events;
+using ScreenOpRecorder.Core.Recording;
 using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Recording.UseCases;
 using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Infrastructure.Input;
 using ScreenOpRecorder.Infrastructure.Recording;
@@ -64,8 +64,7 @@ namespace ScreenOpRecorder
                     services.AddTransient<SettingsViewModel>();
 
                     // Core
-                    services.AddSingleton<IRecordingCommandUseCase, RecordingCommandUseCase>();
-                    services.AddSingleton<IRecordingWorkflowService, RecordingWorkflowService>();
+                    services.AddSingleton<IRecordingUseCase, RecordingUseCase>();
                     services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
 
                     // Infrastructure.Input

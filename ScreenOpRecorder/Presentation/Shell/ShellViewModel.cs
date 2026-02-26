@@ -1,18 +1,16 @@
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml;
 
+using ScreenOpRecorder.Core.Recording;
 using ScreenOpRecorder.Core.Recording.Ports;
-using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Recording.UseCases;
 using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Core.Settings.Ports;
 
 namespace ScreenOpRecorder.Presentation.Shell
 {
@@ -28,10 +26,10 @@ namespace ScreenOpRecorder.Presentation.Shell
         }
 
         private readonly ILogger<ShellViewModel> _logger;
-        private readonly IRecordingCommandUseCase _recordingCommandUseCase;
-        private readonly IRecordingSessionStore _stateStore;
         private readonly IUserSettingsService _settingsService;
         private readonly IKeyboardHookService _keyboardHookService;
+        private readonly IRecordingSessionStore _stateStore;
+        private readonly IRecordingUseCase _recordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private UiRecordingState _state = UiRecordingState.WaitingForSelection;
@@ -39,7 +37,7 @@ namespace ScreenOpRecorder.Presentation.Shell
         private readonly DispatcherTimer _timer;
         private bool _isHotkeyHandling;
         private bool _isStarted;
-        private string _toggleHotkey = "CTRL+SHIFT+R";
+        private string _toggleHotkey = UserSettingsConstraints.DefaultHotkey;
 
         public event Action? StartRecord;
         public event Action? StopRecord;
@@ -50,21 +48,25 @@ namespace ScreenOpRecorder.Presentation.Shell
         [ObservableProperty]
         public partial bool IsRecording { get; set; }
 
-        [ObservableProperty]
-        public partial string RecordingTime { get; set; } = "00:00:00";
+        public event Action? StartRecord;
+        public event Action? StopRecord;
 
         public ShellViewModel(
             ILogger<ShellViewModel> logger,
             IRecordingCommandUseCase recordingCommandUseCase,
             IRecordingSessionStore stateStore,
             IUserSettingsService settingsService,
-            IKeyboardHookService keyboardHookService)
+            IKeyboardHookService keyboardHookService,
+            IRecordingSessionStore stateStore,
+            IRecordingUseCase recordingUseCase)
         {
             _logger = logger;
             _recordingCommandUseCase = recordingCommandUseCase;
             _stateStore = stateStore;
             _settingsService = settingsService;
             _keyboardHookService = keyboardHookService;
+            _stateStore = stateStore;
+            _recordingUseCase = recordingUseCase;
 
             try
             {
@@ -92,9 +94,9 @@ namespace ScreenOpRecorder.Presentation.Shell
                 return;
             }
 
-            _stateStore.StateChanged += OnRecordingStateChanged;
             _settingsService.SettingsChanged += OnSettingsChanged;
-            _keyboardHookService.KeyDown += OnGlobalKeyDown;
+            _stateStore.StateChanged += OnRecordingStateChanged;
+            _keyboardHookService.KeyDown += OnKeyDown;
             _keyboardHookService.Start();
             _isStarted = true;
         }
@@ -108,9 +110,9 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             await StopRecordingAsync();
 
-            _stateStore.StateChanged -= OnRecordingStateChanged;
             _settingsService.SettingsChanged -= OnSettingsChanged;
-            _keyboardHookService.KeyDown -= OnGlobalKeyDown;
+            _stateStore.StateChanged -= OnRecordingStateChanged;
+            _keyboardHookService.KeyDown -= OnKeyDown;
             _keyboardHookService.Stop();
             _isStarted = false;
         }
@@ -140,7 +142,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             TransitionTo(UiRecordingState.Starting);
             try
             {
-                var started = await _recordingCommandUseCase.StartAsync();
+                var started = await _recordingUseCase.StartAsync();
                 if (!started)
                 {
                     TransitionTo(UiRecordingState.ReadyToRecord);
@@ -210,7 +212,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             _toggleHotkey = NormalizeHotkey(settings.ToggleRecordingHotkey);
         }
 
-        private async void OnGlobalKeyDown(string keyName)
+        private async void OnKeyDown(string keyName)
         {
             if (_isHotkeyHandling || string.IsNullOrWhiteSpace(_toggleHotkey))
             {

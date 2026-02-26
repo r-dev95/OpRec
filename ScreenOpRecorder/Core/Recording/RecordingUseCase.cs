@@ -10,41 +10,41 @@ using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
 
-namespace ScreenOpRecorder.Core.Recording.UseCases
+namespace ScreenOpRecorder.Core.Recording
 {
-    public sealed class RecordingWorkflowService : IRecordingWorkflowService, IDisposable
+    public sealed class RecordingUseCase : IRecordingUseCase, IDisposable
     {
-        private readonly ILogger<RecordingWorkflowService> _logger;
+        private readonly ILogger<RecordingUseCase> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly IRecordingSessionStore _stateStore;
-        private readonly IRecordingService _recordingEngine;
+        private readonly IRecordingService _recordingService;
         private readonly IFolderOpenService _outputFolderOpener;
         private readonly IDisposable _zoomSubscription;
 
-        public RecordingWorkflowService(
-            ILogger<RecordingWorkflowService> logger,
+        public RecordingUseCase(
+            ILogger<RecordingUseCase> logger,
             IUserSettingsService settingsService,
             IRecordingSessionStore stateStore,
-            IRecordingService recordingEngine,
+            IRecordingService recordingService,
             IFolderOpenService outputFolderOpener,
             IEventBus eventBus)
         {
             _logger = logger;
             _settingsService = settingsService;
             _stateStore = stateStore;
-            _recordingEngine = recordingEngine;
+            _recordingService = recordingService;
             _outputFolderOpener = outputFolderOpener;
             _zoomSubscription = eventBus.Subscribe<ZoomAreaChangedEvent>(OnZoomAreaChanged);
         }
 
         public bool SelectCaptureArea(ScreenRect captureArea)
         {
-            if (_stateStore.Current.IsRecording)
+            if (!captureArea.HasArea || _stateStore.Current.IsRecording)
             {
                 return false;
             }
 
-            var selected = _recordingEngine.TrySelectCaptureArea(captureArea);
+            var selected = _recordingService.TrySelectCaptureArea(captureArea);
             if (!selected)
             {
                 return false;
@@ -52,7 +52,8 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
 
             _stateStore.SetSelection(captureArea);
 
-            _logger.LogDebug("Selected Rect: {} x {} - {} x {}", captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
+            _logger.LogDebug("Selected Rect: {X} x {Y} - {Width} x {Height}",
+                captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
             return true;
         }
 
@@ -63,7 +64,7 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
                 return false;
             }
 
-            var started = await _recordingEngine.StartAsync();
+            var started = await _recordingService.StartAsync();
             if (!started)
             {
                 return false;
@@ -75,7 +76,7 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
 
         public async Task StopAsync()
         {
-            await _recordingEngine.StopAsync();
+            await _recordingService.StopAsync();
             _stateStore.ClearSelection();
 
             if (_settingsService.Current.OpenOutputFolderAfterRecording)
@@ -96,7 +97,7 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
 
         private async Task OpenOutputFolderAsync()
         {
-            var path = _recordingEngine.LastOutputDirPath;
+            var path = _recordingService.LastOutputDirPath;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await _outputFolderOpener.OpenAsync(path);
