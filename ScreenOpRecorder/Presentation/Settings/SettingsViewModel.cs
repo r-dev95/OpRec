@@ -14,7 +14,7 @@ namespace ScreenOpRecorder.Presentation.Settings
         private readonly IUserSettingsService _settingsService;
 
         [ObservableProperty]
-        public partial string OutputFolderPath { get; set; } = "";
+        public partial string OutputDirPath { get; set; } = "";
 
         [ObservableProperty]
         public partial int RecordingFps { get; set; } = UserSettingsConstraints.Fps30;
@@ -67,11 +67,11 @@ namespace ScreenOpRecorder.Presentation.Settings
             Load(_settingsService.Current);
         }
 
-        public void SetOutputFolderPath(string path)
+        public void SetOutputDirPath(string path)
         {
             if (!string.IsNullOrWhiteSpace(path))
             {
-                OutputFolderPath = path;
+                OutputDirPath = path;
             }
         }
 
@@ -80,7 +80,7 @@ namespace ScreenOpRecorder.Presentation.Settings
         {
             var settings = new UserSettings
             {
-                OutputFolderPath = OutputFolderPath,
+                OutputDirPath = OutputDirPath,
                 RecordingFps = RecordingFps,
                 QualityPreset = QualityPreset,
                 EnableAudioCapture = EnableAudioCapture,
@@ -109,7 +109,7 @@ namespace ScreenOpRecorder.Presentation.Settings
 
         private void Load(UserSettings settings)
         {
-            OutputFolderPath = settings.OutputFolderPath;
+            OutputDirPath = settings.OutputDirPath;
             RecordingFps = settings.RecordingFps;
             QualityPreset = settings.QualityPreset;
             EnableAudioCapture = settings.EnableAudioCapture;

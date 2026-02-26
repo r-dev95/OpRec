@@ -40,7 +40,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0"
-                                         Text="{x:Bind ViewModel.OutputFolderPath, Mode=TwoWay}" />
+                                         Text="{x:Bind ViewModel.OutputDirPath, Mode=TwoWay}" />
                                 <Button Grid.Column="1"
                                         Content="Browse"
                                         Click="OnClickBrowseFolder" />

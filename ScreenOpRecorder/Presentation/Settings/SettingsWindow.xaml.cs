@@ -52,7 +52,7 @@ namespace ScreenOpRecorder.Presentation.Settings
             var folder = await picker.PickSingleFolderAsync();
             if (folder != null)
             {
-                ViewModel.SetOutputFolderPath(folder.Path);
+                ViewModel.SetOutputDirPath(folder.Path);
             }
         }
 

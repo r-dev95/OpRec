@@ -3,53 +3,51 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using ScreenOpRecorder.Core.Settings.Ports;
+
 using Windows.Media;
 using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
-using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
     public sealed class AudioCaptureService : IAudioCaptureService
     {
         private readonly ILogger<AudioCaptureService> _logger;
+        private readonly IUserSettingsService _settingsService;
+        private readonly IFileManager _fileManager;
+
         private MediaCapture? _mediaCapture;
         private LowLagMediaRecording? _recording;
+
         private bool _isRecording;
 
-        public AudioCaptureService(ILogger<AudioCaptureService> logger)
+        public AudioCaptureService(
+            ILogger<AudioCaptureService> logger,
+            IUserSettingsService settingsService,
+            IFileManager fileManager)
         {
             _logger = logger;
+            _settingsService = settingsService;
+            _fileManager = fileManager;
         }
 
-        public async Task<bool> StartAsync(StorageFile outputFile)
+        public async Task<bool> StartAsync()
         {
             if (_isRecording)
             {
-                return true;
+                return false;
             }
 
             try
             {
-                _mediaCapture = new MediaCapture();
-                await _mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
-                {
-                    StreamingCaptureMode = StreamingCaptureMode.Audio,
-                    AudioProcessing = AudioProcessing.Default,
-                    MediaCategory = MediaCategory.Media
-                });
-
-                _recording = await _mediaCapture.PrepareLowLagRecordToStorageFileAsync(
-                    MediaEncodingProfile.CreateM4a(AudioEncodingQuality.Auto),
-                    outputFile);
-
-                await _recording.StartAsync();
+                await StartCaptureAsync();
                 _isRecording = true;
+
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogWarning(ex, "Audio capture failed to start. Continue with video only.");
                 await StopAsync();
                 return false;
             }
@@ -57,41 +55,53 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
         public async Task StopAsync()
         {
-            if (_recording != null)
+            if (!_isRecording)
             {
-                try
-                {
-                    if (_isRecording)
-                    {
-                        await _recording.StopAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "Audio stop failed.");
-                }
-                finally
-                {
-                    try
-                    {
-                        await _recording.FinishAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogDebug(ex, "Audio finish failed.");
-                    }
-                    _recording = null;
-                }
+                Creanup();
+                _isRecording = false;
+                return;
             }
 
-            _mediaCapture?.Dispose();
-            _mediaCapture = null;
-            _isRecording = false;
+            try
+            {
+                await _recording?.StopAsync();
+            }
+            finally
+            {
+                await _recording?.FinishAsync();
+                Creanup();
+                _isRecording = false;
+            }
         }
 
         public void Dispose()
         {
             _ = StopAsync();
+        }
+
+        private async Task StartCaptureAsync()
+        {
+            _mediaCapture = new MediaCapture();
+            await _mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
+            {
+                StreamingCaptureMode = StreamingCaptureMode.Audio,
+                AudioProcessing = AudioProcessing.Default,
+                MediaCategory = MediaCategory.Media
+            });
+
+            _recording = await _mediaCapture.PrepareLowLagRecordToStorageFileAsync(
+                MediaEncodingProfile.CreateM4a(AudioEncodingQuality.Auto),
+                _fileManager.FileList.AudioFilePath);
+
+            await _recording.StartAsync();
+        }
+
+        private void Creanup()
+        {
+            _mediaCapture?.Dispose();
+            _mediaCapture = null;
+
+            _recording = null;
         }
     }
 }

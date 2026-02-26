@@ -6,7 +6,7 @@ namespace ScreenOpRecorder.Core.Recording.Ports
 {
     public interface IRecordingService
     {
-        string? LastOutputFolderPath { get; }
+        string? LastOutputDirPath { get; }
 
         bool TrySelectCaptureArea(ScreenRect captureArea);
 

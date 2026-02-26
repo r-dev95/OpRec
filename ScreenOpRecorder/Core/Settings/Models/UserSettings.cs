@@ -2,7 +2,7 @@ namespace ScreenOpRecorder.Core.Settings.Models
 {
     public class UserSettings
     {
-        public string OutputFolderPath { get; set; } = "";
+        public string OutputDirPath { get; set; } = "";
 
         public int RecordingFps { get; set; } = UserSettingsConstraints.Fps30;
 

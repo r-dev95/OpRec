@@ -74,8 +74,9 @@ namespace ScreenOpRecorder
 
                     // Infrastructure.Recording
                     services.AddSingleton<IRecordingService, RecordingService>();
+                    services.AddSingleton<IFileManager, FileManager>();
+                    services.AddSingleton<IDisplayCaptureService, DisplayCaptureService>();
                     services.AddSingleton<IAudioCaptureService, AudioCaptureService>();
-                    services.AddSingleton<IOutputCoordinator, OutputCoordinator>();
                     services.AddSingleton<IMediaFileMerger, MediaFileMerger>();
 
                     // Infrastructure.Settings

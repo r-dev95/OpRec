@@ -96,7 +96,7 @@ namespace ScreenOpRecorder.Core.Recording.UseCases
 
         private async Task OpenOutputFolderAsync()
         {
-            var path = _recordingEngine.LastOutputFolderPath;
+            var path = _recordingEngine.LastOutputDirPath;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await _outputFolderOpener.OpenAsync(path);

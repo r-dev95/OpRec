@@ -83,7 +83,7 @@ namespace ScreenOpRecorder.Infrastructure.Settings
 
         private static UserSettings Normalize(UserSettings settings)
         {
-            var outputPath = settings.OutputFolderPath;
+            var outputPath = settings.OutputDirPath;
             if (string.IsNullOrWhiteSpace(outputPath))
             {
                 var videosPath = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
@@ -127,7 +127,7 @@ namespace ScreenOpRecorder.Infrastructure.Settings
 
             return new UserSettings
             {
-                OutputFolderPath = outputPath,
+                OutputDirPath = outputPath,
                 RecordingFps = fps,
                 QualityPreset = settings.QualityPreset,
                 EnableAudioCapture = settings.EnableAudioCapture,

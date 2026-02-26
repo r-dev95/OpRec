@@ -1,0 +1,299 @@
+using System;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Graphics.Canvas;
+
+using ScreenOpRecorder.Common.Helpers;
+using ScreenOpRecorder.Core.Recording.Ports;
+using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Domain.ValueObjects;
+using ScreenOpRecorder.Infrastructure.Recording.Models;
+
+using Windows.Foundation;
+using Windows.Graphics.Capture;
+using Windows.Graphics.DirectX.Direct3D11;
+using Windows.Media.Core;
+using Windows.Media.MediaProperties;
+using Windows.Media.Transcoding;
+using Windows.Storage;
+
+namespace ScreenOpRecorder.Infrastructure.Recording
+{
+    public sealed class DisplayCaptureService : IDisplayCaptureService
+    {
+        private readonly ILogger<DisplayCaptureService> _logger;
+        private readonly IUserSettingsService _settingsService;
+        private readonly IMouseHookService _mouseHookService;
+        private readonly IKeyboardHookService _keyboardHookService;
+        private readonly IFileManager _fileManager;
+
+        private CompositionManager? _compositionManager;
+
+        private CanvasDevice? _device;
+        private CanvasRenderTarget? _renderTarget;
+        private CanvasBitmap? _canvasBitmap;
+
+        private GraphicsCaptureItem? _item;
+        private Direct3D11CaptureFramePool? _framePool;
+        private GraphicsCaptureSession? _session;
+
+        private MediaStreamSource? _mediaStreamSource;
+        private VideoStreamDescriptor? _videoDescriptor;
+        private MediaEncodingProfile? _profile;
+        private MediaTranscoder? _transcoder;
+
+        private Rect _captureArea;
+
+        private RecordingState _state = RecordingState.Waiting;
+
+        private Task? _recordingTask;
+        private DateTimeOffset _startTime;
+        public bool HasSelectedCaptureArea => _item != null;
+
+        public event Action<RecordingState>? RecordingStateChanged;
+        public event Action<ScreenRect>? ZoomAreaChanged;
+
+        public DisplayCaptureService(
+            ILogger<DisplayCaptureService> logger,
+            IUserSettingsService settingsService,
+            IMouseHookService mouseHookService,
+            IKeyboardHookService keyboardHookService,
+            IFileManager fileManager)
+        {
+            _logger = logger;
+            _settingsService = settingsService;
+            _mouseHookService = mouseHookService;
+            _keyboardHookService = keyboardHookService;
+            _fileManager = fileManager;
+        }
+
+        public bool TrySelectCaptureArea(ScreenRect captureArea)
+        {
+            if (_state != RecordingState.Waiting)
+            {
+                return false;
+            }
+
+            var captureItem = WindowHelper.CreateForMonitor(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
+            if (captureItem == null)
+            {
+                return false;
+            }
+
+            _item = captureItem;
+            _captureArea = new Rect(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
+
+            ChangeState(RecordingState.Ready);
+            return true;
+        }
+
+        public async Task<bool> StartAsync()
+        {
+            if (_state != RecordingState.Ready || _item == null)
+            {
+                if (_state != RecordingState.Ready)
+                {
+                    _logger.LogWarning("Recording state must be Ready.");
+                }
+
+                if (_item == null)
+                {
+                    _logger.LogWarning("No capture area selected.");
+                }
+
+                return false;
+            }
+
+            ChangeState(RecordingState.Starting);
+            Setup();
+
+            try
+            {
+                await StartCaptureAsync();
+                ChangeState(RecordingState.Recording);
+            }
+            catch
+            {
+                Cleanup();
+                ChangeState(RecordingState.Ready);
+                throw;
+            }
+
+            return true;
+        }
+
+        public async Task StopAsync()
+        {
+            if (_state != RecordingState.Recording)
+            {
+                Cleanup();
+                ChangeState(RecordingState.Waiting);
+                return;
+            }
+
+            ChangeState(RecordingState.Stopping);
+            try
+            {
+                if (_recordingTask != null)
+                {
+                    await _recordingTask;
+                }
+            }
+            finally
+            {
+                Cleanup();
+                ChangeState(RecordingState.Waiting);
+            }
+        }
+
+        public void Dispose()
+        {
+            Cleanup();
+        }
+
+        private void Setup()
+        {
+            var settings = _settingsService.Current;
+
+            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea, settings.ZoomFactor);
+            _compositionManager.ZoomChanged += OnZoomChanged;
+
+            _device = new CanvasDevice();
+
+            var videoProperties = VideoEncodingProperties.CreateUncompressed(
+                MediaEncodingSubtypes.Bgra8,
+                (uint)_captureArea.Width,
+                (uint)_captureArea.Height);
+            _videoDescriptor = new VideoStreamDescriptor(videoProperties);
+
+            _mediaStreamSource = new MediaStreamSource(_videoDescriptor)
+            {
+                BufferTime = TimeSpan.FromSeconds(0)
+            };
+            _mediaStreamSource.SampleRequested += OnSampleRequested;
+
+            _profile = MediaEncodingProfile.CreateMp4(ToVideoQuality(settings.QualityPreset));
+            _profile.Video.FrameRate.Numerator = (uint)settings.RecordingFps;
+            _profile.Video.FrameRate.Denominator = 1;
+            _transcoder = new MediaTranscoder();
+        }
+
+        private async Task StartCaptureAsync()
+        {
+            _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
+                _device,
+                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                2,
+                _item!.Size);
+            _framePool.FrameArrived += OnFrameArrived;
+
+            _session = _framePool.CreateCaptureSession(_item);
+            _session.StartCapture();
+
+            _startTime = DateTimeOffset.Now;
+
+            var videoFile = _fileManager.FileList.VideoFilePath
+                ?? throw new InvalidOperationException("Video output file is not prepared.");
+            var fileOp = await videoFile.OpenAsync(FileAccessMode.ReadWrite);
+            var prepareOp = await _transcoder!.PrepareMediaStreamSourceTranscodeAsync(_mediaStreamSource, fileOp, _profile);
+            _recordingTask = prepareOp.TranscodeAsync().AsTask();
+        }
+
+        private void Cleanup()
+        {
+            _mediaStreamSource?.SampleRequested -= OnSampleRequested;
+            _mediaStreamSource = null;
+            _videoDescriptor = null;
+
+            _compositionManager?.ZoomChanged -= OnZoomChanged;
+            _compositionManager?.Dispose();
+            _compositionManager = null;
+
+            _framePool?.FrameArrived -= OnFrameArrived;
+            _framePool?.Dispose();
+            _framePool = null;
+
+            _session?.Dispose();
+            _session = null;
+
+            _renderTarget?.Dispose();
+            _renderTarget = null;
+
+            _canvasBitmap?.Dispose();
+            _canvasBitmap = null;
+
+            _device = null;
+            _profile = null;
+            _transcoder = null;
+            _recordingTask = null;
+        }
+
+        private void OnSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
+        {
+            if (_state == RecordingState.Stopping || _canvasBitmap == null)
+            {
+                args.Request.Sample = null;
+                return;
+            }
+
+            if (_renderTarget == null)
+            {
+                _renderTarget = new CanvasRenderTarget(_device, (float)_captureArea.Width, (float)_captureArea.Height, 96);
+            }
+
+            _compositionManager!.ComposeFrame(_renderTarget, _canvasBitmap);
+
+            try
+            {
+                var surface = (IDirect3DSurface)_renderTarget;
+                var timeStamp = DateTimeOffset.Now - _startTime;
+                args.Request.Sample = MediaStreamSample.CreateFromDirect3D11Surface(surface, timeStamp);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug("Sample Error: {}", ex.Message);
+            }
+        }
+
+        private void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
+        {
+            using var frame = sender.TryGetNextFrame();
+            if (frame == null)
+            {
+                return;
+            }
+
+            _canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
+        }
+
+        private void OnZoomChanged(Rect rect)
+        {
+            ZoomAreaChanged?.Invoke(new ScreenRect(rect.X, rect.Y, rect.Width, rect.Height));
+        }
+
+        private void ChangeState(RecordingState state)
+        {
+            if (_state == state)
+            {
+                return;
+            }
+
+            _logger.LogDebug("Display capture state changed: {} -> {}", _state, state);
+            _state = state;
+            RecordingStateChanged?.Invoke(_state);
+        }
+
+        private static VideoEncodingQuality ToVideoQuality(QualityPreset preset)
+        {
+            return preset switch
+            {
+                QualityPreset.Low => VideoEncodingQuality.Wvga,
+                QualityPreset.Medium => VideoEncodingQuality.HD720p,
+                _ => VideoEncodingQuality.HD1080p
+            };
+        }
+    }
+}
+

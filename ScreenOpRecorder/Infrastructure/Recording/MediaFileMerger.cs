@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Core.Settings.Ports;
 
-using Windows.Media.Core;
 using Windows.Media.Editing;
 using Windows.Media.MediaProperties;
 using Windows.Media.Transcoding;
@@ -15,27 +15,25 @@ namespace ScreenOpRecorder.Infrastructure.Recording
     public sealed class MediaFileMerger : IMediaFileMerger
     {
         private readonly ILogger<MediaFileMerger> _logger;
+        private readonly IUserSettingsService _settingsService;
+        private readonly IFileManager _fileManager;
 
-        public MediaFileMerger(ILogger<MediaFileMerger> logger)
+        public MediaFileMerger(ILogger<MediaFileMerger> logger, IUserSettingsService settingsService, IFileManager fileManager)
         {
             _logger = logger;
+            _settingsService = settingsService;
+            _fileManager = fileManager;
         }
 
-        public async Task MergeIfNeededAsync(OutputArtifacts artifacts, QualityPreset qualityPreset, int recordingFps)
+        public async Task MergeAsync()
         {
-            if (!artifacts.CaptureAudio)
-            {
-                artifacts.Reset();
-                return;
-            }
+            var finalOutputFile = _fileManager.FileList.FinalFilePath;
+            var videoOutputFile = _fileManager.FileList.VideoFilePath;
+            var audioOutputFile = _fileManager.FileList.AudioFilePath;
 
-            var videoOutputFile = artifacts.VideoOutputFile;
-            var audioOutputFile = artifacts.AudioOutputFile;
-            var finalOutputFile = artifacts.FinalOutputFile;
-
-            if (videoOutputFile == null || audioOutputFile == null || finalOutputFile == null)
+            if (finalOutputFile == null || videoOutputFile == null || audioOutputFile == null)
             {
-                artifacts.Reset();
+                _fileManager.Reset();
                 return;
             }
 
@@ -47,8 +45,8 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                 composition.Clips.Add(videoClip);
                 composition.BackgroundAudioTracks.Add(audioTrack);
 
-                var profile = MediaEncodingProfile.CreateMp4(ToVideoQuality(qualityPreset));
-                profile.Video.FrameRate.Numerator = (uint)recordingFps;
+                var profile = MediaEncodingProfile.CreateMp4(ToVideoQuality(_settingsService.Current.QualityPreset));
+                profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.RecordingFps;
                 profile.Video.FrameRate.Denominator = 1;
 
                 var result = await composition.RenderToFileAsync(
@@ -66,7 +64,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Audio merge failed. Keeping video-only output.");
                 if (videoOutputFile.Path != finalOutputFile.Path)
                 {
                     await videoOutputFile.CopyAndReplaceAsync(finalOutputFile);
@@ -79,10 +76,11 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                 catch
                 {
                 }
+                _logger.LogWarning(ex, "Audio merge failed. Keeping video-only output.");
             }
             finally
             {
-                artifacts.Reset();
+                _fileManager.Reset();
             }
         }
 
@@ -97,3 +95,4 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         }
     }
 }
+
