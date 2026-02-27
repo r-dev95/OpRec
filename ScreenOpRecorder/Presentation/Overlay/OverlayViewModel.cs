@@ -32,14 +32,6 @@ namespace ScreenOpRecorder.Presentation.Overlay
         private bool _isRecording;
         private bool _isSettingsSubscribed;
 
-        public bool EnableClickHighlight { get; private set; } = true;
-        public string ClickHighlightColor { get; private set; } = UserSettingsConstraints.DefaultClickHighlightColor;
-        public double ClickHighlightSize { get; private set; } = UserSettingsConstraints.DefaultClickHighlightSize;
-
-        public event Action? SetRecordingWindow;
-        public event Action? SetNotRecordingWindow;
-        public event Action<double, double, bool>? RippleRequested;
-
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(PointerPressedCommand))]
         [NotifyCanExecuteChangedFor(nameof(PointerMovedCommand))]
@@ -54,6 +46,12 @@ namespace ScreenOpRecorder.Presentation.Overlay
 
         [ObservableProperty]
         public partial MinimapState Minimap { get; set; } = new();
+
+        public ClickHighlightSettings ClickHighlight = ClickHighlightSettings.Default;
+
+        public event Action? SetRecordingWindow;
+        public event Action? SetNotRecordingWindow;
+        public event Action<double, double, bool>? RippleRequested;
 
         public OverlayViewModel(
             ILogger<OverlayViewModel> logger,
@@ -228,9 +226,10 @@ namespace ScreenOpRecorder.Presentation.Overlay
 
         private void ApplySettings(UserSettings settings)
         {
-            EnableClickHighlight = settings.EnableClickHighlight;
-            ClickHighlightColor = settings.ClickHighlightColor;
-            ClickHighlightSize = settings.ClickHighlightSize;
+            ClickHighlight = new ClickHighlightSettings(
+                settings.EnableClickHighlight,
+                settings.ClickHighlightColor,
+                settings.ClickHighlightSize);
             InputFeedback.ApplySettings(settings);
             if (!settings.EnableMinimap)
             {

@@ -78,15 +78,16 @@ namespace ScreenOpRecorder.Presentation.Overlay
 
         private void ShowRipple(double x, double y, bool isDouble)
         {
-            if (!ViewModel.EnableClickHighlight)
+            var clickHighlight = ViewModel.ClickHighlight;
+            if (!clickHighlight.Enabled)
             {
                 return;
             }
 
-            var size = ViewModel.ClickHighlightSize;
+            var size = clickHighlight.Size;
             var stroke = isDouble
                 ? Color.FromArgb(255, 255, 69, 0)
-                : ParseColor(ViewModel.ClickHighlightColor, Color.FromArgb(255, 0, 255, 255));
+                : ParseColor(clickHighlight.ColorHex, Color.FromArgb(255, 0, 255, 255));
             var strokeThickness = Math.Max(1.0, size / 10.0);
             const int duration = 500;
 
