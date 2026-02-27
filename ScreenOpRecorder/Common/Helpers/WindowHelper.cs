@@ -82,10 +82,21 @@ namespace ScreenOpRecorder.Common.Helpers
             }
         }
 
-        public static void MoveAndResize(Window window, RectInt32 rectInt32)
+        public static void Move(Window window, int x, int y)
         {
             var appWindow = GetAppWindow(window);
-            appWindow?.MoveAndResize(rectInt32);
+            appWindow?.Move(new PointInt32(x, y));
+        }
+
+        public static void Resize(Window window, int width, int height)
+        {
+            var appWindow = GetAppWindow(window);
+            appWindow?.Resize(new SizeInt32(width, height));
+        }
+        public static void MoveAndResize(Window window, int x, int y, int width, int height)
+        {
+            var appWindow = GetAppWindow(window);
+            appWindow?.MoveAndResize(new RectInt32(x, y, width, height));
         }
 
         public static double GetScaleFactor(Window window)

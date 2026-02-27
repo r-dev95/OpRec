@@ -3,22 +3,24 @@
     x:Class="ScreenOpRecorder.Presentation.Settings.SettingsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ScreenOpRecorder"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:settings="using:ScreenOpRecorder.Core.Settings.Models"
     mc:Ignorable="d"
     Title="Settings">
 
-    <Grid x:Name="RootGrid">
+    <Grid x:Name="RootGrid"
+          MinWidth="600"
+          MinHeight="500">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <muxc:TabView Grid.Row="0"
-                      IsAddTabButtonVisible="False">
+        <TabView Grid.Row="0"
+                 IsAddTabButtonVisible="False">
             <TabView.Resources>
                 <Style TargetType="TabViewItem">
                     <Setter Property="IsClosable"
@@ -26,7 +28,7 @@
                 </Style>
             </TabView.Resources>
             
-            <muxc:TabViewItem Header="Recording">
+            <TabViewItem Header="Recording">
                 <ScrollViewer>
                     <StackPanel Padding="16"
                                 Spacing="12">
@@ -67,9 +69,9 @@
                         </controls:SettingsCard>
                     </StackPanel>
                 </ScrollViewer>
-            </muxc:TabViewItem>
+            </TabViewItem>
 
-            <muxc:TabViewItem Header="UI">
+            <TabViewItem Header="UI">
                 <ScrollViewer>
                     <StackPanel Padding="16"
                                 Spacing="12">
@@ -121,9 +123,9 @@
                         </controls:SettingsCard>
                     </StackPanel>
                 </ScrollViewer>
-            </muxc:TabViewItem>
+            </TabViewItem>
 
-            <muxc:TabViewItem Header="Hotkey">
+            <TabViewItem Header="Hotkey">
                 <ScrollViewer>
                     <StackPanel Padding="16"
                                 Spacing="12">
@@ -133,8 +135,8 @@
                         </controls:SettingsCard>
                     </StackPanel>
                 </ScrollViewer>
-            </muxc:TabViewItem>
-        </muxc:TabView>
+            </TabViewItem>
+        </TabView>
 
         <Border Grid.Row="1"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"

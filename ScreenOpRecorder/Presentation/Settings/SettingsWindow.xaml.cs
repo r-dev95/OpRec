@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml;
 using ScreenOpRecorder.Common.Helpers;
 
 using Windows.Foundation;
-using Windows.Graphics;
 using Windows.Storage.Pickers;
 
 using WinRT.Interop;
@@ -28,7 +27,7 @@ namespace ScreenOpRecorder.Presentation.Settings
             Closed += OnClosed;
             ViewModel.CloseRequested += OnCloseRequested;
 
-            //SetWindow();
+            SetWindow();
         }
 
         private void OnClosed(object sender, WindowEventArgs args)
@@ -61,15 +60,15 @@ namespace ScreenOpRecorder.Presentation.Settings
             RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             _logger.LogDebug("RootGrid desired size width: {}, height: {}", RootGrid.DesiredSize.Width, RootGrid.DesiredSize.Height);
             var scalingFactor = WindowHelper.GetScaleFactor(this);
-            var width = DpiHelper.ToPhysicalInt(RootGrid.DesiredSize.Width, scalingFactor);
-            var height = DpiHelper.ToPhysicalInt(RootGrid.DesiredSize.Height, scalingFactor);
+            var width = DpiHelper.ToPhysicalInt(RootGrid.DesiredSize.Width + 50, scalingFactor);
+            var height = DpiHelper.ToPhysicalInt(RootGrid.DesiredSize.Height + 50, scalingFactor);
             _logger.LogDebug("Calculated window size width: {}, height: {}", width, height);
 
             var displayArea = WindowHelper.GetDisplayArea(this, DisplayAreaFallback.Nearest);
             var screenBounds = displayArea.WorkArea;
             int x = screenBounds.X + (screenBounds.Width - width) / 2;
             int y = screenBounds.Y + 150;
-            WindowHelper.MoveAndResize(this, new RectInt32(x, y, width, height));
+            WindowHelper.MoveAndResize(this, x, y, width, height);
         }
     }
 }

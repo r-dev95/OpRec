@@ -10,7 +10,6 @@ using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Presentation.Settings;
 
 using Windows.Foundation;
-using Windows.Graphics;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -106,7 +105,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             var screenBounds = displayArea.WorkArea;
             int x = screenBounds.X + (screenBounds.Width - width) / 2;
             int y = screenBounds.Y + 20;
-            WindowHelper.MoveAndResize(_mainWindow, new RectInt32(x, y, width, height));
+            WindowHelper.MoveAndResize(_mainWindow, x, y, width, height);
         }
     }
 }
