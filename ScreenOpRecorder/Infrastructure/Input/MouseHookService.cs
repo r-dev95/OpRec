@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Recording.Ports;
+using ScreenOpRecorder.Core.Input.Ports;
 
 namespace ScreenOpRecorder.Infrastructure.Input
 {

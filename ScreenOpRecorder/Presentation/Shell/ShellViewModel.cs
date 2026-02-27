@@ -6,8 +6,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 
+using ScreenOpRecorder.Core.Input;
 using ScreenOpRecorder.Core.Recording;
-using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Settings.Ports;
@@ -34,7 +34,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         private readonly ILogger<ShellViewModel> _logger;
         private readonly IUserSettingsService _settingsService;
-        private readonly IKeyboardHookService _keyboardHookService;
+        private readonly IInputHookUseCase _inputHookUseCase;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IRecordingUseCase _recordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
@@ -58,13 +58,13 @@ namespace ScreenOpRecorder.Presentation.Shell
         public ShellViewModel(
             ILogger<ShellViewModel> logger,
             IUserSettingsService settingsService,
-            IKeyboardHookService keyboardHookService,
+            IInputHookUseCase inputHookUseCase,
             IRecordingSessionStore stateStore,
             IRecordingUseCase recordingUseCase)
         {
             _logger = logger;
             _settingsService = settingsService;
-            _keyboardHookService = keyboardHookService;
+            _inputHookUseCase = inputHookUseCase;
             _stateStore = stateStore;
             _recordingUseCase = recordingUseCase;
 
@@ -89,8 +89,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             _settingsService.SettingsChanged += OnSettingsChanged;
             _stateStore.StateChanged += OnRecordingStateChanged;
-            _keyboardHookService.KeyDown += OnKeyDown;
-            _keyboardHookService.Start();
+            _inputHookUseCase.KeyDown += OnKeyDown;
             _isStarted = true;
         }
 
@@ -105,8 +104,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             _settingsService.SettingsChanged -= OnSettingsChanged;
             _stateStore.StateChanged -= OnRecordingStateChanged;
-            _keyboardHookService.KeyDown -= OnKeyDown;
-            _keyboardHookService.Stop();
+            _inputHookUseCase.KeyDown -= OnKeyDown;
             _isStarted = false;
         }
 

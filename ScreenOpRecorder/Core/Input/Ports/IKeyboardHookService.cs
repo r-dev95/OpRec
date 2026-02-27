@@ -1,6 +1,6 @@
 using System;
 
-namespace ScreenOpRecorder.Core.Recording.Ports
+namespace ScreenOpRecorder.Core.Input.Ports
 {
     public interface IKeyboardHookService
     {
@@ -11,3 +11,4 @@ namespace ScreenOpRecorder.Core.Recording.Ports
         void Stop();
     }
 }
+

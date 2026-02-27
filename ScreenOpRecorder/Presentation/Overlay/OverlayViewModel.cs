@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 
 using ScreenOpRecorder.Common.Helpers;
+using ScreenOpRecorder.Core.Input;
 using ScreenOpRecorder.Core.Recording;
-using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Settings.Ports;
@@ -22,8 +22,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
     {
         private readonly ILogger<OverlayViewModel> _logger;
         private readonly IUserSettingsService _settingsService;
-        private readonly IMouseHookService _mouseHookService;
-        private readonly IKeyboardHookService _keyboardHookService;
+        private readonly IInputHookUseCase _inputHookUseCase;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IRecordingUseCase _recordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
@@ -56,16 +55,14 @@ namespace ScreenOpRecorder.Presentation.Overlay
         public OverlayViewModel(
             ILogger<OverlayViewModel> logger,
             IUserSettingsService settingsService,
-            IMouseHookService mouseHookService,
-            IKeyboardHookService keyboardHookService,
+            IInputHookUseCase inputHookUseCase,
             IRecordingSessionStore stateStore,
             IRecordingUseCase recordingUseCase)
         {
             _logger = logger;
             _stateStore = stateStore;
             _settingsService = settingsService;
-            _mouseHookService = mouseHookService;
-            _keyboardHookService = keyboardHookService;
+            _inputHookUseCase = inputHookUseCase;
             _recordingUseCase = recordingUseCase;
 
             try
@@ -87,11 +84,8 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 _settingsService.SettingsChanged += OnSettingsChanged;
                 _isSettingsSubscribed = true;
             }
-            _mouseHookService.MouseClicked += OnMouseClicked;
-            _keyboardHookService.KeyDown += OnKeyDown;
-
-            _mouseHookService.Start();
-            _keyboardHookService.Start();
+            _inputHookUseCase.MouseClicked += OnMouseClicked;
+            _inputHookUseCase.KeyDown += OnKeyDown;
 
             CanSubmit = true;
             Selection.ClearSelection();
@@ -105,11 +99,8 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 _settingsService.SettingsChanged -= OnSettingsChanged;
                 _isSettingsSubscribed = false;
             }
-            _mouseHookService.MouseClicked -= OnMouseClicked;
-            _keyboardHookService.KeyDown -= OnKeyDown;
-
-            _mouseHookService.Stop();
-            _keyboardHookService.Stop();
+            _inputHookUseCase.MouseClicked -= OnMouseClicked;
+            _inputHookUseCase.KeyDown -= OnKeyDown;
         }
 
         public void SetScaleFactor(double scaleFactor)
