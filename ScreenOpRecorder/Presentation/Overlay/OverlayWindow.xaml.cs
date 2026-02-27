@@ -1,15 +1,8 @@
-using System;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Xaml.Shapes;
 
 using ScreenOpRecorder.Common.Helpers;
-
-using Windows.UI;
+using ScreenOpRecorder.Presentation.Overlay.Helpers;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,12 +16,14 @@ namespace ScreenOpRecorder.Presentation.Overlay
     {
         private readonly ILogger _logger;
         private readonly OverlayViewModel ViewModel;
+        private readonly RipplePresenter _ripplePresenter;
 
         public OverlayWindow(ILogger<OverlayWindow> logger, OverlayViewModel viewModel)
         {
             InitializeComponent();
             _logger = logger;
             ViewModel = viewModel;
+            _ripplePresenter = new RipplePresenter(OverlayCanvas);
 
             SetWindow();
 
@@ -66,91 +61,12 @@ namespace ScreenOpRecorder.Presentation.Overlay
             ViewModel.ExitRecordingUiState();
         }
 
-
         private void OnRippleRequested(double x, double y, bool isDouble)
         {
-            // Hookイベントは別スレッドから来るため、UIスレッドへディスパッチ
             DispatcherQueue.TryEnqueue(() =>
             {
-                ShowRipple(x, y, isDouble);
+                _ripplePresenter.Show(x, y, ViewModel.ClickHighlight, isDouble);
             });
-        }
-
-        private void ShowRipple(double x, double y, bool isDouble)
-        {
-            var clickHighlight = ViewModel.ClickHighlight;
-            if (!clickHighlight.Enabled)
-            {
-                return;
-            }
-
-            var size = clickHighlight.Size;
-            var stroke = isDouble
-                ? Color.FromArgb(255, 255, 69, 0)
-                : ParseColor(clickHighlight.ColorHex, Color.FromArgb(255, 0, 255, 255));
-            var strokeThickness = Math.Max(1.0, size / 10.0);
-            const int duration = 500;
-
-            var ripple = new Ellipse
-            {
-                Width = size,
-                Height = size,
-                Stroke = new SolidColorBrush(stroke),
-                StrokeThickness = strokeThickness,
-                RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
-                RenderTransform = new ScaleTransform { ScaleX = 1, ScaleY = 1 }
-            };
-
-            Canvas.SetLeft(ripple, x - 0.5 * size);
-            Canvas.SetTop(ripple, y - 0.5 * size);
-            OverlayCanvas.Children.Add(ripple);
-
-            // アニメーションの定義
-            var sb = new Storyboard();
-
-            // スケール拡大
-            var scaleXAnimation = new DoubleAnimation { To = 3, Duration = TimeSpan.FromMilliseconds(duration) };
-            Storyboard.SetTarget(scaleXAnimation, ripple.RenderTransform);
-            Storyboard.SetTargetProperty(scaleXAnimation, "ScaleX");
-
-            var scaleYAnimation = new DoubleAnimation { To = 3, Duration = TimeSpan.FromMilliseconds(duration) };
-            Storyboard.SetTarget(scaleYAnimation, ripple.RenderTransform);
-            Storyboard.SetTargetProperty(scaleYAnimation, "ScaleY");
-
-            // 不透明度を下げる（フェードアウト）
-            var opacityAnimation = new DoubleAnimation { To = 0, Duration = TimeSpan.FromMilliseconds(duration) };
-            Storyboard.SetTarget(opacityAnimation, ripple);
-            Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
-
-            sb.Children.Add(scaleXAnimation);
-            sb.Children.Add(scaleYAnimation);
-            sb.Children.Add(opacityAnimation);
-
-            sb.Completed += (s, e) => OverlayCanvas.Children.Remove(ripple);
-            sb.Begin();
-        }
-
-        private static Color ParseColor(string value, Color fallback)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return fallback;
-            }
-
-            var hex = value.Trim().TrimStart('#');
-            try
-            {
-                return hex.Length switch
-                {
-                    6 => Color.FromArgb(255, Convert.ToByte(hex[0..2], 16), Convert.ToByte(hex[2..4], 16), Convert.ToByte(hex[4..6], 16)),
-                    8 => Color.FromArgb(Convert.ToByte(hex[0..2], 16), Convert.ToByte(hex[2..4], 16), Convert.ToByte(hex[4..6], 16), Convert.ToByte(hex[6..8], 16)),
-                    _ => fallback
-                };
-            }
-            catch
-            {
-                return fallback;
-            }
         }
 
         private void SetWindow()
@@ -165,5 +81,4 @@ namespace ScreenOpRecorder.Presentation.Overlay
         }
     }
 }
-
 
