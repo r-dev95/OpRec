@@ -3,36 +3,28 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Settings.Ports;
-
 using Windows.Media;
 using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
+using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
     public sealed class AudioCaptureService : IAudioCaptureService
     {
         private readonly ILogger<AudioCaptureService> _logger;
-        private readonly IUserSettingsService _settingsService;
-        private readonly IFileManager _fileManager;
 
         private MediaCapture? _mediaCapture;
         private LowLagMediaRecording? _recording;
 
         private bool _isRecording;
 
-        public AudioCaptureService(
-            ILogger<AudioCaptureService> logger,
-            IUserSettingsService settingsService,
-            IFileManager fileManager)
+        public AudioCaptureService(ILogger<AudioCaptureService> logger)
         {
             _logger = logger;
-            _settingsService = settingsService;
-            _fileManager = fileManager;
         }
 
-        public async Task<bool> StartAsync()
+        public async Task<bool> StartAsync(StorageFile filePath)
         {
             if (_isRecording)
             {
@@ -41,7 +33,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             try
             {
-                await StartCaptureAsync();
+                await StartCaptureAsync(filePath);
                 _isRecording = true;
 
                 return true;
@@ -57,7 +49,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         {
             if (!_isRecording)
             {
-                Creanup();
+                Cleanup();
                 _isRecording = false;
                 return;
             }
@@ -69,7 +61,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             finally
             {
                 await _recording?.FinishAsync();
-                Creanup();
+                Cleanup();
                 _isRecording = false;
             }
         }
@@ -79,7 +71,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             _ = StopAsync();
         }
 
-        private async Task StartCaptureAsync()
+        private async Task StartCaptureAsync(StorageFile filePath)
         {
             _mediaCapture = new MediaCapture();
             await _mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
@@ -91,12 +83,12 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             _recording = await _mediaCapture.PrepareLowLagRecordToStorageFileAsync(
                 MediaEncodingProfile.CreateM4a(AudioEncodingQuality.Auto),
-                _fileManager.FileList.AudioFilePath);
+                filePath);
 
             await _recording.StartAsync();
         }
 
-        private void Creanup()
+        private void Cleanup()
         {
             _mediaCapture?.Dispose();
             _mediaCapture = null;

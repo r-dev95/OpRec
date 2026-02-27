@@ -1,14 +1,13 @@
-using System;
 using System.Threading.Tasks;
+
+using ScreenOpRecorder.Infrastructure.Recording.Models;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public interface IFileManager : IDisposable
+    public interface IFileManager
     {
-        FileManager.FilePathList FileList { get; }
+        Task<RecordingFiles?> SetupAsync();
 
-        Task<bool> SetupAsync();
-
-        void Reset();
+        Task CleanupRecordingFilesAsync(RecordingFiles? files);
     }
 }

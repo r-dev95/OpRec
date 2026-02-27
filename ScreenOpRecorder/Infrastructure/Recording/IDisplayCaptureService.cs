@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using ScreenOpRecorder.Domain.ValueObjects;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
 
+using Windows.Storage;
+
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
     public interface IDisplayCaptureService : IDisposable
@@ -15,7 +17,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
         bool TrySelectCaptureArea(ScreenRect captureArea);
 
-        Task<bool> StartAsync();
+        Task<bool> StartAsync(StorageFile filePath);
 
         Task StopAsync();
     }

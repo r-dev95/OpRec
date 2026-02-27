@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         private readonly IEventBus _eventBus;
 
         private RecordingState _state = RecordingState.Waiting;
+        private RecordingFiles? _recordingFiles;
 
         public string? LastOutputDirPath { get; private set; }
 
@@ -61,14 +63,14 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             try
             {
-                var setuped = await _fileManager.SetupAsync();
-                if (!setuped)
+                _recordingFiles = await _fileManager.SetupAsync();
+                if (_recordingFiles == null)
                 {
                     return false;
                 }
-                LastOutputDirPath = _fileManager.FileList.FinalFilePath!.Name;
+                LastOutputDirPath = Path.GetDirectoryName(_recordingFiles.FinalFilePath.Path);
 
-                var started = await _displayCaptureService.StartAsync();
+                var started = await _displayCaptureService.StartAsync(_recordingFiles.VideoFilePath);
                 if (!started)
                 {
                     await RollbackStartAsync("Failed to start display capture service.");
@@ -77,7 +79,14 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
                 if (_settingsService.Current.EnableAudioCapture)
                 {
-                    started = await _audioCaptureService.StartAsync();
+                    var audioFilePath = _recordingFiles.AudioFilePath;
+                    if (audioFilePath == null)
+                    {
+                        await RollbackStartAsync("Audio output file is not prepared.");
+                        return false;
+                    }
+
+                    started = await _audioCaptureService.StartAsync(audioFilePath);
                     if (!started)
                     {
                         await RollbackStartAsync("Failed to start audio capture service.");
@@ -98,7 +107,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         {
             if (_state != RecordingState.Recording)
             {
-                _fileManager.Reset();
+                _recordingFiles = null;
                 return;
             }
 
@@ -109,7 +118,10 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                 if (_settingsService.Current.EnableAudioCapture)
                 {
                     await _audioCaptureService.StopAsync();
-                    await _mediaFileMerger.MergeAsync();
+                    if (_recordingFiles != null)
+                    {
+                        await _mediaFileMerger.MergeAsync(_recordingFiles);
+                    }
                 }
             }
             catch (Exception ex)
@@ -120,7 +132,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             }
             finally
             {
-                _fileManager.Reset();
+                _recordingFiles = null;
             }
         }
 
@@ -156,7 +168,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             {
             }
 
-            _fileManager.Reset();
+            await _fileManager.CleanupRecordingFilesAsync(_recordingFiles);
         }
 
         private void OnRecordingStateChanged(RecordingState state)

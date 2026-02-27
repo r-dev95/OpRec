@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Infrastructure.Recording.Models;
 
 using Windows.Media.Editing;
 using Windows.Media.MediaProperties;
@@ -16,24 +17,21 @@ namespace ScreenOpRecorder.Infrastructure.Recording
     {
         private readonly ILogger<MediaFileMerger> _logger;
         private readonly IUserSettingsService _settingsService;
-        private readonly IFileManager _fileManager;
 
-        public MediaFileMerger(ILogger<MediaFileMerger> logger, IUserSettingsService settingsService, IFileManager fileManager)
+        public MediaFileMerger(ILogger<MediaFileMerger> logger, IUserSettingsService settingsService)
         {
             _logger = logger;
             _settingsService = settingsService;
-            _fileManager = fileManager;
         }
 
-        public async Task MergeAsync()
+        public async Task MergeAsync(RecordingFiles files)
         {
-            var finalOutputFile = _fileManager.FileList.FinalFilePath;
-            var videoOutputFile = _fileManager.FileList.VideoFilePath;
-            var audioOutputFile = _fileManager.FileList.AudioFilePath;
+            var finalOutputFile = files.FinalFilePath;
+            var videoOutputFile = files.VideoFilePath;
+            var audioOutputFile = files.AudioFilePath;
 
             if (finalOutputFile == null || videoOutputFile == null || audioOutputFile == null)
             {
-                _fileManager.Reset();
                 return;
             }
 
@@ -76,11 +74,10 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                 catch
                 {
                 }
-                _logger.LogWarning(ex, "Audio merge failed. Keeping video-only output.");
+                _logger.LogWarning(ex, "Failed to merge video and audio. Keeping video-only output.");
             }
             finally
             {
-                _fileManager.Reset();
             }
         }
 

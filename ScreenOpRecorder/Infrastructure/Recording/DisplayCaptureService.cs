@@ -27,7 +27,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         private readonly IUserSettingsService _settingsService;
         private readonly IMouseHookService _mouseHookService;
         private readonly IKeyboardHookService _keyboardHookService;
-        private readonly IFileManager _fileManager;
 
         private CompositionManager? _compositionManager;
 
@@ -59,14 +58,12 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             ILogger<DisplayCaptureService> logger,
             IUserSettingsService settingsService,
             IMouseHookService mouseHookService,
-            IKeyboardHookService keyboardHookService,
-            IFileManager fileManager)
+            IKeyboardHookService keyboardHookService)
         {
             _logger = logger;
             _settingsService = settingsService;
             _mouseHookService = mouseHookService;
             _keyboardHookService = keyboardHookService;
-            _fileManager = fileManager;
         }
 
         public bool TrySelectCaptureArea(ScreenRect captureArea)
@@ -89,7 +86,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             return true;
         }
 
-        public async Task<bool> StartAsync()
+        public async Task<bool> StartAsync(StorageFile filePath)
         {
             if (_state != RecordingState.Ready || _item == null)
             {
@@ -111,7 +108,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             try
             {
-                await StartCaptureAsync();
+                await StartCaptureAsync(filePath);
                 ChangeState(RecordingState.Recording);
             }
             catch
@@ -180,7 +177,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             _transcoder = new MediaTranscoder();
         }
 
-        private async Task StartCaptureAsync()
+        private async Task StartCaptureAsync(StorageFile filePath)
         {
             _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
                 _device,
@@ -194,9 +191,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             _startTime = DateTimeOffset.Now;
 
-            var videoFile = _fileManager.FileList.VideoFilePath
-                ?? throw new InvalidOperationException("Video output file is not prepared.");
-            var fileOp = await videoFile.OpenAsync(FileAccessMode.ReadWrite);
+            var fileOp = await filePath.OpenAsync(FileAccessMode.ReadWrite);
             var prepareOp = await _transcoder!.PrepareMediaStreamSourceTranscodeAsync(_mediaStreamSource, fileOp, _profile);
             _recordingTask = prepareOp.TranscodeAsync().AsTask();
         }
