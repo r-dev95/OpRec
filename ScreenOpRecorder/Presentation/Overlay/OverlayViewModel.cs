@@ -109,6 +109,12 @@ namespace ScreenOpRecorder.Presentation.Overlay
             _logger.LogDebug("OverlayViewModel initialized with scale factor: {Scale}", _scaleFactor);
         }
 
+        public void InitializeWindowState(double width, double height)
+        {
+            InputFeedback.SetScreenSize(width, height);
+            InputFeedback.ApplySession(false, Selection.CaptureAreaRect, null);
+        }
+
         public ScreenRect GetCaptureRect()
         {
             var physical = DpiHelper.ToPhysical(Selection.GetSelectionRect(), _scaleFactor);
@@ -118,21 +124,15 @@ namespace ScreenOpRecorder.Presentation.Overlay
         public void EnterRecordingUiState(double captureStrokeThickness)
         {
             CanSubmit = false;
-            var offset = captureStrokeThickness;
-            Selection.CaptureAreaRect = new(
-                Selection.X - offset,
-                Selection.Y - offset,
-                Selection.Width + 2 * offset,
-                Selection.Height + 2 * offset);
-            InputFeedback.SetRecordingState(true, Selection.CaptureAreaRect);
+            Selection.EnterRecordingUiState(captureStrokeThickness);
+            InputFeedback.ApplySession(true, Selection.CaptureAreaRect, null);
         }
 
         public void ExitRecordingUiState()
         {
-            Selection.IsCaptureAreaVisible = Visibility.Collapsed;
             CanSubmit = true;
-            Selection.CaptureAreaRect = new(0, 0, 0, 0);
-            InputFeedback.SetRecordingState(false, Selection.CaptureAreaRect);
+            Selection.ExitRecordingUiState();
+            InputFeedback.ApplySession(false, Selection.CaptureAreaRect, null);
         }
 
         private void OnMouseClicked(int x, int y, bool isDouble)
@@ -172,47 +172,24 @@ namespace ScreenOpRecorder.Presentation.Overlay
 
         private void OnRecordingStateChanged(RecordingSessionState state)
         {
-            _dispatcherQueue?.TryEnqueue(() =>
+            if (_dispatcherQueue != null)
             {
-                if (_isRecording != state.IsRecording)
-                {
-                    _isRecording = state.IsRecording;
-                    if (_isRecording)
-                    {
-                        SetRecordingWindow?.Invoke();
-                        InputFeedback.SetRecordingState(true, Selection.CaptureAreaRect);
-                    }
-                    else
-                    {
-                        SetNotRecordingWindow?.Invoke();
-                        InputFeedback.SetRecordingState(false, Selection.CaptureAreaRect);
-                        Minimap.Reset();
-                    }
-                }
+                _dispatcherQueue.TryEnqueue(() => ApplySessionState(state));
+                return;
+            }
 
-                if (!_isRecording)
-                {
-                    return;
-                }
-
-                var logicalRect = DpiHelper.ToLogical(
-                    new Rect(state.ZoomArea.X, state.ZoomArea.Y, state.ZoomArea.Width, state.ZoomArea.Height),
-                    _scaleFactor);
-                InputFeedback.SetZoomArea(logicalRect);
-                if (_settingsService.Current.EnableMinimap)
-                {
-                    Minimap.Update(Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
-                }
-                else
-                {
-                    Minimap.Reset();
-                }
-            });
+            ApplySessionState(state);
         }
 
         private void OnSettingsChanged(UserSettings settings)
         {
-            _dispatcherQueue?.TryEnqueue(() => ApplySettings(settings));
+            if (_dispatcherQueue != null)
+            {
+                _dispatcherQueue.TryEnqueue(() => ApplySettings(settings));
+                return;
+            }
+
+            ApplySettings(settings);
         }
 
         private void ApplySettings(UserSettings settings)
@@ -222,10 +199,38 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 settings.ClickHighlightColor,
                 settings.ClickHighlightSize);
             InputFeedback.ApplySettings(settings);
-            if (!settings.EnableMinimap)
+            Minimap.ApplySession(_isRecording, settings.EnableMinimap, Selection.CaptureAreaRect, InputFeedback.KeyDisplayArea);
+        }
+
+        private void ApplySessionState(RecordingSessionState state)
+        {
+            if (_isRecording != state.IsRecording)
             {
-                Minimap.Reset();
+                _isRecording = state.IsRecording;
+                if (_isRecording)
+                {
+                    SetRecordingWindow?.Invoke();
+                }
+                else
+                {
+                    SetNotRecordingWindow?.Invoke();
+                }
             }
+
+            Rect? logicalZoomRect = null;
+            if (state.IsRecording)
+            {
+                logicalZoomRect = DpiHelper.ToLogical(
+                    new Rect(state.ZoomArea.X, state.ZoomArea.Y, state.ZoomArea.Width, state.ZoomArea.Height),
+                    _scaleFactor);
+            }
+
+            InputFeedback.ApplySession(state.IsRecording, Selection.CaptureAreaRect, logicalZoomRect);
+            Minimap.ApplySession(
+                state.IsRecording,
+                _settingsService.Current.EnableMinimap,
+                Selection.CaptureAreaRect,
+                InputFeedback.KeyDisplayArea);
         }
     }
 }

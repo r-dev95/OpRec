@@ -66,7 +66,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
         public bool TrySelectCaptureArea(ScreenRect captureArea)
         {
-            if (_state != RecordingState.Waiting)
+            if (_state != RecordingState.Waiting && _state != RecordingState.Ready)
             {
                 return false;
             }

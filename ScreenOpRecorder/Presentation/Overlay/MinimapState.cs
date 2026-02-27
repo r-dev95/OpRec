@@ -54,5 +54,16 @@ namespace ScreenOpRecorder.Presentation.Overlay
         {
             IsVisible = Visibility.Collapsed;
         }
+
+        public void ApplySession(bool isRecording, bool enableMinimap, Rect captureArea, Rect currentViewport)
+        {
+            if (!isRecording || !enableMinimap)
+            {
+                Reset();
+                return;
+            }
+
+            Update(captureArea, currentViewport);
+        }
     }
 }

@@ -71,6 +71,22 @@ namespace ScreenOpRecorder.Presentation.Overlay
 
         public Rect GetSelectionRect() => new(X, Y, Width, Height);
 
+        public void EnterRecordingUiState(double captureStrokeThickness)
+        {
+            var offset = captureStrokeThickness;
+            CaptureAreaRect = new Rect(
+                X - offset,
+                Y - offset,
+                Width + 2 * offset,
+                Height + 2 * offset);
+        }
+
+        public void ExitRecordingUiState()
+        {
+            IsCaptureAreaVisible = Visibility.Collapsed;
+            CaptureAreaRect = new Rect(0, 0, 0, 0);
+        }
+
         public void ClearSelection()
         {
             IsCaptureAreaVisible = Visibility.Collapsed;

@@ -74,6 +74,15 @@ namespace ScreenOpRecorder.Presentation.Overlay
             UpdateKeyDisplayArea(logicalZoomRect);
         }
 
+        public void ApplySession(bool isRecording, Rect captureAreaRect, Rect? logicalZoomRect)
+        {
+            SetRecordingState(isRecording, captureAreaRect);
+            if (logicalZoomRect != null)
+            {
+                SetZoomArea(logicalZoomRect.Value);
+            }
+        }
+
         public async Task ShowKeyAsync(string keyName)
         {
             if (!EnableKeyDisplay)

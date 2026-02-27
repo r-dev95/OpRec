@@ -76,8 +76,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
             var scale = WindowHelper.GetScaleFactor(this);
             var physicalBounds = DpiHelper.ToPhysical(new Windows.Foundation.Size(Bounds.Width, Bounds.Height), scale);
             FullAreaRect.Rect = new(0, 0, physicalBounds.Width, physicalBounds.Height);
-            ViewModel.InputFeedback.SetScreenSize(Bounds.Width, Bounds.Height);
-            ViewModel.InputFeedback.SetRecordingState(false, ViewModel.Selection.CaptureAreaRect);
+            ViewModel.InitializeWindowState(Bounds.Width, Bounds.Height);
         }
     }
 }
