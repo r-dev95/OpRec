@@ -1,6 +1,3 @@
-using System;
-
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -22,18 +19,22 @@ namespace ScreenOpRecorder.Presentation.Shell
     public sealed partial class ShellPage : Page
     {
         private readonly ILogger<ShellPage> _logger;
-        private readonly IServiceProvider _services;
         private readonly ShellViewModel ViewModel;
         private readonly MainWindow _mainWindow;
+        private readonly ISettingsWindowFactory _settingsWindowFactory;
         private SettingsWindow? _settingsWindow;
 
-        public ShellPage(ILogger<ShellPage> logger, IServiceProvider services, ShellViewModel viewModel, MainWindow mainWindow)
+        public ShellPage(
+            ILogger<ShellPage> logger,
+            ShellViewModel viewModel,
+            MainWindow mainWindow,
+            ISettingsWindowFactory settingsWindowFactory)
         {
             InitializeComponent();
             _logger = logger;
-            _services = services;
             ViewModel = viewModel;
             _mainWindow = mainWindow;
+            _settingsWindowFactory = settingsWindowFactory;
 
             ViewModel.StartRecord += OnStartRecord;
             ViewModel.StopRecord += OnStopRecord;
@@ -57,7 +58,7 @@ namespace ScreenOpRecorder.Presentation.Shell
         {
             if (_settingsWindow == null)
             {
-                _settingsWindow = _services.GetRequiredService<SettingsWindow>();
+                _settingsWindow = _settingsWindowFactory.Create();
                 _settingsWindow.Closed += OnSettingsWindowClosed;
             }
 

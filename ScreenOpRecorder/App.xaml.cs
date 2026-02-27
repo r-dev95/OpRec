@@ -66,6 +66,7 @@ namespace ScreenOpRecorder
                     services.AddSingleton<OverlayViewModel>();
                     services.AddTransient<SettingsWindow>();
                     services.AddTransient<SettingsViewModel>();
+                    services.AddSingleton<ISettingsWindowFactory, SettingsWindowFactory>();
 
                     // Core
                     services.AddSingleton<IInputHookService, InputHookService>();
