@@ -9,6 +9,7 @@ using ScreenOpRecorder.Core.Input.Ports;
 using ScreenOpRecorder.Core.Settings.Models;
 using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
+using ScreenOpRecorder.Infrastructure.Compositing;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
 
 using Windows.Foundation;
