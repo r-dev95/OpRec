@@ -82,7 +82,7 @@ namespace ScreenOpRecorder
                     services.AddSingleton<IUserSettingsService, UserSettingsService>();
 
                     // Infrastructure.System
-                    services.AddSingleton<IFolderOpenService, FolderOpenService>();
+                    services.AddSingleton<IDirectoryOpenService, DirectoryOpenService>();
 
                     // Common.Events
                     services.AddSingleton<IEventBus, EventBus>();

@@ -28,6 +28,6 @@ namespace ScreenOpRecorder.Core.Settings.Models
 
         public string ToggleRecordingHotkey { get; set; } = UserSettingsConstraints.DefaultHotkey;
 
-        public bool OpenOutputFolderAfterRecording { get; set; } = false;
+        public bool OpenDirectoryAfterRecording { get; set; } = false;
     }
 }

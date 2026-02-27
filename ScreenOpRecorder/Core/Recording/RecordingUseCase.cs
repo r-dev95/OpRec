@@ -18,7 +18,7 @@ namespace ScreenOpRecorder.Core.Recording
         private readonly IUserSettingsService _settingsService;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IRecordingService _recordingService;
-        private readonly IFolderOpenService _outputFolderOpener;
+        private readonly IDirectoryOpenService _directoryOpenService;
         private readonly IDisposable _zoomSubscription;
 
         public RecordingUseCase(
@@ -26,14 +26,14 @@ namespace ScreenOpRecorder.Core.Recording
             IUserSettingsService settingsService,
             IRecordingSessionStore stateStore,
             IRecordingService recordingService,
-            IFolderOpenService outputFolderOpener,
+            IDirectoryOpenService directoryOpenService,
             IEventBus eventBus)
         {
             _logger = logger;
             _settingsService = settingsService;
             _stateStore = stateStore;
             _recordingService = recordingService;
-            _outputFolderOpener = outputFolderOpener;
+            _directoryOpenService = directoryOpenService;
             _zoomSubscription = eventBus.Subscribe<ZoomAreaChangedEvent>(OnZoomAreaChanged);
         }
 
@@ -79,9 +79,9 @@ namespace ScreenOpRecorder.Core.Recording
             await _recordingService.StopAsync();
             _stateStore.ClearSelection();
 
-            if (_settingsService.Current.OpenOutputFolderAfterRecording)
+            if (_settingsService.Current.OpenDirectoryAfterRecording)
             {
-                await OpenOutputFolderAsync();
+                await OpenDirectoryAsync();
             }
         }
 
@@ -95,12 +95,12 @@ namespace ScreenOpRecorder.Core.Recording
             _stateStore.SetZoomArea(evt.ZoomRect);
         }
 
-        private async Task OpenOutputFolderAsync()
+        private async Task OpenDirectoryAsync()
         {
             var path = _recordingService.LastOutputDirPath;
             if (!string.IsNullOrWhiteSpace(path))
             {
-                await _outputFolderOpener.OpenAsync(path);
+                await _directoryOpenService.OpenAsync(path);
             }
         }
     }

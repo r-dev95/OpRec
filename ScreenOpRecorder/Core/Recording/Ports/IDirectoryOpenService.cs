@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 
 namespace ScreenOpRecorder.Core.Recording.Ports
 {
-    public interface IFolderOpenService
+    public interface IDirectoryOpenService
     {
-        Task OpenAsync(string folderPath);
+        Task OpenAsync(string dirPath);
     }
 }

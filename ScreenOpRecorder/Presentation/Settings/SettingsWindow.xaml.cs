@@ -28,7 +28,7 @@ namespace ScreenOpRecorder.Presentation.Settings
             Closed += OnClosed;
             ViewModel.CloseRequested += OnCloseRequested;
 
-            SetWindow();
+            //SetWindow();
         }
 
         private void OnClosed(object sender, WindowEventArgs args)
@@ -42,17 +42,17 @@ namespace ScreenOpRecorder.Presentation.Settings
             Close();
         }
 
-        private async void OnClickBrowseFolder(object sender, RoutedEventArgs args)
+        private async void OnClickBrowseDirectory(object sender, RoutedEventArgs args)
         {
             var picker = new FolderPicker();
             picker.FileTypeFilter.Add("*");
             var hwnd = WindowHelper.GetHwnd(this);
             InitializeWithWindow.Initialize(picker, hwnd);
 
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder != null)
+            var dir = await picker.PickSingleFolderAsync();
+            if (dir != null)
             {
-                ViewModel.SetOutputDirPath(folder.Path);
+                ViewModel.SetOutputDirPath(dir.Path);
             }
         }
 

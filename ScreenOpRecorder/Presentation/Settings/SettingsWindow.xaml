@@ -11,9 +11,7 @@
     mc:Ignorable="d"
     Title="Settings">
 
-    <Grid x:Name="RootGrid"
-          MinWidth="750"
-          MinHeight="600">
+    <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -32,8 +30,8 @@
                 <ScrollViewer>
                     <StackPanel Padding="16"
                                 Spacing="12">
-                        <controls:SettingsCard Header="Output folder"
-                                               Description="Folder where recordings are saved.">
+                        <controls:SettingsCard Header="Output directory"
+                                               Description="Directory where recordings are saved.">
                             <Grid ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -43,7 +41,7 @@
                                          Text="{x:Bind ViewModel.OutputDirPath, Mode=TwoWay}" />
                                 <Button Grid.Column="1"
                                         Content="Browse"
-                                        Click="OnClickBrowseFolder" />
+                                        Click="OnClickBrowseDirectory" />
                             </Grid>
                         </controls:SettingsCard>
 
@@ -64,8 +62,8 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.EnableAudioCapture, Mode=TwoWay}" />
                         </controls:SettingsCard>
 
-                        <controls:SettingsCard Header="Open output folder after recording">
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.OpenOutputFolderAfterRecording, Mode=TwoWay}" />
+                        <controls:SettingsCard Header="Open output directory after recording">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.OpenDirectoryAfterRecording, Mode=TwoWay}" />
                         </controls:SettingsCard>
                     </StackPanel>
                 </ScrollViewer>

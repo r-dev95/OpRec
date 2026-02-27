@@ -53,7 +53,7 @@ namespace ScreenOpRecorder.Presentation.Settings
         public partial string ToggleRecordingHotkey { get; set; } = UserSettingsConstraints.DefaultHotkey;
 
         [ObservableProperty]
-        public partial bool OpenOutputFolderAfterRecording { get; set; }
+        public partial bool OpenDirectoryAfterRecording { get; set; }
 
         public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
         public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
@@ -93,7 +93,7 @@ namespace ScreenOpRecorder.Presentation.Settings
                 EnableMinimap = EnableMinimap,
                 ZoomFactor = ZoomFactor,
                 ToggleRecordingHotkey = ToggleRecordingHotkey,
-                OpenOutputFolderAfterRecording = OpenOutputFolderAfterRecording
+                OpenDirectoryAfterRecording = OpenDirectoryAfterRecording
             };
 
             await _settingsService.SaveAsync(settings);
@@ -122,7 +122,7 @@ namespace ScreenOpRecorder.Presentation.Settings
             EnableMinimap = settings.EnableMinimap;
             ZoomFactor = settings.ZoomFactor;
             ToggleRecordingHotkey = settings.ToggleRecordingHotkey;
-            OpenOutputFolderAfterRecording = settings.OpenOutputFolderAfterRecording;
+            OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording;
         }
     }
 }

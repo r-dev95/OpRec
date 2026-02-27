@@ -140,7 +140,7 @@ namespace ScreenOpRecorder.Infrastructure.Settings
                 EnableMinimap = settings.EnableMinimap,
                 ZoomFactor = zoom,
                 ToggleRecordingHotkey = hotkey,
-                OpenOutputFolderAfterRecording = settings.OpenOutputFolderAfterRecording
+                OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording
             };
         }
     }
