@@ -27,7 +27,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         private readonly ILogger<DisplayCaptureService> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly IMouseHookService _mouseHookService;
-        private readonly IKeyboardHookService _keyboardHookService;
 
         private CompositionManager? _compositionManager;
 
@@ -58,13 +57,11 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         public DisplayCaptureService(
             ILogger<DisplayCaptureService> logger,
             IUserSettingsService settingsService,
-            IMouseHookService mouseHookService,
-            IKeyboardHookService keyboardHookService)
+            IMouseHookService mouseHookService)
         {
             _logger = logger;
             _settingsService = settingsService;
             _mouseHookService = mouseHookService;
-            _keyboardHookService = keyboardHookService;
         }
 
         public bool TrySelectCaptureArea(ScreenRect captureArea)
@@ -155,7 +152,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         {
             var settings = _settingsService.Current;
 
-            _compositionManager = new CompositionManager(_mouseHookService, _keyboardHookService, _captureArea, settings.ZoomFactor);
+            _compositionManager = new CompositionManager(_mouseHookService, _captureArea, settings.ZoomFactor);
             _compositionManager.ZoomChanged += OnZoomChanged;
 
             _device = new CanvasDevice();
