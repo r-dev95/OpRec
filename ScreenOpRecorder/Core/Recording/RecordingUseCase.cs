@@ -8,6 +8,7 @@ using ScreenOpRecorder.Core.Recording.Events;
 using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Core.System.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
 
 namespace ScreenOpRecorder.Core.Recording

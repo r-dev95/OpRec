@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 
-namespace ScreenOpRecorder.Core.Recording.Ports
+namespace ScreenOpRecorder.Core.System.Ports
 {
     public interface IDirectoryOpenService
     {
         Task OpenAsync(string dirPath);
     }
 }
+

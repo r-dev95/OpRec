@@ -15,6 +15,7 @@ using ScreenOpRecorder.Core.Recording;
 using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Core.System.Ports;
 using ScreenOpRecorder.Infrastructure.Input;
 using ScreenOpRecorder.Infrastructure.Recording;
 using ScreenOpRecorder.Infrastructure.Settings;
