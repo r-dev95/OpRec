@@ -2,7 +2,7 @@ using System;
 
 namespace ScreenOpRecorder.Core.Input
 {
-    public interface IInputHookUseCase : IDisposable
+    public interface IInputHookService : IDisposable
     {
         event Action<string>? KeyDown;
 

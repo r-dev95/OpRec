@@ -22,7 +22,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
     {
         private readonly ILogger<OverlayViewModel> _logger;
         private readonly IUserSettingsService _settingsService;
-        private readonly IInputHookUseCase _inputHookUseCase;
+        private readonly IInputHookService _inputHookService;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IRecordingUseCase _recordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
@@ -55,14 +55,14 @@ namespace ScreenOpRecorder.Presentation.Overlay
         public OverlayViewModel(
             ILogger<OverlayViewModel> logger,
             IUserSettingsService settingsService,
-            IInputHookUseCase inputHookUseCase,
+            IInputHookService inputHookService,
             IRecordingSessionStore stateStore,
             IRecordingUseCase recordingUseCase)
         {
             _logger = logger;
             _stateStore = stateStore;
             _settingsService = settingsService;
-            _inputHookUseCase = inputHookUseCase;
+            _inputHookService = inputHookService;
             _recordingUseCase = recordingUseCase;
 
             try
@@ -84,8 +84,8 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 _settingsService.SettingsChanged += OnSettingsChanged;
                 _isSettingsSubscribed = true;
             }
-            _inputHookUseCase.MouseClicked += OnMouseClicked;
-            _inputHookUseCase.KeyDown += OnKeyDown;
+            _inputHookService.MouseClicked += OnMouseClicked;
+            _inputHookService.KeyDown += OnKeyDown;
 
             CanSubmit = true;
             Selection.ClearSelection();
@@ -99,8 +99,8 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 _settingsService.SettingsChanged -= OnSettingsChanged;
                 _isSettingsSubscribed = false;
             }
-            _inputHookUseCase.MouseClicked -= OnMouseClicked;
-            _inputHookUseCase.KeyDown -= OnKeyDown;
+            _inputHookService.MouseClicked -= OnMouseClicked;
+            _inputHookService.KeyDown -= OnKeyDown;
         }
 
         public void SetScaleFactor(double scaleFactor)

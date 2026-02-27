@@ -67,7 +67,7 @@ namespace ScreenOpRecorder
                     services.AddTransient<SettingsViewModel>();
 
                     // Core
-                    services.AddSingleton<IInputHookUseCase, InputHookUseCase>();
+                    services.AddSingleton<IInputHookService, InputHookService>();
                     services.AddSingleton<IRecordingUseCase, RecordingUseCase>();
                     services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
 
