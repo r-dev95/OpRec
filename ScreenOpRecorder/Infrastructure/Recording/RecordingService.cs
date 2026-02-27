@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Common.Events;
+using ScreenOpRecorder.Core.Events.Ports;
 using ScreenOpRecorder.Core.Recording.Events;
 using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Settings.Ports;
@@ -182,4 +182,5 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         }
     }
 }
+
 

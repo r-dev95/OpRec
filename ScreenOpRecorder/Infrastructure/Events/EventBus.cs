@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using ScreenOpRecorder.Core.Events.Ports;
 
-namespace ScreenOpRecorder.Common.Events
+namespace ScreenOpRecorder.Infrastructure.Events
 {
     public class EventBus : IEventBus
     {
@@ -82,3 +83,4 @@ namespace ScreenOpRecorder.Common.Events
         }
     }
 }
+

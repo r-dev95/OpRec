@@ -1,6 +1,6 @@
 using System;
 
-namespace ScreenOpRecorder.Common.Events
+namespace ScreenOpRecorder.Core.Events.Ports
 {
     public interface IEventBus
     {
@@ -9,3 +9,4 @@ namespace ScreenOpRecorder.Common.Events
         void Publish<T>(T message);
     }
 }
+

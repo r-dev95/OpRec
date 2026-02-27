@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
-using ScreenOpRecorder.Common.Events;
+using ScreenOpRecorder.Core.Events.Ports;
 using ScreenOpRecorder.Core.Input;
 using ScreenOpRecorder.Core.Input.Ports;
 using ScreenOpRecorder.Core.Recording;
@@ -16,6 +16,7 @@ using ScreenOpRecorder.Core.Recording.Ports;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Ports;
 using ScreenOpRecorder.Core.System.Ports;
+using ScreenOpRecorder.Infrastructure.Events;
 using ScreenOpRecorder.Infrastructure.Input;
 using ScreenOpRecorder.Infrastructure.Recording;
 using ScreenOpRecorder.Infrastructure.Settings;
@@ -71,6 +72,15 @@ namespace ScreenOpRecorder
                     services.AddSingleton<IRecordingUseCase, RecordingUseCase>();
                     services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
 
+                    // Infrastructure.Events
+                    services.AddSingleton<IEventBus, EventBus>();
+
+                    // Infrastructure.System
+                    services.AddSingleton<IDirectoryOpenService, DirectoryOpenService>();
+
+                    // Infrastructure.Settings
+                    services.AddSingleton<IUserSettingsService, UserSettingsService>();
+
                     // Infrastructure.Input
                     services.AddSingleton<IMouseHookService, MouseHookService>();
                     services.AddSingleton<IKeyboardHookService, KeyboardHookService>();
@@ -81,15 +91,6 @@ namespace ScreenOpRecorder
                     services.AddSingleton<DisplayCaptureService>();
                     services.AddSingleton<AudioCaptureService>();
                     services.AddSingleton<MediaFileMerger>();
-
-                    // Infrastructure.Settings
-                    services.AddSingleton<IUserSettingsService, UserSettingsService>();
-
-                    // Infrastructure.System
-                    services.AddSingleton<IDirectoryOpenService, DirectoryOpenService>();
-
-                    // Common.Events
-                    services.AddSingleton<IEventBus, EventBus>();
                 })
                 .Build();
         }
@@ -118,3 +119,4 @@ namespace ScreenOpRecorder
         }
     }
 }
+
