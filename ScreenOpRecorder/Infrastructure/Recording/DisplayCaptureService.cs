@@ -22,7 +22,7 @@ using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public sealed class DisplayCaptureService : IDisplayCaptureService
+    public sealed class DisplayCaptureService : IDisposable
     {
         private readonly ILogger<DisplayCaptureService> _logger;
         private readonly IUserSettingsService _settingsService;

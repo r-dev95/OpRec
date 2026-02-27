@@ -11,7 +11,7 @@ using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public sealed class FileManager : IFileManager
+    public sealed class FileManager
     {
         private readonly ILogger<FileManager> _logger;
         private readonly IUserSettingsService _settingsService;

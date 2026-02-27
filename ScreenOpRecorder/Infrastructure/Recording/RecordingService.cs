@@ -17,10 +17,10 @@ namespace ScreenOpRecorder.Infrastructure.Recording
     {
         private readonly ILogger<RecordingService> _logger;
         private readonly IUserSettingsService _settingsService;
-        private readonly IFileManager _fileManager;
-        private readonly IDisplayCaptureService _displayCaptureService;
-        private readonly IAudioCaptureService _audioCaptureService;
-        private readonly IMediaFileMerger _mediaFileMerger;
+        private readonly FileManager _fileManager;
+        private readonly DisplayCaptureService _displayCaptureService;
+        private readonly AudioCaptureService _audioCaptureService;
+        private readonly MediaFileMerger _mediaFileMerger;
         private readonly IEventBus _eventBus;
 
         private RecordingState _state = RecordingState.Waiting;
@@ -31,10 +31,10 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         public RecordingService(
             ILogger<RecordingService> logger,
             IUserSettingsService settingsService,
-            IFileManager fileManager,
-            IDisplayCaptureService displayCaptureService,
-            IAudioCaptureService audioCaptureService,
-            IMediaFileMerger mediaFileMerger,
+            FileManager fileManager,
+            DisplayCaptureService displayCaptureService,
+            AudioCaptureService audioCaptureService,
+            MediaFileMerger mediaFileMerger,
             IEventBus eventBus)
         {
             _logger = logger;

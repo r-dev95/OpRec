@@ -13,7 +13,7 @@ using Windows.Media.Transcoding;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public sealed class MediaFileMerger : IMediaFileMerger
+    public sealed class MediaFileMerger
     {
         private readonly ILogger<MediaFileMerger> _logger;
         private readonly IUserSettingsService _settingsService;
