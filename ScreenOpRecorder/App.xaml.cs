@@ -8,14 +8,14 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Events.Ports;
+using ScreenOpRecorder.Core.Events.Interfaces;
 using ScreenOpRecorder.Core.Input;
-using ScreenOpRecorder.Core.Input.Ports;
+using ScreenOpRecorder.Core.Input.Interfaces;
 using ScreenOpRecorder.Core.Recording;
-using ScreenOpRecorder.Core.Recording.Ports;
+using ScreenOpRecorder.Core.Recording.Interfaces;
 using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Settings.Ports;
-using ScreenOpRecorder.Core.System.Ports;
+using ScreenOpRecorder.Core.Settings.Interfaces;
+using ScreenOpRecorder.Core.System.Interfaces;
 using ScreenOpRecorder.Infrastructure.Events;
 using ScreenOpRecorder.Infrastructure.Input;
 using ScreenOpRecorder.Infrastructure.Recording;

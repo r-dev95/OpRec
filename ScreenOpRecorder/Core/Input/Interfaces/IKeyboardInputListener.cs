@@ -1,6 +1,6 @@
 using System;
 
-namespace ScreenOpRecorder.Core.Input.Ports
+namespace ScreenOpRecorder.Core.Input.Interfaces
 {
     public interface IKeyboardInputListener
     {

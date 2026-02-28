@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using ScreenOpRecorder.Core.Settings.Models;
 
-namespace ScreenOpRecorder.Core.Settings.Ports
+namespace ScreenOpRecorder.Core.Settings.Interfaces
 {
     public interface IUserSettingsService
     {

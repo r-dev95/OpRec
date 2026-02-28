@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Events.Ports;
+using ScreenOpRecorder.Core.Events.Interfaces;
 using ScreenOpRecorder.Core.Recording.Events;
-using ScreenOpRecorder.Core.Recording.Ports;
+using ScreenOpRecorder.Core.Recording.Interfaces;
 using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Settings.Ports;
-using ScreenOpRecorder.Core.System.Ports;
+using ScreenOpRecorder.Core.Settings.Interfaces;
+using ScreenOpRecorder.Core.System.Interfaces;
 using ScreenOpRecorder.Domain.ValueObjects;
 
 namespace ScreenOpRecorder.Core.Recording

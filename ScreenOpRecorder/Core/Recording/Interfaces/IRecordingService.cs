@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 using ScreenOpRecorder.Domain.ValueObjects;
 
-namespace ScreenOpRecorder.Core.Recording.Ports
+namespace ScreenOpRecorder.Core.Recording.Interfaces
 {
     public interface IRecordingService
     {

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace ScreenOpRecorder.Core.System.Ports
+namespace ScreenOpRecorder.Core.System.Interfaces
 {
     public interface IDirectoryOpenService
     {

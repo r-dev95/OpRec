@@ -11,7 +11,7 @@ using ScreenOpRecorder.Core.Input;
 using ScreenOpRecorder.Core.Recording;
 using ScreenOpRecorder.Core.Recording.State;
 using ScreenOpRecorder.Core.Settings.Models;
-using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Core.Settings.Interfaces;
 using ScreenOpRecorder.Domain.ValueObjects;
 
 using Windows.Foundation;

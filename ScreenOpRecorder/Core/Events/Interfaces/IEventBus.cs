@@ -1,6 +1,6 @@
 using System;
 
-namespace ScreenOpRecorder.Core.Events.Ports
+namespace ScreenOpRecorder.Core.Events.Interfaces
 {
     public interface IEventBus
     {

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Settings.Ports;
+using ScreenOpRecorder.Core.Settings.Interfaces;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
 
 using Windows.Storage;
