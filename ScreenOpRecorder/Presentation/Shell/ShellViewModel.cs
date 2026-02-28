@@ -36,7 +36,8 @@ namespace ScreenOpRecorder.Presentation.Shell
         private readonly IUserSettingsService _settingsService;
         private readonly IInputEventListener _inputEventListener;
         private readonly IRecordingSessionStore _stateStore;
-        private readonly IRecordingUseCase _recordingUseCase;
+        private readonly IStartRecordingUseCase _startRecordingUseCase;
+        private readonly IStopRecordingUseCase _stopRecordingUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private UiState _state = UiState.Waiting;
@@ -60,13 +61,15 @@ namespace ScreenOpRecorder.Presentation.Shell
             IUserSettingsService settingsService,
             IInputEventListener inputEventListener,
             IRecordingSessionStore stateStore,
-            IRecordingUseCase recordingUseCase)
+            IStartRecordingUseCase startRecordingUseCase,
+            IStopRecordingUseCase stopRecordingUseCase)
         {
             _logger = logger;
             _settingsService = settingsService;
             _inputEventListener = inputEventListener;
             _stateStore = stateStore;
-            _recordingUseCase = recordingUseCase;
+            _startRecordingUseCase = startRecordingUseCase;
+            _stopRecordingUseCase = stopRecordingUseCase;
 
             try
             {
@@ -135,7 +138,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             try
             {
-                var started = await _recordingUseCase.StartAsync();
+                var started = await _startRecordingUseCase.StartAsync();
                 if (!started)
                 {
                     _pendingAction = PendingAction.None;
@@ -166,7 +169,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             try
             {
-                await _recordingUseCase.StopAsync();
+                await _stopRecordingUseCase.StopAsync();
             }
             finally
             {
@@ -272,3 +275,4 @@ namespace ScreenOpRecorder.Presentation.Shell
         }
     }
 }
+

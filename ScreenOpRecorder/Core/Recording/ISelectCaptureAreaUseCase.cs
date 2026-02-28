@@ -1,15 +1,9 @@
-using System.Threading.Tasks;
-
 using ScreenOpRecorder.Domain.ValueObjects;
 
 namespace ScreenOpRecorder.Core.Recording
 {
-    public interface IRecordingUseCase
+    public interface ISelectCaptureAreaUseCase
     {
         bool SelectCaptureArea(ScreenRect captureArea);
-
-        Task<bool> StartAsync();
-
-        Task StopAsync();
     }
 }

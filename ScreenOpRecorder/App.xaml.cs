@@ -70,8 +70,11 @@ namespace ScreenOpRecorder
 
                     // Core
                     services.AddSingleton<IInputEventListener, InputEventListener>();
-                    services.AddSingleton<IRecordingUseCase, RecordingUseCase>();
                     services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
+                    services.AddSingleton<ISelectCaptureAreaUseCase, SelectCaptureAreaUseCase>();
+                    services.AddSingleton<IStartRecordingUseCase, StartRecordingUseCase>();
+                    services.AddSingleton<IStopRecordingUseCase, StopRecordingUseCase>();
+                    services.AddHostedService<RecordingSessionZoomSyncHostedService>();
 
                     // Infrastructure.Events
                     services.AddSingleton<IEventBus, EventBus>();
@@ -102,6 +105,8 @@ namespace ScreenOpRecorder
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            _host.Start();
+
             _mainWindow = _host.Services.GetRequiredService<MainWindow>();
             _mainWindow.Content = _host.Services.GetRequiredService<ShellPage>();
             _mainWindow.Activate();
@@ -116,8 +121,11 @@ namespace ScreenOpRecorder
         {
             _mainWindow?.Closed -= OnMainWindowClosed;
             _overlayWindow?.Close();
+            _host.StopAsync().GetAwaiter().GetResult();
             _host.Dispose();
         }
     }
 }
+
+
 

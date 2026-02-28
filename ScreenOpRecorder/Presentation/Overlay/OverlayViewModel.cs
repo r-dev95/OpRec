@@ -23,7 +23,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
         private readonly IUserSettingsService _settingsService;
         private readonly IInputEventListener _inputEventListener;
         private readonly IRecordingSessionStore _stateStore;
-        private readonly IRecordingUseCase _recordingUseCase;
+        private readonly ISelectCaptureAreaUseCase _selectCaptureAreaUseCase;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private double _scaleFactor = 1.0;
@@ -56,13 +56,13 @@ namespace ScreenOpRecorder.Presentation.Overlay
             IUserSettingsService settingsService,
             IInputEventListener inputEventListener,
             IRecordingSessionStore stateStore,
-            IRecordingUseCase recordingUseCase)
+            ISelectCaptureAreaUseCase selectCaptureAreaUseCase)
         {
             _logger = logger;
             _stateStore = stateStore;
             _settingsService = settingsService;
             _inputEventListener = inputEventListener;
-            _recordingUseCase = recordingUseCase;
+            _selectCaptureAreaUseCase = selectCaptureAreaUseCase;
 
             try
             {
@@ -166,7 +166,7 @@ namespace ScreenOpRecorder.Presentation.Overlay
                 return;
             }
 
-            _recordingUseCase.SelectCaptureArea(GetCaptureRect());
+            _selectCaptureAreaUseCase.SelectCaptureArea(GetCaptureRect());
         }
 
         private void OnRecordingStateChanged(RecordingSessionState state)
@@ -233,4 +233,5 @@ namespace ScreenOpRecorder.Presentation.Overlay
         }
     }
 }
+
 
