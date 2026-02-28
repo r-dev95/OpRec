@@ -8,21 +8,8 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Events.Interfaces;
-using ScreenOpRecorder.Core.Input;
-using ScreenOpRecorder.Core.Input.Interfaces;
-using ScreenOpRecorder.Core.Recording;
-using ScreenOpRecorder.Core.Recording.Interfaces;
-using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Settings.Interfaces;
-using ScreenOpRecorder.Core.System.Interfaces;
-using ScreenOpRecorder.Infrastructure.Events;
-using ScreenOpRecorder.Infrastructure.Input;
-using ScreenOpRecorder.Infrastructure.Recording;
-using ScreenOpRecorder.Infrastructure.Settings;
-using ScreenOpRecorder.Infrastructure.System;
+using ScreenOpRecorder.DependencyInjection;
 using ScreenOpRecorder.Presentation.Overlay;
-using ScreenOpRecorder.Presentation.Settings;
 using ScreenOpRecorder.Presentation.Shell;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -58,43 +45,10 @@ namespace ScreenOpRecorder
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    // Presentation
-                    services.AddSingleton<MainWindow>();
-                    services.AddSingleton<ShellPage>();
-                    services.AddSingleton<ShellViewModel>();
-                    services.AddSingleton<OverlayWindow>();
-                    services.AddSingleton<OverlayViewModel>();
-                    services.AddTransient<SettingsWindow>();
-                    services.AddTransient<SettingsViewModel>();
-                    services.AddSingleton<ISettingsWindowFactory, SettingsWindowFactory>();
-
-                    // Core
-                    services.AddSingleton<IInputEventListener, InputEventListener>();
-                    services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
-                    services.AddSingleton<ISelectCaptureAreaUseCase, SelectCaptureAreaUseCase>();
-                    services.AddSingleton<IStartRecordingUseCase, StartRecordingUseCase>();
-                    services.AddSingleton<IStopRecordingUseCase, StopRecordingUseCase>();
-                    services.AddHostedService<RecordingSessionZoomSyncHostedService>();
-
-                    // Infrastructure.Events
-                    services.AddSingleton<IEventBus, EventBus>();
-
-                    // Infrastructure.System
-                    services.AddSingleton<IDirectoryOpenService, DirectoryOpenService>();
-
-                    // Infrastructure.Settings
-                    services.AddSingleton<IUserSettingsService, UserSettingsService>();
-
-                    // Infrastructure.Input
-                    services.AddSingleton<IMouseInputListener, MouseInputListener>();
-                    services.AddSingleton<IKeyboardInputListener, KeyboardInputListener>();
-
-                    // Infrastructure.Recording
-                    services.AddSingleton<IRecordingService, RecordingService>();
-                    services.AddSingleton<FileManager>();
-                    services.AddSingleton<DisplayCaptureService>();
-                    services.AddSingleton<AudioCaptureService>();
-                    services.AddSingleton<MediaFileMerger>();
+                    services
+                        .AddPresentationServices()
+                        .AddApplicationServices()
+                        .AddInfrastructureServices();
                 })
                 .Build();
         }
