@@ -4,7 +4,7 @@ using ScreenOpRecorder.Core.Input.Interfaces;
 
 namespace ScreenOpRecorder.Core.Input
 {
-    public sealed class InputHookService : IInputHookService
+    public sealed class InputEventListener : IInputEventListener
     {
         private readonly IMouseInputListener _mouseInputListener;
         private readonly IKeyboardInputListener _keyboardInputListener;
@@ -13,7 +13,7 @@ namespace ScreenOpRecorder.Core.Input
         public event Action<string>? KeyDown;
         public event Action<int, int, bool>? MouseClicked;
 
-        public InputHookService(
+        public InputEventListener(
             IMouseInputListener mouseInputListener,
             IKeyboardInputListener keyboardInputListener)
         {

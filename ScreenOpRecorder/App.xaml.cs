@@ -69,7 +69,7 @@ namespace ScreenOpRecorder
                     services.AddSingleton<ISettingsWindowFactory, SettingsWindowFactory>();
 
                     // Core
-                    services.AddSingleton<IInputHookService, InputHookService>();
+                    services.AddSingleton<IInputEventListener, InputEventListener>();
                     services.AddSingleton<IRecordingUseCase, RecordingUseCase>();
                     services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
 
