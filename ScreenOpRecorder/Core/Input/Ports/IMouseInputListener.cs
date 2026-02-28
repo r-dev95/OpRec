@@ -2,7 +2,7 @@ using System;
 
 namespace ScreenOpRecorder.Core.Input.Ports
 {
-    public interface IMouseHookService
+    public interface IMouseInputListener
     {
         event Action<int, int, bool>? MouseClicked;
 

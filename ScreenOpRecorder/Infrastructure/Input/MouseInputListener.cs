@@ -7,9 +7,9 @@ using ScreenOpRecorder.Core.Input.Ports;
 
 namespace ScreenOpRecorder.Infrastructure.Input
 {
-    public class MouseHookService : IMouseHookService, IDisposable
+    public class MouseInputListener : IMouseInputListener, IDisposable
     {
-        private readonly ILogger<MouseHookService> _logger;
+        private readonly ILogger<MouseInputListener> _logger;
 
         private IntPtr _hookId = IntPtr.Zero;
         private readonly InputHelper.HookProc _hookProc;
@@ -25,7 +25,7 @@ namespace ScreenOpRecorder.Infrastructure.Input
 
         public event Action<int, int, bool>? MouseClicked;
 
-        public MouseHookService(ILogger<MouseHookService> logger)
+        public MouseInputListener(ILogger<MouseInputListener> logger)
         {
             _logger = logger;
             _hookProc = HookCallback;

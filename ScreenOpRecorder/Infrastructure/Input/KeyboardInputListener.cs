@@ -10,9 +10,9 @@ using Windows.System;
 
 namespace ScreenOpRecorder.Infrastructure.Input
 {
-    public class KeyboardHookService : IKeyboardHookService, IDisposable
+    public class KeyboardInputListener : IKeyboardInputListener, IDisposable
     {
-        private readonly ILogger<KeyboardHookService> _logger;
+        private readonly ILogger<KeyboardInputListener> _logger;
 
         private IntPtr _hookId = IntPtr.Zero;
         private readonly InputHelper.HookProc _hookProc;
@@ -21,7 +21,7 @@ namespace ScreenOpRecorder.Infrastructure.Input
 
         public event Action<string>? KeyDown;
 
-        public KeyboardHookService(ILogger<KeyboardHookService> logger)
+        public KeyboardInputListener(ILogger<KeyboardInputListener> logger)
         {
             _logger = logger;
             _hookProc = HookCallback;

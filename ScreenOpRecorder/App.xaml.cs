@@ -83,8 +83,8 @@ namespace ScreenOpRecorder
                     services.AddSingleton<IUserSettingsService, UserSettingsService>();
 
                     // Infrastructure.Input
-                    services.AddSingleton<IMouseHookService, MouseHookService>();
-                    services.AddSingleton<IKeyboardHookService, KeyboardHookService>();
+                    services.AddSingleton<IMouseInputListener, MouseInputListener>();
+                    services.AddSingleton<IKeyboardInputListener, KeyboardInputListener>();
 
                     // Infrastructure.Recording
                     services.AddSingleton<IRecordingService, RecordingService>();

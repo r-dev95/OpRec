@@ -10,26 +10,26 @@ namespace ScreenOpRecorder.Infrastructure.Compositing
 {
     public class CompositionManager : IDisposable
     {
-        private readonly IMouseHookService _mouseHookService;
+        private readonly IMouseInputListener _mouseInputListener;
         private readonly Rect _captureArea;
         private readonly FrameZoom _frameZoom;
 
         public event Action<Rect>? ZoomChanged;
 
-        public CompositionManager(IMouseHookService mouseHookService, Rect captureArea, double zoomFactor)
+        public CompositionManager(IMouseInputListener mouseInputListener, Rect captureArea, double zoomFactor)
         {
-            _mouseHookService = mouseHookService;
+            _mouseInputListener = mouseInputListener;
             _captureArea = captureArea;
             _frameZoom = new FrameZoom(_captureArea, zoomFactor);
 
             _frameZoom.ZoomAction += OnZoomAction;
-            _mouseHookService.MouseClicked += OnMouseClicked;
+            _mouseInputListener.MouseClicked += OnMouseClicked;
         }
 
         public void Dispose()
         {
             _frameZoom.ZoomAction -= OnZoomAction;
-            _mouseHookService.MouseClicked -= OnMouseClicked;
+            _mouseInputListener.MouseClicked -= OnMouseClicked;
         }
 
         public void ComposeFrame(CanvasRenderTarget renderTarget, CanvasBitmap rawFrame)

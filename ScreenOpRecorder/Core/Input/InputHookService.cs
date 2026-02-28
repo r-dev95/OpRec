@@ -6,29 +6,29 @@ namespace ScreenOpRecorder.Core.Input
 {
     public sealed class InputHookService : IInputHookService
     {
-        private readonly IMouseHookService _mouseHookService;
-        private readonly IKeyboardHookService _keyboardHookService;
+        private readonly IMouseInputListener _mouseInputListener;
+        private readonly IKeyboardInputListener _keyboardInputListener;
         private bool _isStarted;
 
         public event Action<string>? KeyDown;
         public event Action<int, int, bool>? MouseClicked;
 
         public InputHookService(
-            IMouseHookService mouseHookService,
-            IKeyboardHookService keyboardHookService)
+            IMouseInputListener mouseInputListener,
+            IKeyboardInputListener keyboardInputListener)
         {
-            _mouseHookService = mouseHookService;
-            _keyboardHookService = keyboardHookService;
+            _mouseInputListener = mouseInputListener;
+            _keyboardInputListener = keyboardInputListener;
 
-            _mouseHookService.MouseClicked += OnMouseClicked;
-            _keyboardHookService.KeyDown += OnKeyDown;
+            _mouseInputListener.MouseClicked += OnMouseClicked;
+            _keyboardInputListener.KeyDown += OnKeyDown;
             Start();
         }
 
         public void Dispose()
         {
-            _mouseHookService.MouseClicked -= OnMouseClicked;
-            _keyboardHookService.KeyDown -= OnKeyDown;
+            _mouseInputListener.MouseClicked -= OnMouseClicked;
+            _keyboardInputListener.KeyDown -= OnKeyDown;
             Stop();
         }
 
@@ -39,8 +39,8 @@ namespace ScreenOpRecorder.Core.Input
                 return;
             }
 
-            _mouseHookService.Start();
-            _keyboardHookService.Start();
+            _mouseInputListener.Start();
+            _keyboardInputListener.Start();
             _isStarted = true;
         }
 
@@ -51,8 +51,8 @@ namespace ScreenOpRecorder.Core.Input
                 return;
             }
 
-            _mouseHookService.Stop();
-            _keyboardHookService.Stop();
+            _mouseInputListener.Stop();
+            _keyboardInputListener.Stop();
             _isStarted = false;
         }
 

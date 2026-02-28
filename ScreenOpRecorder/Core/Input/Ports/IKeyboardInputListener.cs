@@ -2,7 +2,7 @@ using System;
 
 namespace ScreenOpRecorder.Core.Input.Ports
 {
-    public interface IKeyboardHookService
+    public interface IKeyboardInputListener
     {
         event Action<string>? KeyDown;
 
