@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using ScreenOpRecorder.Core.Events.Interfaces;
-using ScreenOpRecorder.Core.Input.Interfaces;
-using ScreenOpRecorder.Core.Recording.Interfaces;
-using ScreenOpRecorder.Core.Settings.Interfaces;
-using ScreenOpRecorder.Core.System.Interfaces;
+using ScreenOpRecorder.Application.Events.Interfaces;
+using ScreenOpRecorder.Application.Input.Interfaces;
+using ScreenOpRecorder.Application.Recording.Interfaces;
+using ScreenOpRecorder.Application.Settings.Interfaces;
+using ScreenOpRecorder.Application.System.Interfaces;
 using ScreenOpRecorder.Infrastructure.Events;
 using ScreenOpRecorder.Infrastructure.Input;
 using ScreenOpRecorder.Infrastructure.Recording;

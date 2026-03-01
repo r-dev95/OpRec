@@ -6,11 +6,11 @@ using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Core.Input;
-using ScreenOpRecorder.Core.Recording;
-using ScreenOpRecorder.Core.Recording.State;
-using ScreenOpRecorder.Core.Settings.Interfaces;
-using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Application.Input;
+using ScreenOpRecorder.Application.Recording;
+using ScreenOpRecorder.Application.Recording.State;
+using ScreenOpRecorder.Application.Settings.Interfaces;
+using ScreenOpRecorder.Application.Settings.Models;
 
 namespace ScreenOpRecorder.Presentation.Shell
 {

@@ -1,0 +1,69 @@
+using System;
+
+using ScreenOpRecorder.Application.Input.Interfaces;
+
+namespace ScreenOpRecorder.Application.Input
+{
+    public sealed class InputEventListener : IInputEventListener
+    {
+        private readonly IMouseInputListener _mouseInputListener;
+        private readonly IKeyboardInputListener _keyboardInputListener;
+        private bool _isStarted;
+
+        public event Action<string>? KeyDown;
+        public event Action<int, int, bool>? MouseClicked;
+
+        public InputEventListener(
+            IMouseInputListener mouseInputListener,
+            IKeyboardInputListener keyboardInputListener)
+        {
+            _mouseInputListener = mouseInputListener;
+            _keyboardInputListener = keyboardInputListener;
+
+            _mouseInputListener.MouseClicked += OnMouseClicked;
+            _keyboardInputListener.KeyDown += OnKeyDown;
+            Start();
+        }
+
+        public void Dispose()
+        {
+            _mouseInputListener.MouseClicked -= OnMouseClicked;
+            _keyboardInputListener.KeyDown -= OnKeyDown;
+            Stop();
+        }
+
+        private void Start()
+        {
+            if (_isStarted)
+            {
+                return;
+            }
+
+            _mouseInputListener.Start();
+            _keyboardInputListener.Start();
+            _isStarted = true;
+        }
+
+        private void Stop()
+        {
+            if (!_isStarted)
+            {
+                return;
+            }
+
+            _mouseInputListener.Stop();
+            _keyboardInputListener.Stop();
+            _isStarted = false;
+        }
+
+        private void OnKeyDown(string keyName)
+        {
+            KeyDown?.Invoke(keyName);
+        }
+
+        private void OnMouseClicked(int x, int y, bool isDouble)
+        {
+            MouseClicked?.Invoke(x, y, isDouble);
+        }
+    }
+}

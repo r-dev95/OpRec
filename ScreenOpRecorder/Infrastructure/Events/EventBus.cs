@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ScreenOpRecorder.Core.Events.Interfaces;
+using ScreenOpRecorder.Application.Events.Interfaces;
 
 namespace ScreenOpRecorder.Infrastructure.Events
 {

@@ -2,7 +2,7 @@ using System;
 
 using Microsoft.Graphics.Canvas;
 
-using ScreenOpRecorder.Core.Input.Interfaces;
+using ScreenOpRecorder.Application.Input.Interfaces;
 
 using Windows.Foundation;
 

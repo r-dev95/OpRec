@@ -20,7 +20,7 @@ namespace ScreenOpRecorder
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application
+    public partial class App : Microsoft.UI.Xaml.Application
     {
         private readonly IHost _host;
         private MainWindow? _mainWindow;

@@ -1,4 +1,4 @@
-using ScreenOpRecorder.Core.Settings.Models;
+using ScreenOpRecorder.Application.Settings.Models;
 
 namespace ScreenOpRecorder.Presentation.Overlay
 {
