@@ -7,9 +7,8 @@ using Microsoft.Extensions.Hosting;
 
 using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Recording.Events;
-using ScreenOpRecorder.Application.Recording.State;
 
-namespace ScreenOpRecorder.Application.Recording
+namespace ScreenOpRecorder.Application.Recording.Session
 {
     public sealed class RecordingSessionZoomSyncHostedService : IHostedService, IDisposable
     {

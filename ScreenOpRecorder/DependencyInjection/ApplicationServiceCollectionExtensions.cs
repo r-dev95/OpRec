@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using ScreenOpRecorder.Application.Input;
 using ScreenOpRecorder.Application.Recording;
-using ScreenOpRecorder.Application.Recording.State;
+using ScreenOpRecorder.Application.Recording.Session;
 
 namespace ScreenOpRecorder.DependencyInjection
 {

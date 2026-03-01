@@ -2,7 +2,7 @@ using System;
 
 using ScreenOpRecorder.Domain.ValueObjects;
 
-namespace ScreenOpRecorder.Application.Recording.State
+namespace ScreenOpRecorder.Application.Recording.Session
 {
     public class RecordingSessionStore : IRecordingSessionStore
     {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using ScreenOpRecorder.Application.Recording.Ports;
-using ScreenOpRecorder.Application.Recording.State;
+using ScreenOpRecorder.Application.Recording.Session;
 
 namespace ScreenOpRecorder.Application.Recording
 {
