@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Application.Recording.Interfaces;
+using ScreenOpRecorder.Application.Recording.Ports;
 using ScreenOpRecorder.Application.Recording.State;
 using ScreenOpRecorder.Domain.ValueObjects;
 

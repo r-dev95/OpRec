@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using ScreenOpRecorder.Application.Settings.Models;
-using ScreenOpRecorder.Application.Settings.Interfaces;
+using ScreenOpRecorder.Application.Settings.Ports;
 
 namespace ScreenOpRecorder.Presentation.Settings
 {

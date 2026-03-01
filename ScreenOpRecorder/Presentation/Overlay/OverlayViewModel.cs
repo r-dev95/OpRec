@@ -9,7 +9,7 @@ using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Application.Input;
 using ScreenOpRecorder.Application.Recording;
 using ScreenOpRecorder.Application.Recording.State;
-using ScreenOpRecorder.Application.Settings.Interfaces;
+using ScreenOpRecorder.Application.Settings.Ports;
 using ScreenOpRecorder.Application.Settings.Models;
 using ScreenOpRecorder.Domain.ValueObjects;
 

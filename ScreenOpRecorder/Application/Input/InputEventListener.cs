@@ -1,6 +1,6 @@
 using System;
 
-using ScreenOpRecorder.Application.Input.Interfaces;
+using ScreenOpRecorder.Application.Input.Ports;
 
 namespace ScreenOpRecorder.Application.Input
 {

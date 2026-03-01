@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 
-using ScreenOpRecorder.Application.Events.Interfaces;
+using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Recording.Events;
 using ScreenOpRecorder.Application.Recording.State;
 

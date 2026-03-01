@@ -2,10 +2,10 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Application.Recording.Interfaces;
+using ScreenOpRecorder.Application.Recording.Ports;
 using ScreenOpRecorder.Application.Recording.State;
-using ScreenOpRecorder.Application.Settings.Interfaces;
-using ScreenOpRecorder.Application.System.Interfaces;
+using ScreenOpRecorder.Application.Settings.Ports;
+using ScreenOpRecorder.Application.System.Ports;
 
 namespace ScreenOpRecorder.Application.Recording
 {

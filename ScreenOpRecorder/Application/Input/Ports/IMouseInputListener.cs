@@ -1,6 +1,6 @@
 using System;
 
-namespace ScreenOpRecorder.Application.Input.Interfaces
+namespace ScreenOpRecorder.Application.Input.Ports
 {
     public interface IMouseInputListener
     {

@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
 using ScreenOpRecorder.Common.Helpers;
-using ScreenOpRecorder.Application.Input.Interfaces;
+using ScreenOpRecorder.Application.Input.Ports;
 using ScreenOpRecorder.Application.Settings.Models;
-using ScreenOpRecorder.Application.Settings.Interfaces;
+using ScreenOpRecorder.Application.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
 using ScreenOpRecorder.Infrastructure.Compositing;
 using ScreenOpRecorder.Infrastructure.Recording.Models;

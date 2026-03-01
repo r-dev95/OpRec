@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Application.Input.Interfaces;
+using ScreenOpRecorder.Application.Input.Ports;
 
 using Windows.System;
 

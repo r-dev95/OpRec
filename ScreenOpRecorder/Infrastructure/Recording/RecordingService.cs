@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Application.Events.Interfaces;
+using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Recording.Events;
-using ScreenOpRecorder.Application.Recording.Interfaces;
-using ScreenOpRecorder.Application.Settings.Interfaces;
+using ScreenOpRecorder.Application.Recording.Ports;
+using ScreenOpRecorder.Application.Settings.Ports;
 using ScreenOpRecorder.Domain.ValueObjects;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
 
