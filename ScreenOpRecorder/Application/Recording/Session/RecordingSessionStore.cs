@@ -24,7 +24,7 @@ namespace ScreenOpRecorder.Application.Recording.Session
 
         public void SetSelection(ScreenRect captureArea)
         {
-            Update(_current with
+            Update(current => current with
             {
                 HasSelection = true,
                 CaptureArea = captureArea,
@@ -34,17 +34,17 @@ namespace ScreenOpRecorder.Application.Recording.Session
 
         public void SetZoomArea(ScreenRect zoomArea)
         {
-            Update(_current with { ZoomArea = zoomArea });
+            Update(current => current with { ZoomArea = zoomArea });
         }
 
         public void SetRecording(bool isRecording)
         {
-            Update(_current with { IsRecording = isRecording });
+            Update(current => current with { IsRecording = isRecording });
         }
 
         public void ClearSelection()
         {
-            Update(_current with
+            Update(current => current with
             {
                 HasSelection = false,
                 CaptureArea = ScreenRect.Empty,
@@ -53,11 +53,13 @@ namespace ScreenOpRecorder.Application.Recording.Session
             });
         }
 
-        private void Update(RecordingSessionState next)
+        private void Update(Func<RecordingSessionState, RecordingSessionState> updater)
         {
             bool changed;
+            RecordingSessionState next;
             lock (_gate)
             {
+                next = updater(_current);
                 changed = _current != next;
                 _current = next;
             }

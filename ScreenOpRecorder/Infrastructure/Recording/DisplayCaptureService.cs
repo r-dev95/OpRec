@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas;
 
-using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Application.Input.Ports;
 using ScreenOpRecorder.Application.Settings.Ports;
+using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Domain.Settings.ValueObjects;
 using ScreenOpRecorder.Domain.ValueObjects;
 using ScreenOpRecorder.Infrastructure.Compositing;
@@ -225,40 +225,72 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
         private void OnSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
         {
-            if (_state == RecordingState.Stopping || _canvasBitmap == null)
+            if (_state == RecordingState.Stopping)
             {
                 args.Request.Sample = null;
                 return;
             }
 
-            if (_renderTarget == null)
+            var compositionManager = _compositionManager;
+            var device = _device;
+            var canvasBitmap = _canvasBitmap;
+
+            if (compositionManager == null || device == null || canvasBitmap == null)
             {
-                _renderTarget = new CanvasRenderTarget(_device, (float)_captureArea.Width, (float)_captureArea.Height, 96);
+                args.Request.Sample = null;
+                return;
             }
 
-            _compositionManager!.ComposeFrame(_renderTarget, _canvasBitmap);
+            var renderTarget = _renderTarget;
+            if (renderTarget == null)
+            {
+                try
+                {
+                    renderTarget = new CanvasRenderTarget(device, (float)_captureArea.Width, (float)_captureArea.Height, 96);
+                    _renderTarget = renderTarget;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("RenderTarget create error: {}", ex.Message);
+                    args.Request.Sample = null;
+                    return;
+                }
+            }
 
             try
             {
-                var surface = (IDirect3DSurface)_renderTarget;
+                compositionManager.ComposeFrame(renderTarget, canvasBitmap);
+                var surface = (IDirect3DSurface)renderTarget;
                 var timeStamp = DateTimeOffset.Now - _startTime;
                 args.Request.Sample = MediaStreamSample.CreateFromDirect3D11Surface(surface, timeStamp);
             }
+            catch (ObjectDisposedException)
+            {
+                args.Request.Sample = null;
+            }
             catch (Exception ex)
             {
-                _logger.LogDebug("Sample Error: {}", ex.Message);
+                _logger.LogError("Sample Error: {}", ex.Message);
+                args.Request.Sample = null;
             }
         }
 
         private void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
         {
             using var frame = sender.TryGetNextFrame();
-            if (frame == null)
+            var device = _device;
+            if (frame == null || device == null)
             {
                 return;
             }
 
-            _canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(_device, frame.Surface);
+            try
+            {
+                _canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(device, frame.Surface);
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
 
         private void OnZoomChanged(Rect rect)

@@ -68,7 +68,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
         public void Dispose()
         {
-            _ = StopAsync();
+            Cleanup();
         }
 
         private async Task StartCaptureAsync(StorageFile filePath)
