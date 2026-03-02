@@ -16,8 +16,6 @@ namespace ScreenOpRecorder.Infrastructure.Input
 
         private IntPtr _hookId = IntPtr.Zero;
         private readonly InputHelper.HookProc _hookProc;
-        private readonly object _gate = new();
-        private int _startCount;
 
         public event Action<string>? KeyDown;
 
@@ -29,36 +27,23 @@ namespace ScreenOpRecorder.Infrastructure.Input
 
         public void Start()
         {
-            lock (_gate)
+            if (_hookId != IntPtr.Zero)
             {
-                _startCount++;
-                if (_hookId != IntPtr.Zero)
-                {
-                    return;
-                }
-
-                _hookId = InputHelper.SetHook(_hookProc, InputHelper.WH_KEYBOARD_LL);
+                return;
             }
+
+            _hookId = InputHelper.SetHook(_hookProc, InputHelper.WH_KEYBOARD_LL);
         }
 
         public void Stop()
         {
-            lock (_gate)
+            if (_hookId == IntPtr.Zero)
             {
-                if (_startCount == 0)
-                {
-                    return;
-                }
-
-                _startCount--;
-                if (_startCount > 0 || _hookId == IntPtr.Zero)
-                {
-                    return;
-                }
-
-                InputHelper.UnhookWindowsHookEx(_hookId);
-                _hookId = IntPtr.Zero;
+                return;
             }
+
+            InputHelper.UnhookWindowsHookEx(_hookId);
+            _hookId = IntPtr.Zero;
         }
 
         public void Dispose() => Stop();
