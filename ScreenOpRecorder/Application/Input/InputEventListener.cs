@@ -8,7 +8,6 @@ namespace ScreenOpRecorder.Application.Input
     {
         private readonly IMouseInputListener _mouseInputListener;
         private readonly IKeyboardInputListener _keyboardInputListener;
-        private bool _isStarted;
 
         public event Action<string>? KeyDown;
         public event Action<int, int, bool>? MouseClicked;
@@ -22,38 +21,16 @@ namespace ScreenOpRecorder.Application.Input
 
             _mouseInputListener.MouseClicked += OnMouseClicked;
             _keyboardInputListener.KeyDown += OnKeyDown;
-            Start();
+            _mouseInputListener.Start();
+            _keyboardInputListener.Start();
         }
 
         public void Dispose()
         {
             _mouseInputListener.MouseClicked -= OnMouseClicked;
             _keyboardInputListener.KeyDown -= OnKeyDown;
-            Stop();
-        }
-
-        private void Start()
-        {
-            if (_isStarted)
-            {
-                return;
-            }
-
-            _mouseInputListener.Start();
-            _keyboardInputListener.Start();
-            _isStarted = true;
-        }
-
-        private void Stop()
-        {
-            if (!_isStarted)
-            {
-                return;
-            }
-
             _mouseInputListener.Stop();
             _keyboardInputListener.Stop();
-            _isStarted = false;
         }
 
         private void OnKeyDown(string keyName)
