@@ -5,8 +5,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 
-using ScreenOpRecorder.Application.Settings.Models;
-
 using Windows.UI;
 
 namespace ScreenOpRecorder.Presentation.Overlay.Helpers

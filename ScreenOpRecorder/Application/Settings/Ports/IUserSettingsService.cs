@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-using ScreenOpRecorder.Application.Settings.Models;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 namespace ScreenOpRecorder.Application.Settings.Ports
 {

@@ -10,7 +10,8 @@ using ScreenOpRecorder.Application.Input;
 using ScreenOpRecorder.Application.Recording;
 using ScreenOpRecorder.Application.Recording.Session;
 using ScreenOpRecorder.Application.Settings.Ports;
-using ScreenOpRecorder.Application.Settings.Models;
+using ScreenOpRecorder.Domain.Settings.Policies;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 namespace ScreenOpRecorder.Presentation.Shell
 {

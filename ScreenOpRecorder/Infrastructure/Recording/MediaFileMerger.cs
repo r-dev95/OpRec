@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Application.Settings.Models;
 using ScreenOpRecorder.Application.Settings.Ports;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
 
 using Windows.Media.Editing;

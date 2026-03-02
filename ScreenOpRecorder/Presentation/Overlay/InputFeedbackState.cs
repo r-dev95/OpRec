@@ -6,7 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.UI.Xaml;
 
-using ScreenOpRecorder.Application.Settings.Models;
+using ScreenOpRecorder.Domain.Settings.Policies;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 using Windows.Foundation;
 

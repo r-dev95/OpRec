@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using ScreenOpRecorder.Application.Settings.Models;
 using ScreenOpRecorder.Application.Settings.Ports;
+using ScreenOpRecorder.Domain.Settings.Policies;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 namespace ScreenOpRecorder.Presentation.Settings
 {

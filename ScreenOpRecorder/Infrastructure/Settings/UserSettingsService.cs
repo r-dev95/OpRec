@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using ScreenOpRecorder.Application.Settings.Models;
 using ScreenOpRecorder.Application.Settings.Ports;
+using ScreenOpRecorder.Domain.Settings.Policies;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 namespace ScreenOpRecorder.Infrastructure.Settings
 {

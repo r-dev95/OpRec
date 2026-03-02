@@ -1,4 +1,4 @@
-namespace ScreenOpRecorder.Application.Settings.Models
+namespace ScreenOpRecorder.Domain.Settings.ValueObjects
 {
     public enum KeyDisplayPosition
     {

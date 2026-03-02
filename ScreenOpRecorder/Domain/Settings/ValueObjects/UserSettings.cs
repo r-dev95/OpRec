@@ -1,4 +1,6 @@
-namespace ScreenOpRecorder.Application.Settings.Models
+using ScreenOpRecorder.Domain.Settings.Policies;
+
+namespace ScreenOpRecorder.Domain.Settings.ValueObjects
 {
     public class UserSettings
     {
