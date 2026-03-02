@@ -23,8 +23,9 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Features\Overlay\OverlayWindow.xaml" />
-    <None Remove="Features\Shell\ShellPage.xaml" />
+    <None Remove="Presentation\Settings\SettingsWindow.xaml" />
+    <None Remove="Presentation\Overlay\OverlayWindow.xaml" />
+    <None Remove="Presentation\Shell\ShellPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,23 +52,29 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7463" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260101001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.0" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.1" />
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Features\Shell\ShellPage.xaml">
+    <Page Update="Presentation\Settings\SettingsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Features\Overlay\OverlayWindow.xaml">
+    <Page Update="Presentation\Shell\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Presentation\Overlay\OverlayWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

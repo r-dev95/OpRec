@@ -1,7 +1,5 @@
 using System;
 
-using CommunityToolkit.Mvvm.Messaging;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,10 +8,9 @@ using Microsoft.UI.Xaml;
 
 using NLog.Extensions.Logging;
 
-using ScreenOpRecorder.Features.Input;
-using ScreenOpRecorder.Features.Overlay;
-using ScreenOpRecorder.Features.Record;
-using ScreenOpRecorder.Features.Shell;
+using ScreenOpRecorder.DependencyInjection;
+using ScreenOpRecorder.Presentation.Overlay;
+using ScreenOpRecorder.Presentation.Shell;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,7 +20,7 @@ namespace ScreenOpRecorder
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application
+    public partial class App : Microsoft.UI.Xaml.Application
     {
         private readonly IHost _host;
         private MainWindow? _mainWindow;
@@ -48,33 +45,12 @@ namespace ScreenOpRecorder
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
-
-                    services.AddSingleton<MainWindow>();
-                    services.AddSingleton<ShellPage>();
-                    services.AddSingleton<ShellViewModel>();
-                    services.AddSingleton<OverlayWindow>();
-                    services.AddSingleton<OverlayViewModel>();
-
-                    // Input Hook Services
-                    services.AddSingleton<MouseHookService>();
-                    services.AddSingleton<KeyboardHookService>();
-                    services.AddSingleton<RecordService>();
-
+                    services
+                        .AddPresentationServices()
+                        .AddApplicationServices()
+                        .AddInfrastructureServices();
                 })
                 .Build();
-        }
-
-        public static T GetService<T>()
-            where T : class
-        {
-            if ((Current as App)!._host.Services.GetService(typeof(T)) is not T service)
-            {
-                string msg = $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.";
-                throw new ArgumentException(msg);
-            }
-
-            return service;
         }
 
         /// <summary>
@@ -83,20 +59,27 @@ namespace ScreenOpRecorder
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            var shellPage = GetService<ShellPage>();
+            _host.Start();
 
-            _mainWindow = GetService<MainWindow>();
-            _mainWindow.Content = shellPage;
+            _mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            _mainWindow.Content = _host.Services.GetRequiredService<ShellPage>();
             _mainWindow.Activate();
 
-            _overlayWindow = GetService<OverlayWindow>();
+            _overlayWindow = _host.Services.GetRequiredService<OverlayWindow>();
             _overlayWindow.Activate();
 
-            _mainWindow.Closed += async (_, _) =>
-            {
-                await shellPage.StopRecordingAsync();
-                _overlayWindow.Close();
-            };
+            _mainWindow.Closed += OnMainWindowClosed;
+        }
+
+        private void OnMainWindowClosed(object sender, WindowEventArgs args)
+        {
+            _mainWindow?.Closed -= OnMainWindowClosed;
+            _overlayWindow?.Close();
+            _host.StopAsync().GetAwaiter().GetResult();
+            _host.Dispose();
         }
     }
 }
+
+
+
