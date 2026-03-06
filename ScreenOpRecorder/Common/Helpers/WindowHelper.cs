@@ -99,6 +99,12 @@ namespace ScreenOpRecorder.Common.Helpers
             appWindow?.MoveAndResize(new RectInt32(x, y, width, height));
         }
 
+        public static void SetDisplayAffinity(Window window, bool isExcluded)
+        {
+            var hwnd = GetHwnd(window);
+            SetWindowDisplayAffinity(hwnd, isExcluded ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
+        }
+
         public static double GetScaleFactor(Window window)
         {
             var hwnd = GetHwnd(window);
@@ -141,6 +147,9 @@ namespace ScreenOpRecorder.Common.Helpers
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_SHOWWINDOW = 0x0040;
 
+        const uint WDA_NONE = 0x00000000;
+        const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
+
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
@@ -154,7 +163,10 @@ namespace ScreenOpRecorder.Common.Helpers
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [DllImport("user32.dll")]
-        private static extern uint GetDpiForWindow(IntPtr hwnd);
+        private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         private static extern IntPtr MonitorFromRect(ref RECT lprc, uint dwFlags);

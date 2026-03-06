@@ -76,20 +76,19 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         private void OnStartRecord()
         {
-            WindowHelper.SetAlwaysOnTop(_mainWindow, false);
             RecordingButton.Icon = new SymbolIcon(Symbol.Stop);
             RecordingButton.Label = "Stop";
         }
 
         private void OnStopRecord()
         {
-            WindowHelper.SetAlwaysOnTop(_mainWindow, true);
             RecordingButton.Icon = new SymbolIcon(Symbol.Video);
             RecordingButton.Label = "Recording";
         }
 
         private void SetWindow()
         {
+            WindowHelper.SetDisplayAffinity(_mainWindow, true);
             WindowHelper.SetAlwaysOnTop(_mainWindow, true);
 
             _mainWindow.ExtendsContentIntoTitleBar = true;
