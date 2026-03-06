@@ -1,7 +1,8 @@
 using System;
+
 using Windows.UI;
 
-namespace ScreenOpRecorder.Presentation.Overlay.Helpers
+namespace ScreenOpRecorder.Presentation.Overlay.Recording.Helpers
 {
     internal static class HexColorParser
     {

@@ -1,6 +1,6 @@
 using ScreenOpRecorder.Domain.Settings.Policies;
 
-namespace ScreenOpRecorder.Presentation.Overlay
+namespace ScreenOpRecorder.Presentation.Overlay.Recording.Models
 {
     public sealed record ClickHighlightSettings(bool Enabled, string ColorHex, double Size)
     {

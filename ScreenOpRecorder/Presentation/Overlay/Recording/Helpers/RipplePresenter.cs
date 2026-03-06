@@ -5,9 +5,11 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 
+using ScreenOpRecorder.Presentation.Overlay.Recording.Models;
+
 using Windows.UI;
 
-namespace ScreenOpRecorder.Presentation.Overlay.Helpers
+namespace ScreenOpRecorder.Presentation.Overlay.Recording.Helpers
 {
     internal sealed class RipplePresenter
     {
@@ -22,7 +24,7 @@ namespace ScreenOpRecorder.Presentation.Overlay.Helpers
             _overlayCanvas = overlayCanvas;
         }
 
-        public void Show(double x, double y, ClickHighlightSettings settings, bool isDouble)
+        public void Show(double x, double y, bool isDouble, ClickHighlightSettings settings)
         {
             if (!settings.Enabled)
             {

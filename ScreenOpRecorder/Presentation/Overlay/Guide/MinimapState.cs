@@ -2,12 +2,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.UI.Xaml;
 
+using ScreenOpRecorder.Application.Recording.Session;
+using ScreenOpRecorder.Common.Helpers;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
+
 using Windows.Foundation;
 
-namespace ScreenOpRecorder.Presentation.Overlay
+namespace ScreenOpRecorder.Presentation.Overlay.Guide
 {
     public partial class MinimapState : ObservableObject
     {
+        private double _scaleFactor = 1.0;
+        private bool _enableMinimap;
+
         [ObservableProperty]
         public partial double Width { get; set; } = 150;
 
@@ -29,7 +36,40 @@ namespace ScreenOpRecorder.Presentation.Overlay
         [ObservableProperty]
         public partial Visibility IsVisible { get; set; } = Visibility.Collapsed;
 
-        public void Update(Rect captureArea, Rect currentViewport)
+        public void SetScaleFactor(double scaleFactor)
+        {
+            _scaleFactor = scaleFactor;
+        }
+
+        public void ApplaySettings(UserSettings settings)
+        {
+            _enableMinimap = settings.EnableMinimap;
+        }
+
+        public void ApplySessionState(RecordingSessionState state)
+        {
+            if (!state.IsRecording || !_enableMinimap)
+            {
+                Reset();
+                return;
+            }
+
+            var captureRect = state.HasSelection
+                ? DpiHelper.ToLogical(
+                    new Rect(state.CaptureArea.X, state.CaptureArea.Y, state.CaptureArea.Width, state.CaptureArea.Height),
+                    _scaleFactor)
+                : Rect.Empty;
+
+            var viewportRect = state.IsRecording
+                ? DpiHelper.ToLogical(
+                    new Rect(state.ZoomArea.X, state.ZoomArea.Y, state.ZoomArea.Width, state.ZoomArea.Height),
+                    _scaleFactor)
+                : captureRect;
+
+            Update(captureRect, viewportRect);
+        }
+
+        private void Update(Rect captureArea, Rect currentViewport)
         {
             // ズーム判定 (幅がキャプチャエリアより小さい場合)
             // 浮動小数点の誤差を考慮して少し余裕を持たせる
@@ -50,20 +90,9 @@ namespace ScreenOpRecorder.Presentation.Overlay
             ViewportHeight = currentViewport.Height * scale;
         }
 
-        public void Reset()
+        private void Reset()
         {
             IsVisible = Visibility.Collapsed;
-        }
-
-        public void ApplySession(bool isRecording, bool enableMinimap, Rect captureArea, Rect currentViewport)
-        {
-            if (!isRecording || !enableMinimap)
-            {
-                Reset();
-                return;
-            }
-
-            Update(captureArea, currentViewport);
         }
     }
 }

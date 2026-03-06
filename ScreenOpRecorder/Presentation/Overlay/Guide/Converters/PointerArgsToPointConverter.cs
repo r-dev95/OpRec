@@ -3,7 +3,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 
-namespace ScreenOpRecorder.Presentation.Overlay.Converters
+namespace ScreenOpRecorder.Presentation.Overlay.Guide.Converters
 {
     public class PointerArgsToPointConverter : Microsoft.UI.Xaml.Data.IValueConverter
     {

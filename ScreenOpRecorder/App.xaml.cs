@@ -9,7 +9,8 @@ using Microsoft.UI.Xaml;
 using NLog.Extensions.Logging;
 
 using ScreenOpRecorder.DependencyInjection;
-using ScreenOpRecorder.Presentation.Overlay;
+using ScreenOpRecorder.Presentation.Overlay.Guide;
+using ScreenOpRecorder.Presentation.Overlay.Recording;
 using ScreenOpRecorder.Presentation.Shell;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -24,12 +25,9 @@ namespace ScreenOpRecorder
     {
         private readonly IHost _host;
         private MainWindow? _mainWindow;
-        private OverlayWindow? _overlayWindow;
+        private RecordingOverlayWindow? _recordingOverlayWindow;
+        private GuideOverlayWindow? _guideOverlayWindow;
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
         public App()
         {
             InitializeComponent();
@@ -53,33 +51,29 @@ namespace ScreenOpRecorder
                 .Build();
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             _host.Start();
 
             _mainWindow = _host.Services.GetRequiredService<MainWindow>();
             _mainWindow.Content = _host.Services.GetRequiredService<ShellPage>();
+            _mainWindow.Closed += OnMainWindowClosed;
             _mainWindow.Activate();
 
-            _overlayWindow = _host.Services.GetRequiredService<OverlayWindow>();
-            _overlayWindow.Activate();
+            _recordingOverlayWindow = _host.Services.GetRequiredService<RecordingOverlayWindow>();
+            _recordingOverlayWindow.Activate();
 
-            _mainWindow.Closed += OnMainWindowClosed;
+            _guideOverlayWindow = _host.Services.GetRequiredService<GuideOverlayWindow>();
+            _guideOverlayWindow.Activate();
         }
 
         private void OnMainWindowClosed(object sender, WindowEventArgs args)
         {
             _mainWindow?.Closed -= OnMainWindowClosed;
-            _overlayWindow?.Close();
+            _recordingOverlayWindow?.Close();
+            _guideOverlayWindow?.Close();
             _host.StopAsync().GetAwaiter().GetResult();
             _host.Dispose();
         }
     }
 }
-
-
-
