@@ -88,7 +88,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         private void SetWindow()
         {
-            WindowHelper.SetDisplayAffinity(_mainWindow, true);
+            WindowHelper.SetExcludeFromCapture(_mainWindow, true);
             WindowHelper.SetAlwaysOnTop(_mainWindow, true);
 
             _mainWindow.ExtendsContentIntoTitleBar = true;

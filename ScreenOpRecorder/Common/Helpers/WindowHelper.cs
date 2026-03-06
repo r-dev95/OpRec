@@ -99,7 +99,7 @@ namespace ScreenOpRecorder.Common.Helpers
             appWindow?.MoveAndResize(new RectInt32(x, y, width, height));
         }
 
-        public static void SetDisplayAffinity(Window window, bool isExcluded)
+        public static void SetExcludeFromCapture(Window window, bool isExcluded)
         {
             var hwnd = GetHwnd(window);
             SetWindowDisplayAffinity(hwnd, isExcluded ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
