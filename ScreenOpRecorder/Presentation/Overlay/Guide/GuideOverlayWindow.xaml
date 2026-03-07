@@ -39,10 +39,11 @@
             </interactivity:Interaction.Behaviors>
 
             <!-- 録画範囲（選択中） -->
-            <Path x:Name="MaskPath" Fill="#88000000">
+            <Path Fill="#88000000"
+                  Visibility="{x:Bind ViewModel.Selection.MaskVisibility, Mode=OneWay}">
                 <Path.Data>
                     <GeometryGroup FillRule="EvenOdd">
-                        <RectangleGeometry x:Name="FullAreaRect" />
+                        <RectangleGeometry Rect="{x:Bind ViewModel.Selection.FullAreaRect, Mode=OneWay}" />
                         <RectangleGeometry Rect="{x:Bind ViewModel.Selection.CaptureAreaRect, Mode=OneWay}" />
                     </GeometryGroup>
                 </Path.Data>
@@ -97,5 +98,13 @@
                         Canvas.Top="{x:Bind ViewModel.Minimap.ViewportY, Mode=OneWay}" />
             </Canvas>
         </Grid>
+
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="120"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   Text="{x:Bind ViewModel.Countdown.Text, Mode=OneWay}"
+                   Visibility="{x:Bind ViewModel.Countdown.Visibility, Mode=OneWay}" />
     </Grid>
 </Window>

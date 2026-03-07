@@ -19,14 +19,13 @@ namespace ScreenOpRecorder.Presentation.Overlay.Recording
             ViewModel = viewModel;
             _ripplePresenter = new RipplePresenter(OverlayCanvas);
 
-            Closed += OnClosed;
             SetWindow();
 
+            Closed += OnClosed;
             ViewModel.SetRecordingUi += OnSetRecordingUi;
             ViewModel.UnSetRecordingUi += OnUnSetRecordingUi;
             ViewModel.ClickHighlightRequested += OnClickHighlightRequested;
-            ViewModel.InitializeWindowState(Bounds.Width, Bounds.Height);
-            ViewModel.Start(WindowHelper.GetScaleFactor(this));
+            ViewModel.Start(WindowHelper.GetScaleFactor(this), Bounds.Width, Bounds.Height);
         }
 
         private void OnClosed(object sender, WindowEventArgs args)

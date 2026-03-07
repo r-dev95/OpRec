@@ -6,8 +6,10 @@ using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 
+using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Input;
 using ScreenOpRecorder.Application.Recording;
+using ScreenOpRecorder.Application.Recording.Events;
 using ScreenOpRecorder.Application.Recording.Session;
 using ScreenOpRecorder.Application.Settings.Ports;
 using ScreenOpRecorder.Domain.Settings.Policies;
@@ -39,6 +41,7 @@ namespace ScreenOpRecorder.Presentation.Shell
         private readonly IRecordingSessionStore _stateStore;
         private readonly IStartRecordingUseCase _startRecordingUseCase;
         private readonly IStopRecordingUseCase _stopRecordingUseCase;
+        private readonly IEventBus _eventBus;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private UiState _state = UiState.Waiting;
@@ -63,7 +66,8 @@ namespace ScreenOpRecorder.Presentation.Shell
             IInputEventListener inputEventListener,
             IRecordingSessionStore stateStore,
             IStartRecordingUseCase startRecordingUseCase,
-            IStopRecordingUseCase stopRecordingUseCase)
+            IStopRecordingUseCase stopRecordingUseCase,
+            IEventBus eventBus)
         {
             _logger = logger;
             _settingsService = settingsService;
@@ -71,6 +75,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             _stateStore = stateStore;
             _startRecordingUseCase = startRecordingUseCase;
             _stopRecordingUseCase = stopRecordingUseCase;
+            _eventBus = eventBus;
 
             try
             {
@@ -139,6 +144,8 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             try
             {
+                await WaitForStartCountdownAsync();
+
                 var started = await _startRecordingUseCase.StartAsync();
                 if (!started)
                 {
@@ -152,9 +159,9 @@ namespace ScreenOpRecorder.Presentation.Shell
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to start recording.");
                 _pendingAction = PendingAction.None;
                 ChangeState(_stateStore.Current);
+                _logger.LogError(ex, "Failed to start recording.");
             }
         }
 
@@ -273,6 +280,28 @@ namespace ScreenOpRecorder.Presentation.Shell
             return string.IsNullOrWhiteSpace(value)
                 ? ""
                 : value.Replace(" ", "", StringComparison.Ordinal).ToUpperInvariant();
+        }
+
+        private async Task WaitForStartCountdownAsync()
+        {
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            IDisposable? subscription = null;
+
+            subscription = _eventBus.Subscribe<RecordingStartCountdownCompletedEvent>(_ =>
+            {
+                subscription?.Dispose();
+                tcs.TrySetResult();
+            });
+
+            try
+            {
+                _eventBus.Publish(new RecordingStartCountdownRequestedEvent());
+                await tcs.Task;
+            }
+            finally
+            {
+                subscription?.Dispose();
+            }
         }
     }
 }

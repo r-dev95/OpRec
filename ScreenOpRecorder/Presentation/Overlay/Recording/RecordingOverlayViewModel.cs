@@ -56,7 +56,7 @@ namespace ScreenOpRecorder.Presentation.Overlay.Recording
             }
         }
 
-        public void Start(double scaleFactor)
+        public void Start(double scaleFactor, double width, double height)
         {
             _inputEventListener.MouseClicked += OnMouseClicked;
             _inputEventListener.KeyDown += OnKeyDown;
@@ -66,10 +66,10 @@ namespace ScreenOpRecorder.Presentation.Overlay.Recording
             _scaleFactor = scaleFactor;
 
             InputFeedback.SetScaleFactor(_scaleFactor);
+            InputFeedback.SetScreenSize(width, height);
 
             ApplySettings(_settingsService.Current);
             ApplySessionState(_stateStore.Current);
-
         }
 
         public void Stop()
@@ -78,11 +78,6 @@ namespace ScreenOpRecorder.Presentation.Overlay.Recording
             _inputEventListener.KeyDown -= OnKeyDown;
             _stateStore.StateChanged -= OnRecordingStateChanged;
             _settingsService.SettingsChanged -= OnSettingsChanged;
-        }
-
-        public void InitializeWindowState(double width, double height)
-        {
-            InputFeedback.SetScreenSize(width, height);
         }
 
         private void OnMouseClicked(int x, int y, bool isDouble)

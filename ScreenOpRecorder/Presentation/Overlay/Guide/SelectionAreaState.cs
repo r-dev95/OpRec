@@ -11,14 +11,20 @@ using Windows.Foundation;
 
 namespace ScreenOpRecorder.Presentation.Overlay.Guide
 {
-    public partial class SelectionRegionState : ObservableObject
+    public partial class SelectionAreaState : ObservableObject
     {
         private double _scaleFactor = 1.0;
         private Point _startPoint;
         private bool _isSelecting;
 
         [ObservableProperty]
+        public partial Rect FullAreaRect { get; set; }
+
+        [ObservableProperty]
         public partial Rect CaptureAreaRect { get; set; }
+
+        [ObservableProperty]
+        public partial Visibility MaskVisibility { get; set; } = Visibility.Visible;
 
         [ObservableProperty]
         public partial Visibility IsCaptureAreaVisible { get; set; } = Visibility.Collapsed;
@@ -34,6 +40,12 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
         public void SetScaleFactor(double scaleFactor)
         {
             _scaleFactor = scaleFactor;
+        }
+
+        public void SetFullAreaRect(double width, double height)
+        {
+            var physicalBounds = DpiHelper.ToPhysical(new Size(width, height), _scaleFactor);
+            FullAreaRect = new Rect(0, 0, physicalBounds.Width, physicalBounds.Height);
         }
         public void BeginSelection(Point startPoint)
         {
@@ -70,6 +82,11 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
             IsCaptureAreaVisible = Visibility.Collapsed;
             IsSizeTagVisible = Visibility.Collapsed;
             CaptureAreaRect = new Rect(0, 0, 0, 0);
+        }
+
+        public void SetMaskVisible(bool visible)
+        {
+            MaskVisibility = visible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void ApplySessionState(RecordingSessionState state)

@@ -1,11 +1,14 @@
 using System;
+using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 
+using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Recording;
+using ScreenOpRecorder.Application.Recording.Events;
 using ScreenOpRecorder.Application.Recording.Session;
 using ScreenOpRecorder.Application.Settings.Ports;
 using ScreenOpRecorder.Common.Helpers;
@@ -22,8 +25,10 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
         private readonly IUserSettingsService _settingsService;
         private readonly IRecordingSessionStore _stateStore;
         private readonly ISelectCaptureAreaUseCase _selectCaptureAreaUseCase;
+        private readonly IEventBus _eventBus;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
+        private IDisposable? _startRequestSubscription;
         private double _scaleFactor = 1.0;
         private bool _isRecording;
 
@@ -34,7 +39,10 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
         public partial bool CanSubmit { get; set; }
 
         [ObservableProperty]
-        public partial SelectionRegionState Selection { get; set; } = new();
+        public partial SelectionAreaState Selection { get; set; } = new();
+
+        [ObservableProperty]
+        public partial CountdownState Countdown { get; set; } = new();
 
         [ObservableProperty]
         public partial MinimapState Minimap { get; set; } = new();
@@ -46,12 +54,14 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
             ILogger<GuideOverlayViewModel> logger,
             IUserSettingsService settingsService,
             IRecordingSessionStore stateStore,
-            ISelectCaptureAreaUseCase selectCaptureAreaUseCase)
+            ISelectCaptureAreaUseCase selectCaptureAreaUseCase,
+            IEventBus eventBus)
         {
             _logger = logger;
             _settingsService = settingsService;
             _stateStore = stateStore;
             _selectCaptureAreaUseCase = selectCaptureAreaUseCase;
+            _eventBus = eventBus;
 
             try
             {
@@ -63,15 +73,18 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
             }
         }
 
-        public void Start(double scaleFactor)
+        public void Start(double scaleFactor, double width, double height)
         {
+            _startRequestSubscription = _eventBus.Subscribe<RecordingStartCountdownRequestedEvent>(OnRecordingStartRequestedAsync);
             _stateStore.StateChanged += OnRecordingStateChanged;
             _settingsService.SettingsChanged += OnSettingsChanged;
 
             _scaleFactor = scaleFactor;
             CanSubmit = true;
 
+            Countdown.SetScaleFactor(_scaleFactor);
             Selection.SetScaleFactor(_scaleFactor);
+            Selection.SetFullAreaRect(width, height);
             Minimap.SetScaleFactor(_scaleFactor);
 
             ApplySettings(_settingsService.Current);
@@ -80,6 +93,8 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
 
         public void Stop()
         {
+            _startRequestSubscription?.Dispose();
+            _startRequestSubscription = null;
             _stateStore.StateChanged -= OnRecordingStateChanged;
             _settingsService.SettingsChanged -= OnSettingsChanged;
         }
@@ -108,6 +123,34 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
             var physical = DpiHelper.ToPhysical(Selection.CaptureAreaRect, _scaleFactor);
             var captureRect = new ScreenRect(physical.X, physical.Y, physical.Width, physical.Height);
             _selectCaptureAreaUseCase.SelectCaptureArea(captureRect);
+        }
+
+        private async void OnRecordingStartRequestedAsync(RecordingStartCountdownRequestedEvent evt)
+        {
+            if (_dispatcherQueue != null)
+            {
+                _dispatcherQueue.TryEnqueue(async () => await RunCountdownAsync());
+                return;
+            }
+
+            await RunCountdownAsync();
+        }
+
+        private async Task RunCountdownAsync()
+        {
+            if (Countdown.IsRunning)
+            {
+                return;
+            }
+
+            try
+            {
+                await Countdown.ShowAsync();
+            }
+            finally
+            {
+                _eventBus.Publish(new RecordingStartCountdownCompletedEvent());
+            }
         }
 
         private void OnSettingsChanged(UserSettings settings)
@@ -145,11 +188,13 @@ namespace ScreenOpRecorder.Presentation.Overlay.Guide
                 if (_isRecording)
                 {
                     CanSubmit = false;
+                    Selection.SetMaskVisible(false);
                     SetRecordingUi?.Invoke();
                 }
                 else
                 {
                     CanSubmit = true;
+                    Selection.SetMaskVisible(true);
                     Selection.ClearSelection();
                     UnSetRecordingUi?.Invoke();
                 }
