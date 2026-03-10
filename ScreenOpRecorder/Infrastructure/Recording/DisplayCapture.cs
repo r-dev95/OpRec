@@ -9,7 +9,6 @@ using ScreenOpRecorder.Application.Settings.Ports;
 using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Domain.Settings.ValueObjects;
 using ScreenOpRecorder.Domain.ValueObjects;
-using ScreenOpRecorder.Infrastructure.Compositing;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
 
 using Windows.Foundation;
@@ -22,9 +21,9 @@ using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public sealed class DisplayCaptureService : IDisposable
+    public sealed class DisplayCapture : IDisposable
     {
-        private readonly ILogger<DisplayCaptureService> _logger;
+        private readonly ILogger<DisplayCapture> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly IMouseInputListener _mouseInputListener;
 
@@ -54,8 +53,8 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         public event Action<RecordingState>? RecordingStateChanged;
         public event Action<ScreenRect>? ZoomAreaChanged;
 
-        public DisplayCaptureService(
-            ILogger<DisplayCaptureService> logger,
+        public DisplayCapture(
+            ILogger<DisplayCapture> logger,
             IUserSettingsService settingsService,
             IMouseInputListener mouseInputListener)
         {

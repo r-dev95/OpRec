@@ -18,8 +18,8 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         private readonly ILogger<RecordingService> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly FileManager _fileManager;
-        private readonly DisplayCaptureService _displayCaptureService;
-        private readonly AudioCaptureService _audioCaptureService;
+        private readonly DisplayCapture _displayCaptureService;
+        private readonly AudioCapture _audioCaptureService;
         private readonly MediaFileMerger _mediaFileMerger;
         private readonly IEventBus _eventBus;
 
@@ -32,8 +32,8 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             ILogger<RecordingService> logger,
             IUserSettingsService settingsService,
             FileManager fileManager,
-            DisplayCaptureService displayCaptureService,
-            AudioCaptureService audioCaptureService,
+            DisplayCapture displayCaptureService,
+            AudioCapture audioCaptureService,
             MediaFileMerger mediaFileMerger,
             IEventBus eventBus)
         {

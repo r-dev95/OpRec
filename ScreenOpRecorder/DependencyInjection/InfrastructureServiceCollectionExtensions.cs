@@ -24,8 +24,8 @@ namespace ScreenOpRecorder.DependencyInjection
             services.AddSingleton<IKeyboardInputListener, KeyboardInputListener>();
             services.AddSingleton<IRecordingService, RecordingService>();
             services.AddSingleton<FileManager>();
-            services.AddSingleton<DisplayCaptureService>();
-            services.AddSingleton<AudioCaptureService>();
+            services.AddSingleton<DisplayCapture>();
+            services.AddSingleton<AudioCapture>();
             services.AddSingleton<MediaFileMerger>();
 
             return services;

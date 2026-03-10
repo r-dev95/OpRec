@@ -10,16 +10,16 @@ using Windows.Storage;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
-    public sealed class AudioCaptureService : IDisposable
+    public sealed class AudioCapture : IDisposable
     {
-        private readonly ILogger<AudioCaptureService> _logger;
+        private readonly ILogger<AudioCapture> _logger;
 
         private MediaCapture? _mediaCapture;
         private LowLagMediaRecording? _recording;
 
         private bool _isRecording;
 
-        public AudioCaptureService(ILogger<AudioCaptureService> logger)
+        public AudioCapture(ILogger<AudioCapture> logger)
         {
             _logger = logger;
         }
