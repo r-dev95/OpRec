@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -8,8 +7,11 @@ using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Recording.Events;
 using ScreenOpRecorder.Application.Recording.Ports;
 using ScreenOpRecorder.Application.Settings.Ports;
+using ScreenOpRecorder.Domain.Settings.ValueObjects;
 using ScreenOpRecorder.Domain.ValueObjects;
+using ScreenOpRecorder.Infrastructure.Recording.Audio;
 using ScreenOpRecorder.Infrastructure.Recording.Models;
+using ScreenOpRecorder.Infrastructure.Recording.Video;
 
 namespace ScreenOpRecorder.Infrastructure.Recording
 {
@@ -18,45 +20,45 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         private readonly ILogger<RecordingService> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly FileManager _fileManager;
-        private readonly DisplayCapture _displayCaptureService;
-        private readonly AudioCapture _audioCaptureService;
+        private readonly VideoCapture _videoCapture;
+        private readonly AudioCapture _audioCapture;
         private readonly MediaFileMerger _mediaFileMerger;
         private readonly IEventBus _eventBus;
 
         private RecordingState _state = RecordingState.Waiting;
         private RecordingFiles? _recordingFiles;
 
-        public string? LastOutputDirPath { get; private set; }
+        public string? LastOutputDirPath => throw new NotImplementedException();
 
         public RecordingService(
             ILogger<RecordingService> logger,
             IUserSettingsService settingsService,
             FileManager fileManager,
-            DisplayCapture displayCaptureService,
-            AudioCapture audioCaptureService,
+            VideoCapture videoCapture,
+            AudioCapture audioCapture,
             MediaFileMerger mediaFileMerger,
             IEventBus eventBus)
         {
             _logger = logger;
             _settingsService = settingsService;
             _fileManager = fileManager;
-            _displayCaptureService = displayCaptureService;
-            _audioCaptureService = audioCaptureService;
+            _videoCapture = videoCapture;
+            _audioCapture = audioCapture;
             _mediaFileMerger = mediaFileMerger;
             _eventBus = eventBus;
 
-            _displayCaptureService.RecordingStateChanged += OnRecordingStateChanged;
-            _displayCaptureService.ZoomAreaChanged += OnZoomAreaChanged;
+            _videoCapture.RecordingStateChanged += OnRecordingStateChanged;
+            _videoCapture.ZoomAreaChanged += OnZoomAreaChanged;
         }
 
         public bool TrySelectCaptureArea(ScreenRect captureArea)
         {
-            return _displayCaptureService.TrySelectCaptureArea(captureArea);
+            return _videoCapture.TrySelectCaptureArea(captureArea);
         }
 
         public async Task<bool> StartAsync()
         {
-            if (_state != RecordingState.Ready || !_displayCaptureService.HasSelectedCaptureArea)
+            if (_state != RecordingState.Ready || !_videoCapture.HasSelectedCaptureArea)
             {
                 return false;
             }
@@ -68,25 +70,25 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                 {
                     return false;
                 }
-                LastOutputDirPath = Path.GetDirectoryName(_recordingFiles.FinalFilePath.Path);
 
-                var started = await _displayCaptureService.StartAsync(_recordingFiles.VideoFilePath);
+                var started = await _videoCapture.StartAsync(_recordingFiles.VideoFile);
                 if (!started)
                 {
                     await RollbackStartAsync("Failed to start display capture service.");
                     return false;
                 }
 
-                if (_settingsService.Current.EnableAudioCapture)
+                var shouldCaptureAudio = _settingsService.Current.AudioCaptureMode != AudioCaptureMode.Off;
+                if (shouldCaptureAudio)
                 {
-                    var audioFilePath = _recordingFiles.AudioFilePath;
-                    if (audioFilePath == null)
+                    var AudioFile = _recordingFiles.AudioFile;
+                    if (AudioFile == null)
                     {
                         await RollbackStartAsync("Audio output file is not prepared.");
                         return false;
                     }
 
-                    started = await _audioCaptureService.StartAsync(audioFilePath);
+                    started = await _audioCapture.StartAsync(_recordingFiles);
                     if (!started)
                     {
                         await RollbackStartAsync("Failed to start audio capture service.");
@@ -113,14 +115,16 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             try
             {
-                await _displayCaptureService.StopAsync();
+                await _videoCapture.StopAsync();
 
-                if (_settingsService.Current.EnableAudioCapture)
+                var shouldCaptureAudio = _settingsService.Current.AudioCaptureMode != AudioCaptureMode.Off;
+                if (shouldCaptureAudio)
                 {
-                    await _audioCaptureService.StopAsync();
+                    await _audioCapture.StopAsync();
                     if (_recordingFiles != null)
                     {
-                        await _mediaFileMerger.MergeAsync(_recordingFiles);
+                        var mergeSucceeded = await _mediaFileMerger.MergeAsync(_recordingFiles);
+                        await _fileManager.CleanupAfterMergeAsync(_recordingFiles, mergeSucceeded);
                     }
                 }
             }
@@ -154,7 +158,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         {
             try
             {
-                await _displayCaptureService.StopAsync();
+                await _videoCapture.StopAsync();
             }
             catch
             {
@@ -162,7 +166,7 @@ namespace ScreenOpRecorder.Infrastructure.Recording
 
             try
             {
-                await _audioCaptureService.StopAsync();
+                await _audioCapture.StopAsync();
             }
             catch
             {

@@ -24,7 +24,7 @@ namespace ScreenOpRecorder.Presentation.Settings
         public partial QualityPreset QualityPreset { get; set; } = QualityPreset.High;
 
         [ObservableProperty]
-        public partial bool EnableAudioCapture { get; set; }
+        public partial AudioCaptureMode AudioCaptureMode { get; set; } = AudioCaptureMode.Off;
 
         [ObservableProperty]
         public partial bool EnableClickHighlight { get; set; } = true;
@@ -59,6 +59,7 @@ namespace ScreenOpRecorder.Presentation.Settings
         public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
         public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
         public KeyDisplayPosition[] KeyDisplayPositionOptions { get; } = Enum.GetValues<KeyDisplayPosition>();
+        public AudioCaptureMode[] AudioCaptureModeOptions { get; } = Enum.GetValues<AudioCaptureMode>();
 
         public event Action? CloseRequested;
 
@@ -84,7 +85,7 @@ namespace ScreenOpRecorder.Presentation.Settings
                 OutputDirPath = OutputDirPath,
                 RecordingFps = RecordingFps,
                 QualityPreset = QualityPreset,
-                EnableAudioCapture = EnableAudioCapture,
+                AudioCaptureMode = AudioCaptureMode,
                 EnableClickHighlight = EnableClickHighlight,
                 ClickHighlightColor = ClickHighlightColor,
                 ClickHighlightSize = ClickHighlightSize,
@@ -113,7 +114,7 @@ namespace ScreenOpRecorder.Presentation.Settings
             OutputDirPath = settings.OutputDirPath;
             RecordingFps = settings.RecordingFps;
             QualityPreset = settings.QualityPreset;
-            EnableAudioCapture = settings.EnableAudioCapture;
+            AudioCaptureMode = settings.AudioCaptureMode;
             EnableClickHighlight = settings.EnableClickHighlight;
             ClickHighlightColor = settings.ClickHighlightColor;
             ClickHighlightSize = settings.ClickHighlightSize;

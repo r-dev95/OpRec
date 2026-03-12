@@ -19,11 +19,11 @@ using Windows.Media.MediaProperties;
 using Windows.Media.Transcoding;
 using Windows.Storage;
 
-namespace ScreenOpRecorder.Infrastructure.Recording
+namespace ScreenOpRecorder.Infrastructure.Recording.Video
 {
-    public sealed class DisplayCapture : IDisposable
+    public sealed class VideoCapture : IDisposable
     {
-        private readonly ILogger<DisplayCapture> _logger;
+        private readonly ILogger<VideoCapture> _logger;
         private readonly IUserSettingsService _settingsService;
         private readonly IMouseInputListener _mouseInputListener;
 
@@ -53,8 +53,8 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         public event Action<RecordingState>? RecordingStateChanged;
         public event Action<ScreenRect>? ZoomAreaChanged;
 
-        public DisplayCapture(
-            ILogger<DisplayCapture> logger,
+        public VideoCapture(
+            ILogger<VideoCapture> logger,
             IUserSettingsService settingsService,
             IMouseInputListener mouseInputListener)
         {

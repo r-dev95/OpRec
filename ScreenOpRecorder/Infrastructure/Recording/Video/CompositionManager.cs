@@ -6,7 +6,7 @@ using ScreenOpRecorder.Application.Input.Ports;
 
 using Windows.Foundation;
 
-namespace ScreenOpRecorder.Infrastructure.Recording
+namespace ScreenOpRecorder.Infrastructure.Recording.Video
 {
     public class CompositionManager : IDisposable
     {

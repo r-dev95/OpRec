@@ -62,6 +62,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.1.1" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>

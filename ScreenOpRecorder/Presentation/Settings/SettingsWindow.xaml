@@ -60,8 +60,9 @@
                         </controls:SettingsCard>
 
                         <controls:SettingsCard Header="Audio recording"
-                                               Description="Record microphone audio with the video.">
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.EnableAudioCapture, Mode=TwoWay}" />
+                                               Description="Select audio source to record.">
+                            <ComboBox ItemsSource="{x:Bind ViewModel.AudioCaptureModeOptions}"
+                                      SelectedItem="{x:Bind ViewModel.AudioCaptureMode, Mode=TwoWay}" />
                         </controls:SettingsCard>
 
                         <controls:SettingsCard Header="Open output directory after recording">

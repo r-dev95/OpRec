@@ -8,18 +8,17 @@ using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
 using Windows.Storage;
 
-namespace ScreenOpRecorder.Infrastructure.Recording
+namespace ScreenOpRecorder.Infrastructure.Recording.Audio
 {
-    public sealed class AudioCapture : IDisposable
+    public sealed class MicAudioCapture : IDisposable
     {
-        private readonly ILogger<AudioCapture> _logger;
+        private readonly ILogger<MicAudioCapture> _logger;
 
         private MediaCapture? _mediaCapture;
         private LowLagMediaRecording? _recording;
-
         private bool _isRecording;
 
-        public AudioCapture(ILogger<AudioCapture> logger)
+        public MicAudioCapture(ILogger<MicAudioCapture> logger)
         {
             _logger = logger;
         }
@@ -35,11 +34,11 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             {
                 await StartCaptureAsync(filePath);
                 _isRecording = true;
-
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogWarning(ex, "Failed to start microphone capture.");
                 await StopAsync();
                 return false;
             }
@@ -50,7 +49,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             if (!_isRecording)
             {
                 Cleanup();
-                _isRecording = false;
                 return;
             }
 
@@ -81,10 +79,8 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                 MediaCategory = MediaCategory.Media
             });
 
-            _recording = await _mediaCapture.PrepareLowLagRecordToStorageFileAsync(
-                MediaEncodingProfile.CreateM4a(AudioEncodingQuality.Auto),
-                filePath);
-
+            var profile = MediaEncodingProfile.CreateWav(AudioEncodingQuality.Auto);
+            _recording = await _mediaCapture.PrepareLowLagRecordToStorageFileAsync(profile, filePath);
             await _recording.StartAsync();
         }
 
@@ -92,7 +88,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording
         {
             _mediaCapture?.Dispose();
             _mediaCapture = null;
-
             _recording = null;
         }
     }

@@ -126,12 +126,16 @@ namespace ScreenOpRecorder.Infrastructure.Settings
                 ? UserSettingsConstraints.DefaultClickHighlightColor
                 : settings.ClickHighlightColor.Trim();
 
+            var audioMode = Enum.IsDefined(typeof(AudioCaptureMode), settings.AudioCaptureMode)
+                ? settings.AudioCaptureMode
+                : AudioCaptureMode.Off;
+
             return new UserSettings
             {
                 OutputDirPath = outputPath,
                 RecordingFps = fps,
                 QualityPreset = settings.QualityPreset,
-                EnableAudioCapture = settings.EnableAudioCapture,
+                AudioCaptureMode = audioMode,
                 EnableClickHighlight = settings.EnableClickHighlight,
                 ClickHighlightColor = color,
                 ClickHighlightSize = clickSize,

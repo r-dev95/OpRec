@@ -8,6 +8,8 @@ using ScreenOpRecorder.Application.System.Ports;
 using ScreenOpRecorder.Infrastructure.Events;
 using ScreenOpRecorder.Infrastructure.Input;
 using ScreenOpRecorder.Infrastructure.Recording;
+using ScreenOpRecorder.Infrastructure.Recording.Audio;
+using ScreenOpRecorder.Infrastructure.Recording.Video;
 using ScreenOpRecorder.Infrastructure.Settings;
 using ScreenOpRecorder.Infrastructure.System;
 
@@ -24,9 +26,13 @@ namespace ScreenOpRecorder.DependencyInjection
             services.AddSingleton<IKeyboardInputListener, KeyboardInputListener>();
             services.AddSingleton<IRecordingService, RecordingService>();
             services.AddSingleton<FileManager>();
-            services.AddSingleton<DisplayCapture>();
-            services.AddSingleton<AudioCapture>();
             services.AddSingleton<MediaFileMerger>();
+            services.AddSingleton<VideoCapture>();
+            services.AddSingleton<AudioCapture>();
+            services.AddSingleton<MicAudioCapture>();
+            services.AddSingleton<SystemAudioCapture>();
+            services.AddSingleton<AudioMixer>();
+            services.AddSingleton<AudioTranscoder>();
 
             return services;
         }

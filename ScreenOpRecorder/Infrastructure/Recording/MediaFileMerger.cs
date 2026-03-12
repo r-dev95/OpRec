@@ -24,15 +24,15 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             _settingsService = settingsService;
         }
 
-        public async Task MergeAsync(RecordingFiles files)
+        public async Task<bool> MergeAsync(RecordingFiles files)
         {
-            var finalOutputFile = files.FinalFilePath;
-            var videoOutputFile = files.VideoFilePath;
-            var audioOutputFile = files.AudioFilePath;
+            var finalOutputFile = files.FinalFile;
+            var videoOutputFile = files.VideoFile;
+            var audioOutputFile = files.AudioFile;
 
             if (finalOutputFile == null || videoOutputFile == null || audioOutputFile == null)
             {
-                return;
+                return false;
             }
 
             try
@@ -57,27 +57,12 @@ namespace ScreenOpRecorder.Infrastructure.Recording
                     throw new InvalidOperationException($"Audio merge failed: {result}");
                 }
 
-                await videoOutputFile.DeleteAsync();
-                await audioOutputFile.DeleteAsync();
+                return true;
             }
             catch (Exception ex)
             {
-                if (videoOutputFile.Path != finalOutputFile.Path)
-                {
-                    await videoOutputFile.CopyAndReplaceAsync(finalOutputFile);
-                }
-
-                try
-                {
-                    await audioOutputFile.DeleteAsync();
-                }
-                catch
-                {
-                }
                 _logger.LogWarning(ex, "Failed to merge video and audio. Keeping video-only output.");
-            }
-            finally
-            {
+                return false;
             }
         }
 

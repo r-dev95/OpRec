@@ -10,7 +10,7 @@ namespace ScreenOpRecorder.Domain.Settings.ValueObjects
 
         public QualityPreset QualityPreset { get; set; } = QualityPreset.High;
 
-        public bool EnableAudioCapture { get; set; } = false;
+        public AudioCaptureMode AudioCaptureMode { get; set; } = AudioCaptureMode.Off;
 
         public bool EnableClickHighlight { get; set; } = true;
 
