@@ -10,6 +10,7 @@ namespace ScreenOpRecorder.DependencyInjection
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddSingleton<IHotkeyRouter, HotkeyRouter>();
             services.AddSingleton<IInputEventListener, InputEventListener>();
             services.AddSingleton<IRecordingSessionStore, RecordingSessionStore>();
             services.AddSingleton<ISelectCaptureAreaUseCase, SelectCaptureAreaUseCase>();

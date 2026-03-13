@@ -11,9 +11,6 @@ using ScreenOpRecorder.Application.Input;
 using ScreenOpRecorder.Application.Recording;
 using ScreenOpRecorder.Application.Recording.Events;
 using ScreenOpRecorder.Application.Recording.Session;
-using ScreenOpRecorder.Application.Settings.Ports;
-using ScreenOpRecorder.Domain.Settings.Policies;
-using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 namespace ScreenOpRecorder.Presentation.Shell
 {
@@ -36,7 +33,7 @@ namespace ScreenOpRecorder.Presentation.Shell
         }
 
         private readonly ILogger<ShellViewModel> _logger;
-        private readonly IUserSettingsService _settingsService;
+        private readonly IHotkeyRouter _hotkeyRouter;
         private readonly IInputEventListener _inputEventListener;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IStartRecordingUseCase _startRecordingUseCase;
@@ -49,10 +46,6 @@ namespace ScreenOpRecorder.Presentation.Shell
         private PendingAction _pendingAction = PendingAction.None;
 
         private bool _isStarted;
-        private bool _isHotkeyHandling;
-        private bool _isZoomHotkeyHandling;
-        private string _toggleHotkey = UserSettingsConstraints.DefaultHotkey;
-        private string _toggleZoomHotkey = UserSettingsConstraints.DefaultZoomHotkey;
 
         [ObservableProperty]
         public partial TimeState TimeState { get; set; } = new();
@@ -65,7 +58,7 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         public ShellViewModel(
             ILogger<ShellViewModel> logger,
-            IUserSettingsService settingsService,
+            IHotkeyRouter hotkeyRouter,
             IInputEventListener inputEventListener,
             IRecordingSessionStore stateStore,
             IStartRecordingUseCase startRecordingUseCase,
@@ -74,7 +67,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             IEventBus eventBus)
         {
             _logger = logger;
-            _settingsService = settingsService;
+            _hotkeyRouter = hotkeyRouter;
             _inputEventListener = inputEventListener;
             _stateStore = stateStore;
             _startRecordingUseCase = startRecordingUseCase;
@@ -90,8 +83,10 @@ namespace ScreenOpRecorder.Presentation.Shell
             {
             }
 
-            ApplySettings(_settingsService.Current);
             ChangeState(_stateStore.Current);
+
+            _hotkeyRouter.Register(HotkeyAction.ToggleRecording, ToggleRecordingAsync);
+            _hotkeyRouter.Register(HotkeyAction.ToggleZoomAtCursor, ToggleZoomAtCursorAsync);
         }
 
         public void Start()
@@ -101,7 +96,6 @@ namespace ScreenOpRecorder.Presentation.Shell
                 return;
             }
 
-            _settingsService.SettingsChanged += OnSettingsChanged;
             _stateStore.StateChanged += OnRecordingStateChanged;
             _inputEventListener.KeyDown += OnKeyDown;
             _isStarted = true;
@@ -116,7 +110,6 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             await StopRecordingAsync();
 
-            _settingsService.SettingsChanged -= OnSettingsChanged;
             _stateStore.StateChanged -= OnRecordingStateChanged;
             _inputEventListener.KeyDown -= OnKeyDown;
             _isStarted = false;
@@ -233,88 +226,46 @@ namespace ScreenOpRecorder.Presentation.Shell
             StartReady = next is UiState.Ready or UiState.Recording;
         }
 
-        private void OnSettingsChanged(UserSettings settings)
+        private async void OnKeyDown(string keyName)
+        {
+            await _hotkeyRouter.TryHandleAsync(keyName);
+        }
+
+        private Task ToggleZoomAtCursorAsync()
+        {
+            return RunOnUiAsync(() =>
+            {
+                _toggleZoomAtCursorUseCase.TryToggle();
+                return Task.CompletedTask;
+            });
+        }
+
+        private Task ToggleRecordingAsync()
+        {
+            return RunOnUiAsync(RecordingAsync);
+        }
+
+        private Task RunOnUiAsync(Func<Task> action)
         {
             if (_dispatcherQueue != null)
             {
-                _dispatcherQueue.TryEnqueue(() => ApplySettings(settings));
-            }
-            else
-            {
-                ApplySettings(settings);
-            }
-        }
-
-        private void ApplySettings(UserSettings settings)
-        {
-            _toggleHotkey = NormalizeHotkey(settings.ToggleRecordingHotkey);
-            _toggleZoomHotkey = NormalizeHotkey(settings.ToggleZoomHotkey);
-        }
-
-        private async void OnKeyDown(string keyName)
-        {
-            if (!_isZoomHotkeyHandling && !string.IsNullOrWhiteSpace(_toggleZoomHotkey))
-            {
-                if (string.Equals(NormalizeHotkey(keyName), _toggleZoomHotkey, StringComparison.OrdinalIgnoreCase))
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                _dispatcherQueue.TryEnqueue(async () =>
                 {
-                    _isZoomHotkeyHandling = true;
                     try
                     {
-                        if (_dispatcherQueue != null)
-                        {
-                            _dispatcherQueue.TryEnqueue(ToggleZoomAtCursor);
-                        }
-                        else
-                        {
-                            ToggleZoomAtCursor();
-                        }
+                        await action();
+                        tcs.TrySetResult();
                     }
-                    finally
+                    catch (Exception ex)
                     {
-                        _isZoomHotkeyHandling = false;
+                        tcs.TrySetException(ex);
                     }
-                    return;
-                }
+                });
+                return tcs.Task;
             }
 
-            if (_isHotkeyHandling || string.IsNullOrWhiteSpace(_toggleHotkey))
-            {
-                return;
-            }
-
-            if (!string.Equals(NormalizeHotkey(keyName), _toggleHotkey, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            _isHotkeyHandling = true;
-            try
-            {
-                if (_dispatcherQueue != null)
-                {
-                    _dispatcherQueue.TryEnqueue(async () => await RecordingAsync());
-                }
-                else
-                {
-                    await RecordingAsync();
-                }
-            }
-            finally
-            {
-                _isHotkeyHandling = false;
-            }
-        }
-
-        private void ToggleZoomAtCursor()
-        {
-            _toggleZoomAtCursorUseCase.TryToggle();
-        }
-
-        private static string NormalizeHotkey(string value)
-        {
-            return string.IsNullOrWhiteSpace(value)
-                ? ""
-                : value.Replace(" ", "", StringComparison.Ordinal).ToUpperInvariant();
+            return action();
         }
 
         private async Task WaitForStartCountdownAsync()
