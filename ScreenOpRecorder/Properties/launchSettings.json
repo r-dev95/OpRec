@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScreenOpRecorder (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ScreenOpRecorder (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
