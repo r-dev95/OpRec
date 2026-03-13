@@ -134,6 +134,10 @@
                                                Description="Example: Ctrl+Shift+R">
                             <TextBox Text="{x:Bind ViewModel.ToggleRecordingHotkey, Mode=TwoWay}" />
                         </controls:SettingsCard>
+                        <controls:SettingsCard Header="Toggle zoom hotkey"
+                                               Description="Example: Ctrl+Shift+Z">
+                            <TextBox Text="{x:Bind ViewModel.ToggleZoomHotkey, Mode=TwoWay}" />
+                        </controls:SettingsCard>
                     </StackPanel>
                 </ScrollViewer>
             </TabViewItem>

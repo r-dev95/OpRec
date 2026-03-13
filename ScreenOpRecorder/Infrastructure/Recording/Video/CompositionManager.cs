@@ -38,6 +38,11 @@ namespace ScreenOpRecorder.Infrastructure.Recording.Video
             _frameZoom.DrawZoomFrame(drawingSession, renderTarget.Size, rawFrame);
         }
 
+        public void ToggleZoomAt(float relativeX, float relativeY)
+        {
+            _frameZoom.ToggleZoom(relativeX, relativeY);
+        }
+
         private void OnZoomAction(Rect rect)
         {
             ZoomChanged?.Invoke(rect);

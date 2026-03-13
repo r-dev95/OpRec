@@ -20,6 +20,7 @@ namespace ScreenOpRecorder.Domain.Settings.Policies
         public const double DefaultClickHighlightSize = 20.0;
 
         public const string DefaultHotkey = "Ctrl+Shift+R";
+        public const string DefaultZoomHotkey = "Ctrl+Shift+Z";
         public const string DefaultClickHighlightColor = "#00FFFF";
     }
 }

@@ -63,26 +63,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording.Video
             _mouseInputListener = mouseInputListener;
         }
 
-        public bool TrySelectCaptureArea(ScreenRect captureArea)
-        {
-            if (_state != RecordingState.Waiting && _state != RecordingState.Ready)
-            {
-                return false;
-            }
-
-            var captureItem = WindowHelper.CreateForMonitor(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
-            if (captureItem == null)
-            {
-                return false;
-            }
-
-            _item = captureItem;
-            _captureArea = new Rect(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
-
-            ChangeState(RecordingState.Ready);
-            return true;
-        }
-
         public async Task<bool> StartAsync(StorageFile filePath)
         {
             if (_state != RecordingState.Ready || _item == null)
@@ -145,6 +125,56 @@ namespace ScreenOpRecorder.Infrastructure.Recording.Video
         public void Dispose()
         {
             Cleanup();
+        }
+
+        public bool TrySelectCaptureArea(ScreenRect captureArea)
+        {
+            if (_state != RecordingState.Waiting && _state != RecordingState.Ready)
+            {
+                return false;
+            }
+
+            var captureItem = WindowHelper.CreateForMonitor(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
+            if (captureItem == null)
+            {
+                return false;
+            }
+
+            _item = captureItem;
+            _captureArea = new Rect(captureArea.X, captureArea.Y, captureArea.Width, captureArea.Height);
+
+            ChangeState(RecordingState.Ready);
+            return true;
+        }
+
+        public bool TryToggleZoomAt(int screenX, int screenY)
+        {
+            if (_state != RecordingState.Recording)
+            {
+                return false;
+            }
+
+            var compositionManager = _compositionManager;
+            if (compositionManager == null)
+            {
+                return false;
+            }
+
+            var captureLeft = _captureArea.X;
+            var captureTop = _captureArea.Y;
+            var captureRight = _captureArea.X + _captureArea.Width;
+            var captureBottom = _captureArea.Y + _captureArea.Height;
+
+            if (screenX < captureLeft || screenX > captureRight
+                || screenY < captureTop || screenY > captureBottom)
+            {
+                return false;
+            }
+
+            var relativeX = (float)(screenX - captureLeft);
+            var relativeY = (float)(screenY - captureTop);
+            compositionManager.ToggleZoomAt(relativeX, relativeY);
+            return true;
         }
 
         private void Setup()

@@ -11,5 +11,7 @@ namespace ScreenOpRecorder.Application.Recording.Ports
         Task<bool> StartAsync();
 
         Task StopAsync();
+
+        bool TryToggleZoomAt(int screenX, int screenY);
     }
 }

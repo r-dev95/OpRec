@@ -20,8 +20,9 @@ namespace ScreenOpRecorder.DependencyInjection
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             services.AddSingleton<IEventBus, EventBus>();
-            services.AddSingleton<IDirectoryOpenService, DirectoryOpenService>();
             services.AddSingleton<IUserSettingsService, UserSettingsService>();
+            services.AddSingleton<IDirectoryOpenService, DirectoryOpenService>();
+            services.AddSingleton<ICursorPositionService, CursorPositionService>();
             services.AddSingleton<IMouseInputListener, MouseInputListener>();
             services.AddSingleton<IKeyboardInputListener, KeyboardInputListener>();
             services.AddSingleton<IRecordingService, RecordingService>();

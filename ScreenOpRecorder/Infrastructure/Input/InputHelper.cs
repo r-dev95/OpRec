@@ -88,6 +88,9 @@ namespace ScreenOpRecorder.Infrastructure.Input
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(int nIndex);
 
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+
 
         [StructLayout(LayoutKind.Sequential)]
         public struct KBDLLHOOKSTRUCT

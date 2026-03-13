@@ -15,6 +15,7 @@ namespace ScreenOpRecorder.DependencyInjection
             services.AddSingleton<ISelectCaptureAreaUseCase, SelectCaptureAreaUseCase>();
             services.AddSingleton<IStartRecordingUseCase, StartRecordingUseCase>();
             services.AddSingleton<IStopRecordingUseCase, StopRecordingUseCase>();
+            services.AddSingleton<IToggleZoomAtCursorUseCase, ToggleZoomAtCursorUseCase>();
             services.AddHostedService<RecordingSessionZoomSyncHostedService>();
 
             return services;

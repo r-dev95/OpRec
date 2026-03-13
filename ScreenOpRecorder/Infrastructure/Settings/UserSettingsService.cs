@@ -121,6 +121,9 @@ namespace ScreenOpRecorder.Infrastructure.Settings
             var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
                 ? UserSettingsConstraints.DefaultHotkey
                 : settings.ToggleRecordingHotkey.Trim();
+            var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
+                ? UserSettingsConstraints.DefaultZoomHotkey
+                : settings.ToggleZoomHotkey.Trim();
 
             var color = string.IsNullOrWhiteSpace(settings.ClickHighlightColor)
                 ? UserSettingsConstraints.DefaultClickHighlightColor
@@ -145,6 +148,7 @@ namespace ScreenOpRecorder.Infrastructure.Settings
                 EnableMinimap = settings.EnableMinimap,
                 ZoomFactor = zoom,
                 ToggleRecordingHotkey = hotkey,
+                ToggleZoomHotkey = zoomHotkey,
                 OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording
             };
         }

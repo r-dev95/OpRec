@@ -51,11 +51,6 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             _videoCapture.ZoomAreaChanged += OnZoomAreaChanged;
         }
 
-        public bool TrySelectCaptureArea(ScreenRect captureArea)
-        {
-            return _videoCapture.TrySelectCaptureArea(captureArea);
-        }
-
         public async Task<bool> StartAsync()
         {
             if (_state != RecordingState.Ready || !_videoCapture.HasSelectedCaptureArea)
@@ -138,6 +133,16 @@ namespace ScreenOpRecorder.Infrastructure.Recording
             {
                 _recordingFiles = null;
             }
+        }
+
+        public bool TrySelectCaptureArea(ScreenRect captureArea)
+        {
+            return _videoCapture.TrySelectCaptureArea(captureArea);
+        }
+
+        public bool TryToggleZoomAt(int screenX, int screenY)
+        {
+            return _videoCapture.TryToggleZoomAt(screenX, screenY);
         }
 
         private async Task RollbackStartAsync(string message, Exception? ex = null)

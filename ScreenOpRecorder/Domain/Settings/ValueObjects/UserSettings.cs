@@ -30,6 +30,8 @@ namespace ScreenOpRecorder.Domain.Settings.ValueObjects
 
         public string ToggleRecordingHotkey { get; set; } = UserSettingsConstraints.DefaultHotkey;
 
+        public string ToggleZoomHotkey { get; set; } = UserSettingsConstraints.DefaultZoomHotkey;
+
         public bool OpenDirectoryAfterRecording { get; set; } = false;
     }
 }

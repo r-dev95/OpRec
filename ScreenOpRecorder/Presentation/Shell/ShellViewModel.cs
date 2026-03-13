@@ -41,6 +41,7 @@ namespace ScreenOpRecorder.Presentation.Shell
         private readonly IRecordingSessionStore _stateStore;
         private readonly IStartRecordingUseCase _startRecordingUseCase;
         private readonly IStopRecordingUseCase _stopRecordingUseCase;
+        private readonly IToggleZoomAtCursorUseCase _toggleZoomAtCursorUseCase;
         private readonly IEventBus _eventBus;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
@@ -49,7 +50,9 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         private bool _isStarted;
         private bool _isHotkeyHandling;
+        private bool _isZoomHotkeyHandling;
         private string _toggleHotkey = UserSettingsConstraints.DefaultHotkey;
+        private string _toggleZoomHotkey = UserSettingsConstraints.DefaultZoomHotkey;
 
         [ObservableProperty]
         public partial TimeState TimeState { get; set; } = new();
@@ -67,6 +70,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             IRecordingSessionStore stateStore,
             IStartRecordingUseCase startRecordingUseCase,
             IStopRecordingUseCase stopRecordingUseCase,
+            IToggleZoomAtCursorUseCase toggleZoomAtCursorUseCase,
             IEventBus eventBus)
         {
             _logger = logger;
@@ -75,6 +79,7 @@ namespace ScreenOpRecorder.Presentation.Shell
             _stateStore = stateStore;
             _startRecordingUseCase = startRecordingUseCase;
             _stopRecordingUseCase = stopRecordingUseCase;
+            _toggleZoomAtCursorUseCase = toggleZoomAtCursorUseCase;
             _eventBus = eventBus;
 
             try
@@ -243,10 +248,35 @@ namespace ScreenOpRecorder.Presentation.Shell
         private void ApplySettings(UserSettings settings)
         {
             _toggleHotkey = NormalizeHotkey(settings.ToggleRecordingHotkey);
+            _toggleZoomHotkey = NormalizeHotkey(settings.ToggleZoomHotkey);
         }
 
         private async void OnKeyDown(string keyName)
         {
+            if (!_isZoomHotkeyHandling && !string.IsNullOrWhiteSpace(_toggleZoomHotkey))
+            {
+                if (string.Equals(NormalizeHotkey(keyName), _toggleZoomHotkey, StringComparison.OrdinalIgnoreCase))
+                {
+                    _isZoomHotkeyHandling = true;
+                    try
+                    {
+                        if (_dispatcherQueue != null)
+                        {
+                            _dispatcherQueue.TryEnqueue(ToggleZoomAtCursor);
+                        }
+                        else
+                        {
+                            ToggleZoomAtCursor();
+                        }
+                    }
+                    finally
+                    {
+                        _isZoomHotkeyHandling = false;
+                    }
+                    return;
+                }
+            }
+
             if (_isHotkeyHandling || string.IsNullOrWhiteSpace(_toggleHotkey))
             {
                 return;
@@ -273,6 +303,11 @@ namespace ScreenOpRecorder.Presentation.Shell
             {
                 _isHotkeyHandling = false;
             }
+        }
+
+        private void ToggleZoomAtCursor()
+        {
+            _toggleZoomAtCursorUseCase.TryToggle();
         }
 
         private static string NormalizeHotkey(string value)
