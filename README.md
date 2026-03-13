@@ -1,7 +1,7 @@
-# ScreenOpRecorder
+# OpRec
 
 画面の「伝えたい動き」を、迷わず録れる。
-ScreenOpRecorder は Windows 向けの画面録画ツールです。
+OpRec は Windows 向けの画面録画ツールです。
 ズーム、クリックハイライト、キー表示、システム/マイク音声録音までまとめて扱えます。
 
 ## こんなときに便利
@@ -35,8 +35,8 @@ ScreenOpRecorder は Windows 向けの画面録画ツールです。
 ## ビルドと実行
 
 1. リポジトリをクローン
-1. Visual Studio で `ScreenOpRecorder.slnx` を開く
-1. スタートアッププロジェクトを `ScreenOpRecorder` に設定
+1. Visual Studio で `OpRec.slnx` を開く
+1. スタートアッププロジェクトを `OpRec` に設定
 1. ビルドして実行
 
 ## アーキテクチャ

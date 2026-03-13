@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OpRec (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "OpRec (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

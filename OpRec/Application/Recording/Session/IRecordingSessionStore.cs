@@ -1,0 +1,21 @@
+using System;
+
+using OpRec.Domain.ValueObjects;
+
+namespace OpRec.Application.Recording.Session
+{
+    public interface IRecordingSessionStore
+    {
+        RecordingSessionState Current { get; }
+
+        event Action<RecordingSessionState>? StateChanged;
+
+        void SetSelection(ScreenRect captureArea);
+
+        void SetZoomArea(ScreenRect zoomArea);
+
+        void SetRecording(bool isRecording);
+
+        void ClearSelection();
+    }
+}
