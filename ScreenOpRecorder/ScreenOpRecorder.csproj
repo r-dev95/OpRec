@@ -24,7 +24,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Presentation\Settings\SettingsWindow.xaml" />
-    <None Remove="Presentation\Overlay\OverlayWindow.xaml" />
+    <None Remove="Presentation\Overlay\RecordingOverlayWindow.xaml" />
+    <None Remove="Presentation\Overlay\GuideOverlayWindow.xaml" />
     <None Remove="Presentation\Shell\ShellPage.xaml" />
   </ItemGroup>
 
@@ -61,6 +62,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.1.1" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
   <ItemGroup>
@@ -74,7 +76,12 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Presentation\Overlay\OverlayWindow.xaml">
+    <Page Update="Presentation\Overlay\RecordingOverlayWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Presentation\Overlay\GuideOverlayWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

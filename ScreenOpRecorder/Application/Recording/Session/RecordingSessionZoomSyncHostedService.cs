@@ -2,8 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Recording.Events;
@@ -30,7 +30,6 @@ namespace ScreenOpRecorder.Application.Recording.Session
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _zoomSubscription = _eventBus.Subscribe<ZoomAreaChangedEvent>(OnZoomAreaChanged);
-            _logger.LogDebug("RecordingSessionZoomSyncHostedService started.");
             return Task.CompletedTask;
         }
 
@@ -38,7 +37,6 @@ namespace ScreenOpRecorder.Application.Recording.Session
         {
             _zoomSubscription?.Dispose();
             _zoomSubscription = null;
-            _logger.LogDebug("RecordingSessionZoomSyncHostedService stopped.");
             return Task.CompletedTask;
         }
 
@@ -51,11 +49,6 @@ namespace ScreenOpRecorder.Application.Recording.Session
         private void OnZoomAreaChanged(ZoomAreaChangedEvent evt)
         {
             _stateStore.SetZoomArea(evt.ZoomRect);
-            _logger.LogDebug("Zoom area updated: {X}, {Y}, {Width}, {Height}",
-                evt.ZoomRect.X,
-                evt.ZoomRect.Y,
-                evt.ZoomRect.Width,
-                evt.ZoomRect.Height);
         }
     }
 }

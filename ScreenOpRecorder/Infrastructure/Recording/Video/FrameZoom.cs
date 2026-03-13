@@ -5,7 +5,7 @@ using Microsoft.Graphics.Canvas;
 
 using Windows.Foundation;
 
-namespace ScreenOpRecorder.Infrastructure.Compositing
+namespace ScreenOpRecorder.Infrastructure.Recording.Video
 {
     public class FrameZoom
     {

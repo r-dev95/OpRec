@@ -45,7 +45,7 @@ namespace ScreenOpRecorder.Application.Recording
 
         private async Task OpenDirectoryAsync()
         {
-            var path = _recordingService.LastOutputDirPath;
+            var path = _settingsService.Current.OutputDirPath;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await _directoryOpenService.OpenAsync(path);

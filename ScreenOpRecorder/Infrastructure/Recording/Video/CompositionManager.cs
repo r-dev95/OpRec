@@ -6,7 +6,7 @@ using ScreenOpRecorder.Application.Input.Ports;
 
 using Windows.Foundation;
 
-namespace ScreenOpRecorder.Infrastructure.Compositing
+namespace ScreenOpRecorder.Infrastructure.Recording.Video
 {
     public class CompositionManager : IDisposable
     {
@@ -36,6 +36,11 @@ namespace ScreenOpRecorder.Infrastructure.Compositing
         {
             using var drawingSession = renderTarget.CreateDrawingSession();
             _frameZoom.DrawZoomFrame(drawingSession, renderTarget.Size, rawFrame);
+        }
+
+        public void ToggleZoomAt(float relativeX, float relativeY)
+        {
+            _frameZoom.ToggleZoom(relativeX, relativeY);
         }
 
         private void OnZoomAction(Rect rect)

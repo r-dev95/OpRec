@@ -15,19 +15,19 @@ namespace ScreenOpRecorder.Presentation.Settings
         private readonly IUserSettingsService _settingsService;
 
         [ObservableProperty]
-        public partial string OutputDirPath { get; set; } = "";
+        public partial string OutputDirPath { get; set; } = UserSettingsConstraints.DefaultOutputDirPath;
 
         [ObservableProperty]
-        public partial int RecordingFps { get; set; } = UserSettingsConstraints.Fps30;
+        public partial int RecordingFps { get; set; } = UserSettingsConstraints.DefaultRecordingFps;
 
         [ObservableProperty]
-        public partial QualityPreset QualityPreset { get; set; } = QualityPreset.High;
+        public partial QualityPreset QualityPreset { get; set; } = UserSettingsConstraints.DefaultQualityPreset;
 
         [ObservableProperty]
-        public partial bool EnableAudioCapture { get; set; }
+        public partial AudioCaptureMode AudioCaptureMode { get; set; } = UserSettingsConstraints.DefaultAudioCaptureMode;
 
         [ObservableProperty]
-        public partial bool EnableClickHighlight { get; set; } = true;
+        public partial bool EnableClickHighlight { get; set; } = UserSettingsConstraints.DefaultEnableClickHighlight;
 
         [ObservableProperty]
         public partial string ClickHighlightColor { get; set; } = UserSettingsConstraints.DefaultClickHighlightColor;
@@ -36,16 +36,16 @@ namespace ScreenOpRecorder.Presentation.Settings
         public partial double ClickHighlightSize { get; set; } = UserSettingsConstraints.DefaultClickHighlightSize;
 
         [ObservableProperty]
-        public partial bool EnableKeyDisplay { get; set; } = true;
+        public partial bool EnableKeyDisplay { get; set; } = UserSettingsConstraints.DefaultEnableKeyDisplay;
 
         [ObservableProperty]
-        public partial KeyDisplayPosition KeyDisplayPosition { get; set; } = KeyDisplayPosition.BottomCenter;
+        public partial KeyDisplayPosition KeyDisplayPosition { get; set; } = UserSettingsConstraints.DefaultKeyDisplayPosition;
 
         [ObservableProperty]
         public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
 
         [ObservableProperty]
-        public partial bool EnableMinimap { get; set; } = true;
+        public partial bool EnableMinimap { get; set; } = UserSettingsConstraints.DefaultEnableMinimap;
 
         [ObservableProperty]
         public partial double ZoomFactor { get; set; } = UserSettingsConstraints.DefaultZoomFactor;
@@ -54,11 +54,15 @@ namespace ScreenOpRecorder.Presentation.Settings
         public partial string ToggleRecordingHotkey { get; set; } = UserSettingsConstraints.DefaultHotkey;
 
         [ObservableProperty]
-        public partial bool OpenDirectoryAfterRecording { get; set; }
+        public partial string ToggleZoomHotkey { get; set; } = UserSettingsConstraints.DefaultZoomHotkey;
+
+        [ObservableProperty]
+        public partial bool OpenDirectoryAfterRecording { get; set; } = UserSettingsConstraints.DefaultOpenDirectoryAfterRecording;
 
         public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
         public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
         public KeyDisplayPosition[] KeyDisplayPositionOptions { get; } = Enum.GetValues<KeyDisplayPosition>();
+        public AudioCaptureMode[] AudioCaptureModeOptions { get; } = Enum.GetValues<AudioCaptureMode>();
 
         public event Action? CloseRequested;
 
@@ -84,7 +88,7 @@ namespace ScreenOpRecorder.Presentation.Settings
                 OutputDirPath = OutputDirPath,
                 RecordingFps = RecordingFps,
                 QualityPreset = QualityPreset,
-                EnableAudioCapture = EnableAudioCapture,
+                AudioCaptureMode = AudioCaptureMode,
                 EnableClickHighlight = EnableClickHighlight,
                 ClickHighlightColor = ClickHighlightColor,
                 ClickHighlightSize = ClickHighlightSize,
@@ -94,6 +98,7 @@ namespace ScreenOpRecorder.Presentation.Settings
                 EnableMinimap = EnableMinimap,
                 ZoomFactor = ZoomFactor,
                 ToggleRecordingHotkey = ToggleRecordingHotkey,
+                ToggleZoomHotkey = ToggleZoomHotkey,
                 OpenDirectoryAfterRecording = OpenDirectoryAfterRecording
             };
 
@@ -108,12 +113,18 @@ namespace ScreenOpRecorder.Presentation.Settings
             CloseRequested?.Invoke();
         }
 
+        [RelayCommand]
+        private void ResetToDefaults()
+        {
+            Load(UserSettingsConstraints.CreateDefaultSettings());
+        }
+
         private void Load(UserSettings settings)
         {
             OutputDirPath = settings.OutputDirPath;
             RecordingFps = settings.RecordingFps;
             QualityPreset = settings.QualityPreset;
-            EnableAudioCapture = settings.EnableAudioCapture;
+            AudioCaptureMode = settings.AudioCaptureMode;
             EnableClickHighlight = settings.EnableClickHighlight;
             ClickHighlightColor = settings.ClickHighlightColor;
             ClickHighlightSize = settings.ClickHighlightSize;
@@ -123,6 +134,7 @@ namespace ScreenOpRecorder.Presentation.Settings
             EnableMinimap = settings.EnableMinimap;
             ZoomFactor = settings.ZoomFactor;
             ToggleRecordingHotkey = settings.ToggleRecordingHotkey;
+            ToggleZoomHotkey = settings.ToggleZoomHotkey;
             OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording;
         }
     }

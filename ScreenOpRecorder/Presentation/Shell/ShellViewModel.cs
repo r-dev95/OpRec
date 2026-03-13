@@ -6,12 +6,11 @@ using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 
+using ScreenOpRecorder.Application.Events.Ports;
 using ScreenOpRecorder.Application.Input;
 using ScreenOpRecorder.Application.Recording;
+using ScreenOpRecorder.Application.Recording.Events;
 using ScreenOpRecorder.Application.Recording.Session;
-using ScreenOpRecorder.Application.Settings.Ports;
-using ScreenOpRecorder.Domain.Settings.Policies;
-using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 namespace ScreenOpRecorder.Presentation.Shell
 {
@@ -34,19 +33,19 @@ namespace ScreenOpRecorder.Presentation.Shell
         }
 
         private readonly ILogger<ShellViewModel> _logger;
-        private readonly IUserSettingsService _settingsService;
+        private readonly IHotkeyRouter _hotkeyRouter;
         private readonly IInputEventListener _inputEventListener;
         private readonly IRecordingSessionStore _stateStore;
         private readonly IStartRecordingUseCase _startRecordingUseCase;
         private readonly IStopRecordingUseCase _stopRecordingUseCase;
+        private readonly IToggleZoomAtCursorUseCase _toggleZoomAtCursorUseCase;
+        private readonly IEventBus _eventBus;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private UiState _state = UiState.Waiting;
         private PendingAction _pendingAction = PendingAction.None;
 
         private bool _isStarted;
-        private bool _isHotkeyHandling;
-        private string _toggleHotkey = UserSettingsConstraints.DefaultHotkey;
 
         [ObservableProperty]
         public partial TimeState TimeState { get; set; } = new();
@@ -59,18 +58,22 @@ namespace ScreenOpRecorder.Presentation.Shell
 
         public ShellViewModel(
             ILogger<ShellViewModel> logger,
-            IUserSettingsService settingsService,
+            IHotkeyRouter hotkeyRouter,
             IInputEventListener inputEventListener,
             IRecordingSessionStore stateStore,
             IStartRecordingUseCase startRecordingUseCase,
-            IStopRecordingUseCase stopRecordingUseCase)
+            IStopRecordingUseCase stopRecordingUseCase,
+            IToggleZoomAtCursorUseCase toggleZoomAtCursorUseCase,
+            IEventBus eventBus)
         {
             _logger = logger;
-            _settingsService = settingsService;
+            _hotkeyRouter = hotkeyRouter;
             _inputEventListener = inputEventListener;
             _stateStore = stateStore;
             _startRecordingUseCase = startRecordingUseCase;
             _stopRecordingUseCase = stopRecordingUseCase;
+            _toggleZoomAtCursorUseCase = toggleZoomAtCursorUseCase;
+            _eventBus = eventBus;
 
             try
             {
@@ -80,8 +83,10 @@ namespace ScreenOpRecorder.Presentation.Shell
             {
             }
 
-            ApplySettings(_settingsService.Current);
             ChangeState(_stateStore.Current);
+
+            _hotkeyRouter.Register(HotkeyAction.ToggleRecording, ToggleRecordingAsync);
+            _hotkeyRouter.Register(HotkeyAction.ToggleZoomAtCursor, ToggleZoomAtCursorAsync);
         }
 
         public void Start()
@@ -91,7 +96,6 @@ namespace ScreenOpRecorder.Presentation.Shell
                 return;
             }
 
-            _settingsService.SettingsChanged += OnSettingsChanged;
             _stateStore.StateChanged += OnRecordingStateChanged;
             _inputEventListener.KeyDown += OnKeyDown;
             _isStarted = true;
@@ -106,7 +110,6 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             await StopRecordingAsync();
 
-            _settingsService.SettingsChanged -= OnSettingsChanged;
             _stateStore.StateChanged -= OnRecordingStateChanged;
             _inputEventListener.KeyDown -= OnKeyDown;
             _isStarted = false;
@@ -139,6 +142,8 @@ namespace ScreenOpRecorder.Presentation.Shell
 
             try
             {
+                await WaitForStartCountdownAsync();
+
                 var started = await _startRecordingUseCase.StartAsync();
                 if (!started)
                 {
@@ -152,9 +157,9 @@ namespace ScreenOpRecorder.Presentation.Shell
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to start recording.");
                 _pendingAction = PendingAction.None;
                 ChangeState(_stateStore.Current);
+                _logger.LogError(ex, "Failed to start recording.");
             }
         }
 
@@ -221,58 +226,68 @@ namespace ScreenOpRecorder.Presentation.Shell
             StartReady = next is UiState.Ready or UiState.Recording;
         }
 
-        private void OnSettingsChanged(UserSettings settings)
+        private async void OnKeyDown(string keyName)
+        {
+            await _hotkeyRouter.TryHandleAsync(keyName);
+        }
+
+        private Task ToggleZoomAtCursorAsync()
+        {
+            return RunOnUiAsync(() =>
+            {
+                _toggleZoomAtCursorUseCase.TryToggle();
+                return Task.CompletedTask;
+            });
+        }
+
+        private Task ToggleRecordingAsync()
+        {
+            return RunOnUiAsync(RecordingAsync);
+        }
+
+        private Task RunOnUiAsync(Func<Task> action)
         {
             if (_dispatcherQueue != null)
             {
-                _dispatcherQueue.TryEnqueue(() => ApplySettings(settings));
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                _dispatcherQueue.TryEnqueue(async () =>
+                {
+                    try
+                    {
+                        await action();
+                        tcs.TrySetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                });
+                return tcs.Task;
             }
-            else
-            {
-                ApplySettings(settings);
-            }
+
+            return action();
         }
 
-        private void ApplySettings(UserSettings settings)
+        private async Task WaitForStartCountdownAsync()
         {
-            _toggleHotkey = NormalizeHotkey(settings.ToggleRecordingHotkey);
-        }
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            IDisposable? subscription = null;
 
-        private async void OnKeyDown(string keyName)
-        {
-            if (_isHotkeyHandling || string.IsNullOrWhiteSpace(_toggleHotkey))
+            subscription = _eventBus.Subscribe<RecordingStartCountdownCompletedEvent>(_ =>
             {
-                return;
-            }
+                subscription?.Dispose();
+                tcs.TrySetResult();
+            });
 
-            if (!string.Equals(NormalizeHotkey(keyName), _toggleHotkey, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            _isHotkeyHandling = true;
             try
             {
-                if (_dispatcherQueue != null)
-                {
-                    _dispatcherQueue.TryEnqueue(async () => await RecordingAsync());
-                }
-                else
-                {
-                    await RecordingAsync();
-                }
+                _eventBus.Publish(new RecordingStartCountdownRequestedEvent());
+                await tcs.Task;
             }
             finally
             {
-                _isHotkeyHandling = false;
+                subscription?.Dispose();
             }
-        }
-
-        private static string NormalizeHotkey(string value)
-        {
-            return string.IsNullOrWhiteSpace(value)
-                ? ""
-                : value.Replace(" ", "", StringComparison.Ordinal).ToUpperInvariant();
         }
     }
 }

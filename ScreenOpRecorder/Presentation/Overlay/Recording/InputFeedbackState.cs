@@ -6,17 +6,23 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.UI.Xaml;
 
+using ScreenOpRecorder.Application.Recording.Session;
+using ScreenOpRecorder.Common.Helpers;
 using ScreenOpRecorder.Domain.Settings.Policies;
 using ScreenOpRecorder.Domain.Settings.ValueObjects;
 
 using Windows.Foundation;
 
-namespace ScreenOpRecorder.Presentation.Overlay
+namespace ScreenOpRecorder.Presentation.Overlay.Recording
 {
     public partial class InputFeedbackState : ObservableObject
     {
+        private double _scaleFactor = 1.0;
+        private CancellationTokenSource? _cts;
+        private Size _screenSize;
+
         [ObservableProperty]
-        public partial string CurrentKeyText { get; set; } = "";
+        public partial string CurrentKeyText { get; set; } = string.Empty;
 
         [ObservableProperty]
         public partial Rect KeyDisplayArea { get; set; }
@@ -42,46 +48,14 @@ namespace ScreenOpRecorder.Presentation.Overlay
         partial void OnCurrentKeyTextChanged(string value) => OnPropertyChanged(nameof(KeyVisibility));
         partial void OnEnableKeyDisplayChanged(bool value) => OnPropertyChanged(nameof(KeyVisibility));
 
-        private CancellationTokenSource? _cts;
-        private bool _isRecording;
-        private Size _screenSize;
+        public void SetScaleFactor(double scaleFactor)
+        {
+            _scaleFactor = scaleFactor;
+        }
 
         public void SetScreenSize(double width, double height)
         {
             _screenSize = new Size(width, height);
-            UpdateKeyDisplayArea(KeyDisplayArea);
-        }
-
-        public void SetRecordingState(bool isRecording, Rect captureAreaRect)
-        {
-            _isRecording = isRecording;
-            if (_isRecording)
-            {
-                UpdateKeyDisplayArea(captureAreaRect);
-                return;
-            }
-
-            CurrentKeyText = "";
-            UpdateKeyDisplayArea(new Rect(0, 0, _screenSize.Width, _screenSize.Height));
-        }
-
-        public void SetZoomArea(Rect logicalZoomRect)
-        {
-            if (!_isRecording)
-            {
-                return;
-            }
-
-            UpdateKeyDisplayArea(logicalZoomRect);
-        }
-
-        public void ApplySession(bool isRecording, Rect captureAreaRect, Rect? logicalZoomRect)
-        {
-            SetRecordingState(isRecording, captureAreaRect);
-            if (logicalZoomRect != null)
-            {
-                SetZoomArea(logicalZoomRect.Value);
-            }
         }
 
         public async Task ShowKeyAsync(string keyName)
@@ -146,9 +120,26 @@ namespace ScreenOpRecorder.Presentation.Overlay
             }
         }
 
-        private void UpdateKeyDisplayArea(Rect rect)
+        public void ApplySessionState(RecordingSessionState state)
         {
-            KeyDisplayArea = rect;
+            UpdateKeyDisplayArea(state);
+        }
+
+        private void UpdateKeyDisplayArea(RecordingSessionState state)
+        {
+            var logicalCaptureRect = state.HasSelection
+                ? DpiHelper.ToLogical(
+                    new Rect(state.CaptureArea.X, state.CaptureArea.Y, state.CaptureArea.Width, state.CaptureArea.Height),
+                    _scaleFactor)
+                : new Rect(0, 0, _screenSize.Width, _screenSize.Height);
+
+            logicalCaptureRect = state.IsRecording
+                ? DpiHelper.ToLogical(
+                    new Rect(state.ZoomArea.X, state.ZoomArea.Y, state.ZoomArea.Width, state.ZoomArea.Height),
+                    _scaleFactor)
+                : logicalCaptureRect;
+
+            KeyDisplayArea = logicalCaptureRect;
         }
     }
 }
