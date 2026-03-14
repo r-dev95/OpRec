@@ -97,6 +97,10 @@ namespace OpRec.Infrastructure.Settings
                 fps = UserSettingsConstraints.Fps30;
             }
 
+            var qualityPreset = Enum.IsDefined(typeof(QualityPreset), settings.QualityPreset)
+                ? settings.QualityPreset
+                : UserSettingsConstraints.DefaultQualityPreset;
+
             var micVolume = settings.MicVolume;
             if (double.IsNaN(micVolume)
                 || micVolume < UserSettingsConstraints.MinAudioVolume
@@ -163,7 +167,7 @@ namespace OpRec.Infrastructure.Settings
                 OutputDirPath = outputPath,
                 OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording,
                 RecordingFps = fps,
-                QualityPreset = settings.QualityPreset,
+                QualityPreset = qualityPreset,
                 AudioCaptureMode = audioMode,
                 MicVolume = micVolume,
                 SystemVolume = systemVolume,

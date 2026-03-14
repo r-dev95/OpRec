@@ -7,9 +7,9 @@ using Microsoft.Graphics.Canvas;
 using OpRec.Application.Input.Ports;
 using OpRec.Application.Settings.Ports;
 using OpRec.Common.Helpers;
-using OpRec.Domain.Settings.ValueObjects;
 using OpRec.Domain.ValueObjects;
 using OpRec.Infrastructure.Recording.Models;
+using OpRec.Infrastructure.Settings;
 
 using Windows.Foundation;
 using Windows.Graphics.Capture;
@@ -198,7 +198,7 @@ namespace OpRec.Infrastructure.Recording.Video
             };
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
-            _profile = MediaEncodingProfile.CreateMp4(ToVideoQuality(settings.QualityPreset));
+            _profile = MediaEncodingProfile.CreateMp4(VideoQualitySelector.FromSettings(settings));
             _profile.Video.FrameRate.Numerator = (uint)settings.RecordingFps;
             _profile.Video.FrameRate.Denominator = 1;
             _transcoder = new MediaTranscoder();
@@ -339,15 +339,6 @@ namespace OpRec.Infrastructure.Recording.Video
             RecordingStateChanged?.Invoke(_state);
         }
 
-        private static VideoEncodingQuality ToVideoQuality(QualityPreset preset)
-        {
-            return preset switch
-            {
-                QualityPreset.Low => VideoEncodingQuality.Wvga,
-                QualityPreset.Medium => VideoEncodingQuality.HD720p,
-                _ => VideoEncodingQuality.HD1080p
-            };
-        }
     }
 }
 
