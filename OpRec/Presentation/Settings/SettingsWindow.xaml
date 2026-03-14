@@ -106,12 +106,23 @@
                                    FontSize="14"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
+                            <controls:SettingsCard Header="Double-click zoom">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDoubleClickZoom, Mode=TwoWay}" />
+                            </controls:SettingsCard>
                             <controls:SettingsCard Header="Zoom factor"
                                                    Description="Zoom amount for double-click zoom mode.">
                                 <NumberBox Value="{x:Bind ViewModel.ZoomFactor, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomFactor, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomFactor, Mode=OneWay}"
                                            SmallChange="0.1"
+                                           SpinButtonPlacementMode="Inline" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard Header="Zoom interpolation speed"
+                                                   Description="Lower is smoother, higher is snappier.">
+                                <NumberBox Value="{x:Bind ViewModel.ZoomInterpolationSpeed, Mode=TwoWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomInterpolationSpeed, Mode=OneWay}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomInterpolationSpeed, Mode=OneWay}"
+                                           SmallChange="0.005"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                         </StackPanel>

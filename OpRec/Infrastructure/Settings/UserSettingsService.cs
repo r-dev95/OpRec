@@ -97,13 +97,6 @@ namespace OpRec.Infrastructure.Settings
                 fps = UserSettingsConstraints.Fps30;
             }
 
-            var keySeconds = settings.KeyDisplayDurationSeconds;
-            if (keySeconds < UserSettingsConstraints.MinKeyDisplayDurationSeconds
-                || keySeconds > UserSettingsConstraints.MaxKeyDisplayDurationSeconds)
-            {
-                keySeconds = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
-            }
-
             var zoom = settings.ZoomFactor;
             if (zoom < UserSettingsConstraints.MinZoomFactor
                 || zoom > UserSettingsConstraints.MaxZoomFactor)
@@ -111,6 +104,20 @@ namespace OpRec.Infrastructure.Settings
                 zoom = UserSettingsConstraints.DefaultZoomFactor;
             }
 
+            var zoomInterpolation = settings.ZoomInterpolationSpeed;
+            if (double.IsNaN(zoomInterpolation)
+                || zoomInterpolation < UserSettingsConstraints.MinZoomInterpolationSpeed
+                || zoomInterpolation > UserSettingsConstraints.MaxZoomInterpolationSpeed)
+            {
+                zoomInterpolation = UserSettingsConstraints.DefaultZoomInterpolationSpeed;
+            }
+
+            var keySeconds = settings.KeyDisplayDurationSeconds;
+            if (keySeconds < UserSettingsConstraints.MinKeyDisplayDurationSeconds
+                || keySeconds > UserSettingsConstraints.MaxKeyDisplayDurationSeconds)
+            {
+                keySeconds = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
+            }
             var clickSize = settings.ClickHighlightSize;
             if (clickSize < UserSettingsConstraints.MinClickHighlightSize
                 || clickSize > UserSettingsConstraints.MaxClickHighlightSize)
@@ -118,27 +125,32 @@ namespace OpRec.Infrastructure.Settings
                 clickSize = UserSettingsConstraints.DefaultClickHighlightSize;
             }
 
-            var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
-                ? UserSettingsConstraints.DefaultHotkey
-                : settings.ToggleRecordingHotkey.Trim();
-            var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
-                ? UserSettingsConstraints.DefaultZoomHotkey
-                : settings.ToggleZoomHotkey.Trim();
+            var audioMode = Enum.IsDefined(typeof(AudioCaptureMode), settings.AudioCaptureMode)
+                ? settings.AudioCaptureMode
+                : AudioCaptureMode.Off;
 
             var color = string.IsNullOrWhiteSpace(settings.ClickHighlightColor)
                 ? UserSettingsConstraints.DefaultClickHighlightColor
                 : settings.ClickHighlightColor.Trim();
 
-            var audioMode = Enum.IsDefined(typeof(AudioCaptureMode), settings.AudioCaptureMode)
-                ? settings.AudioCaptureMode
-                : AudioCaptureMode.Off;
+            var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
+                ? UserSettingsConstraints.DefaultRecordingHotkey
+                : settings.ToggleRecordingHotkey.Trim();
+
+            var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
+                ? UserSettingsConstraints.DefaultZoomHotkey
+                : settings.ToggleZoomHotkey.Trim();
 
             return new UserSettings
             {
                 OutputDirPath = outputPath,
+                OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording,
                 RecordingFps = fps,
                 QualityPreset = settings.QualityPreset,
                 AudioCaptureMode = audioMode,
+                EnableDoubleClickZoom = settings.EnableDoubleClickZoom,
+                ZoomFactor = zoom,
+                ZoomInterpolationSpeed = zoomInterpolation,
                 EnableClickHighlight = settings.EnableClickHighlight,
                 ClickHighlightColor = color,
                 ClickHighlightSize = clickSize,
@@ -146,10 +158,8 @@ namespace OpRec.Infrastructure.Settings
                 KeyDisplayPosition = settings.KeyDisplayPosition,
                 KeyDisplayDurationSeconds = keySeconds,
                 EnableMinimap = settings.EnableMinimap,
-                ZoomFactor = zoom,
                 ToggleRecordingHotkey = hotkey,
                 ToggleZoomHotkey = zoomHotkey,
-                OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording
             };
         }
     }

@@ -181,7 +181,7 @@ namespace OpRec.Infrastructure.Recording.Video
         {
             var settings = _settingsService.Current;
 
-            _compositionManager = new CompositionManager(_mouseInputListener, _captureArea, settings.ZoomFactor);
+            _compositionManager = new CompositionManager(_settingsService, _mouseInputListener, _captureArea);
             _compositionManager.ZoomChanged += OnZoomChanged;
 
             _device = new CanvasDevice();
