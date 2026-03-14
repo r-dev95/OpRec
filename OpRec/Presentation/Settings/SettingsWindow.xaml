@@ -88,6 +88,22 @@
                                 <ComboBox ItemsSource="{x:Bind ViewModel.AudioCaptureModeOptions}"
                                           SelectedItem="{x:Bind ViewModel.AudioCaptureMode, Mode=TwoWay}" />
                             </controls:SettingsCard>
+                            <controls:SettingsCard Header="Mic volume"
+                                                   Description="0.0 = mute, 1.0 = normal, 2.0 = boost.">
+                                <NumberBox Value="{x:Bind ViewModel.MicVolume, Mode=TwoWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
+                                           SmallChange="0.05"
+                                           SpinButtonPlacementMode="Inline" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard Header="System volume"
+                                                   Description="0.0 = mute, 1.0 = normal, 2.0 = boost.">
+                                <NumberBox Value="{x:Bind ViewModel.SystemVolume, Mode=TwoWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
+                                           SmallChange="0.05"
+                                           SpinButtonPlacementMode="Inline" />
+                            </controls:SettingsCard>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

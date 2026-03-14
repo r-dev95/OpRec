@@ -11,6 +11,8 @@ namespace OpRec.Domain.Settings.ValueObjects
         public QualityPreset QualityPreset { get; set; } = UserSettingsConstraints.DefaultQualityPreset;
 
         public AudioCaptureMode AudioCaptureMode { get; set; } = UserSettingsConstraints.DefaultAudioCaptureMode;
+        public double MicVolume { get; set; } = UserSettingsConstraints.DefaultMicVolume;
+        public double SystemVolume { get; set; } = UserSettingsConstraints.DefaultSystemVolume;
 
         public bool EnableDoubleClickZoom { get; set; } = UserSettingsConstraints.DefaultEnableDoubleClickZoom;
         public double ZoomFactor { get; set; } = UserSettingsConstraints.DefaultZoomFactor;

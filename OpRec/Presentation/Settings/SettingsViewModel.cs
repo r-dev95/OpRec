@@ -30,6 +30,12 @@ namespace OpRec.Presentation.Settings
         public partial AudioCaptureMode AudioCaptureMode { get; set; } = UserSettingsConstraints.DefaultAudioCaptureMode;
 
         [ObservableProperty]
+        public partial double MicVolume { get; set; } = UserSettingsConstraints.DefaultMicVolume;
+
+        [ObservableProperty]
+        public partial double SystemVolume { get; set; } = UserSettingsConstraints.DefaultSystemVolume;
+
+        [ObservableProperty]
         public partial bool EnableDoubleClickZoom { get; set; } = UserSettingsConstraints.DefaultEnableDoubleClickZoom;
 
         [ObservableProperty]
@@ -96,6 +102,8 @@ namespace OpRec.Presentation.Settings
                 RecordingFps = RecordingFps,
                 QualityPreset = QualityPreset,
                 AudioCaptureMode = AudioCaptureMode,
+                MicVolume = MicVolume,
+                SystemVolume = SystemVolume,
                 EnableDoubleClickZoom = EnableDoubleClickZoom,
                 ZoomFactor = ZoomFactor,
                 ZoomInterpolationSpeed = ZoomInterpolationSpeed,
@@ -134,6 +142,8 @@ namespace OpRec.Presentation.Settings
             RecordingFps = settings.RecordingFps;
             QualityPreset = settings.QualityPreset;
             AudioCaptureMode = settings.AudioCaptureMode;
+            MicVolume = settings.MicVolume;
+            SystemVolume = settings.SystemVolume;
             EnableDoubleClickZoom = settings.EnableDoubleClickZoom;
             ZoomFactor = settings.ZoomFactor;
             ZoomInterpolationSpeed = settings.ZoomInterpolationSpeed;

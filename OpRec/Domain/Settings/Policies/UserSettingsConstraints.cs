@@ -16,6 +16,10 @@ namespace OpRec.Domain.Settings.Policies
         public const QualityPreset DefaultQualityPreset = QualityPreset.High;
 
         public const AudioCaptureMode DefaultAudioCaptureMode = AudioCaptureMode.Off;
+        public const double MinAudioVolume = 0.0;
+        public const double MaxAudioVolume = 2.0;
+        public const double DefaultMicVolume = 1.0;
+        public const double DefaultSystemVolume = 1.0;
 
         public const bool DefaultEnableDoubleClickZoom = true;
 
@@ -58,6 +62,8 @@ namespace OpRec.Domain.Settings.Policies
                 EnableClickHighlight = DefaultEnableClickHighlight,
                 ClickHighlightColor = DefaultClickHighlightColor,
                 ClickHighlightSize = DefaultClickHighlightSize,
+                MicVolume = DefaultMicVolume,
+                SystemVolume = DefaultSystemVolume,
                 EnableKeyDisplay = DefaultEnableKeyDisplay,
                 KeyDisplayPosition = DefaultKeyDisplayPosition,
                 KeyDisplayDurationSeconds = DefaultKeyDisplayDurationSeconds,

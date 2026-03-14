@@ -97,6 +97,22 @@ namespace OpRec.Infrastructure.Settings
                 fps = UserSettingsConstraints.Fps30;
             }
 
+            var micVolume = settings.MicVolume;
+            if (double.IsNaN(micVolume)
+                || micVolume < UserSettingsConstraints.MinAudioVolume
+                || micVolume > UserSettingsConstraints.MaxAudioVolume)
+            {
+                micVolume = UserSettingsConstraints.DefaultMicVolume;
+            }
+
+            var systemVolume = settings.SystemVolume;
+            if (double.IsNaN(systemVolume)
+                || systemVolume < UserSettingsConstraints.MinAudioVolume
+                || systemVolume > UserSettingsConstraints.MaxAudioVolume)
+            {
+                systemVolume = UserSettingsConstraints.DefaultSystemVolume;
+            }
+
             var zoom = settings.ZoomFactor;
             if (zoom < UserSettingsConstraints.MinZoomFactor
                 || zoom > UserSettingsConstraints.MaxZoomFactor)
@@ -118,6 +134,7 @@ namespace OpRec.Infrastructure.Settings
             {
                 keySeconds = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
             }
+
             var clickSize = settings.ClickHighlightSize;
             if (clickSize < UserSettingsConstraints.MinClickHighlightSize
                 || clickSize > UserSettingsConstraints.MaxClickHighlightSize)
@@ -148,6 +165,8 @@ namespace OpRec.Infrastructure.Settings
                 RecordingFps = fps,
                 QualityPreset = settings.QualityPreset,
                 AudioCaptureMode = audioMode,
+                MicVolume = micVolume,
+                SystemVolume = systemVolume,
                 EnableDoubleClickZoom = settings.EnableDoubleClickZoom,
                 ZoomFactor = zoom,
                 ZoomInterpolationSpeed = zoomInterpolation,

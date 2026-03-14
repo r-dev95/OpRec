@@ -54,7 +54,8 @@ namespace OpRec.Infrastructure.Recording.Audio
                 return false;
             }
 
-            _mode = _settingsService.Current.AudioCaptureMode;
+            var settings = _settingsService.Current;
+            _mode = settings.AudioCaptureMode;
             if (_mode == AudioCaptureMode.Off)
             {
                 return true;
@@ -155,6 +156,9 @@ namespace OpRec.Infrastructure.Recording.Audio
 
         private async Task StopCaptureAsync()
         {
+            var micVolume = (float)_settingsService.Current.MicVolume;
+            var systemVolume = (float)_settingsService.Current.SystemVolume;
+
             switch (_mode)
             {
                 case AudioCaptureMode.Mic:
@@ -163,7 +167,7 @@ namespace OpRec.Infrastructure.Recording.Audio
                     {
                         throw new InvalidOperationException("Microphone temp file is not prepared.");
                     }
-                    await _audioTranscoder.EncodeWavToM4aAsync(_micTempFile, _outputFile);
+                    await _audioTranscoder.EncodeWavToM4aAsync(_micTempFile, _outputFile, micVolume);
                     return;
                 case AudioCaptureMode.System:
                     await _systemAudioCapture.StopAsync();
@@ -171,7 +175,7 @@ namespace OpRec.Infrastructure.Recording.Audio
                     {
                         throw new InvalidOperationException("System audio temp file is not prepared.");
                     }
-                    await _audioTranscoder.EncodeWavToM4aAsync(_systemTempFile, _outputFile);
+                    await _audioTranscoder.EncodeWavToM4aAsync(_systemTempFile, _outputFile, systemVolume);
                     return;
                 case AudioCaptureMode.Both:
                     await _micAudioCapture.StopAsync();
@@ -182,7 +186,7 @@ namespace OpRec.Infrastructure.Recording.Audio
                         throw new InvalidOperationException("Audio temp files are not prepared.");
                     }
 
-                    await _audioMixer.MixAsync(_micTempFile, _systemTempFile, _outputFile);
+                    await _audioMixer.MixAsync(_micTempFile, _systemTempFile, _outputFile, micVolume, systemVolume);
                     return;
                 default:
                     return;

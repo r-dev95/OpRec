@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 using Windows.Storage;
 
@@ -18,12 +19,17 @@ namespace OpRec.Infrastructure.Recording.Audio
             _logger = logger;
         }
 
-        public Task EncodeWavToM4aAsync(StorageFile inputWavFile, StorageFile outputM4aFile)
+        public Task EncodeWavToM4aAsync(StorageFile inputWavFile, StorageFile outputM4aFile, float volume)
         {
             try
             {
                 using var reader = new AudioFileReader(inputWavFile.Path);
-                MediaFoundationEncoder.EncodeToAac(reader, outputM4aFile.Path);
+                var volumeSample = new VolumeSampleProvider(reader)
+                {
+                    Volume = volume
+                };
+                var waveProvider = new SampleToWaveProvider16(volumeSample);
+                MediaFoundationEncoder.EncodeToAac(waveProvider, outputM4aFile.Path);
                 return Task.CompletedTask;
             }
             catch (Exception ex)
