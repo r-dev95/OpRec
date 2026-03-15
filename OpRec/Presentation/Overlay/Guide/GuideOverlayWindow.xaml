@@ -21,7 +21,7 @@
             <converters:PointerArgsToPointConverter x:Key="PointerArgsToPointConverter" />
         </Grid.Resources>
 
-        <Canvas x:Name="GuideCanvas" Background="#44000000">
+        <Canvas x:Name="GuideCanvas" Background="Transparent">
             <interactivity:Interaction.Behaviors>
                 <interactivity:EventTriggerBehavior EventName="PointerPressed">
                     <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerPressedCommand}"
