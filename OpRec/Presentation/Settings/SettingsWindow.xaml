@@ -208,6 +208,11 @@
                 <ScrollViewer>
                     <StackPanel Padding="16"
                                 Spacing="12">
+                        <TextBlock Text="Hotkey"
+                                   FontSize="16"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Leave blank to disable."
+                                   Opacity="0.7" />
                         <controls:SettingsCard Header="Toggle recording hotkey"
                                                Description="Example: Ctrl+Shift+R">
                             <TextBox Text="{x:Bind ViewModel.ToggleRecordingHotkey, Mode=TwoWay}" />

@@ -152,11 +152,11 @@ namespace OpRec.Infrastructure.Settings
                 : settings.ClickHighlightColor.Trim();
 
             var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
-                ? UserSettingsDefaults.ToggleRecordingHotkey
+                ? ""
                 : settings.ToggleRecordingHotkey.Trim();
 
             var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
-                ? UserSettingsDefaults.ToggleZoomHotkey
+                ? ""
                 : settings.ToggleZoomHotkey.Trim();
 
             return new UserSettings
