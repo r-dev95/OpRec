@@ -6,7 +6,7 @@ namespace OpRec.Presentation.Overlay.Recording.Models
     {
         public static ClickHighlightSettings Default { get; } = new(
             true,
-            UserSettingsConstraints.DefaultClickHighlightColor,
-            UserSettingsConstraints.DefaultClickHighlightSize);
+            UserSettingsDefaults.ClickHighlightColor,
+            UserSettingsDefaults.ClickHighlightSize);
     }
 }

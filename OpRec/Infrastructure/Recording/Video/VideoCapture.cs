@@ -199,7 +199,7 @@ namespace OpRec.Infrastructure.Recording.Video
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
             _profile = MediaEncodingProfile.CreateMp4(VideoQualitySelector.FromSettings(settings));
-            _profile.Video.FrameRate.Numerator = (uint)settings.RecordingFps;
+            _profile.Video.FrameRate.Numerator = (uint)settings.VideoFps;
             _profile.Video.FrameRate.Denominator = 1;
             _transcoder = new MediaTranscoder();
         }

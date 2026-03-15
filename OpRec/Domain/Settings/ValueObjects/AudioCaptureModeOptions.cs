@@ -1,6 +1,6 @@
 namespace OpRec.Domain.Settings.ValueObjects
 {
-    public enum AudioCaptureMode
+    public enum AudioCaptureModeOptions
     {
         Off,
         Mic,

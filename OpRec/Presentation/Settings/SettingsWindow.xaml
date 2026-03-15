@@ -57,7 +57,7 @@
 
                             <controls:SettingsCard Header="Reset settings"
                                                    Description="Restore all settings to defaults.">
-                                <Button Content="Reset to defaults"
+                                <Button Content="Reset"
                                         Command="{x:Bind ViewModel.ResetToDefaultsCommand}" />
                             </controls:SettingsCard>
                         </StackPanel>
@@ -66,16 +66,16 @@
                                    FontSize="16"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
-                            <controls:SettingsCard Header="Recording FPS"
+                            <controls:SettingsCard Header="FPS"
                                                    Description="Select 15, 30, or 60 FPS.">
-                                <ComboBox ItemsSource="{x:Bind ViewModel.FpsOptions}"
-                                          SelectedItem="{x:Bind ViewModel.RecordingFps, Mode=TwoWay}" />
+                                <ComboBox ItemsSource="{x:Bind ViewModel.VideoFpsItems}"
+                                          SelectedItem="{x:Bind ViewModel.VideoFps, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
-                            <controls:SettingsCard Header="Quality preset"
+                            <controls:SettingsCard Header="Quality"
                                                    Description="Video encoding quality.">
-                                <ComboBox ItemsSource="{x:Bind ViewModel.QualityOptions}"
-                                          SelectedItem="{x:Bind ViewModel.QualityPreset, Mode=TwoWay}" />
+                                <ComboBox ItemsSource="{x:Bind ViewModel.VideoQualityItems}"
+                                          SelectedItem="{x:Bind ViewModel.VideoQuality, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </StackPanel>
 
@@ -85,7 +85,7 @@
                         <StackPanel Spacing="12">
                             <controls:SettingsCard Header="Audio recording"
                                                    Description="Select audio source to record.">
-                                <ComboBox ItemsSource="{x:Bind ViewModel.AudioCaptureModeOptions}"
+                                <ComboBox ItemsSource="{x:Bind ViewModel.AudioCaptureModeItems}"
                                           SelectedItem="{x:Bind ViewModel.AudioCaptureMode, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Mic volume"
@@ -93,7 +93,7 @@
                                 <NumberBox Value="{x:Bind ViewModel.MicVolume, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
-                                           SmallChange="0.05"
+                                           SmallChange="0.1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="System volume"
@@ -101,7 +101,7 @@
                                 <NumberBox Value="{x:Bind ViewModel.SystemVolume, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
-                                           SmallChange="0.05"
+                                           SmallChange="0.1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                         </StackPanel>
@@ -122,11 +122,11 @@
                                    FontSize="14"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
-                            <controls:SettingsCard Header="Double-click zoom">
+                            <controls:SettingsCard Header="Double click zoom">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDoubleClickZoom, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Zoom factor"
-                                                   Description="Zoom amount for double-click zoom mode.">
+                                                   Description="Zoom amount.">
                                 <NumberBox Value="{x:Bind ViewModel.ZoomFactor, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomFactor, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomFactor, Mode=OneWay}"
@@ -138,7 +138,7 @@
                                 <NumberBox Value="{x:Bind ViewModel.ZoomInterpolationSpeed, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomInterpolationSpeed, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomInterpolationSpeed, Mode=OneWay}"
-                                           SmallChange="0.005"
+                                           SmallChange="0.01"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                         </StackPanel>
@@ -174,7 +174,7 @@
                             </controls:SettingsCard>
 
                             <controls:SettingsCard Header="Key display position">
-                                <ComboBox ItemsSource="{x:Bind ViewModel.KeyDisplayPositionOptions}"
+                                <ComboBox ItemsSource="{x:Bind ViewModel.KeyDisplayPositionItems}"
                                           SelectedItem="{x:Bind ViewModel.KeyDisplayPosition, Mode=TwoWay}" />
                             </controls:SettingsCard>
 

@@ -82,7 +82,6 @@ namespace OpRec.Presentation.Overlay.Guide
             _scaleFactor = scaleFactor;
             CanSubmit = true;
 
-            Countdown.SetScaleFactor(_scaleFactor);
             Selection.SetScaleFactor(_scaleFactor);
             Selection.SetFullAreaRect(width, height);
             Minimap.SetScaleFactor(_scaleFactor);

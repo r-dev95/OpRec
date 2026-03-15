@@ -8,15 +8,15 @@ namespace OpRec.Infrastructure.Settings
     {
         public static VideoEncodingQuality FromSettings(UserSettings settings)
         {
-            return ToVideoEncodingQuality(settings.QualityPreset);
+            return ToVideoEncodingQuality(settings.VideoQuality);
         }
 
-        public static VideoEncodingQuality ToVideoEncodingQuality(QualityPreset preset)
+        public static VideoEncodingQuality ToVideoEncodingQuality(VideoQualityOptions preset)
         {
             return preset switch
             {
-                QualityPreset.Low => VideoEncodingQuality.Wvga,
-                QualityPreset.Medium => VideoEncodingQuality.HD720p,
+                VideoQualityOptions.Low => VideoEncodingQuality.Wvga,
+                VideoQualityOptions.Medium => VideoEncodingQuality.HD720p,
                 _ => VideoEncodingQuality.HD1080p
             };
         }

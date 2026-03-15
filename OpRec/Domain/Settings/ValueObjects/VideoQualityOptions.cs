@@ -1,6 +1,6 @@
 namespace OpRec.Domain.Settings.ValueObjects
 {
-    public enum QualityPreset
+    public enum VideoQualityOptions
     {
         Low,
         Medium,

@@ -8,6 +8,7 @@ using OpRec.Infrastructure.Recording.Models;
 using OpRec.Infrastructure.Settings;
 
 using Windows.Media.Editing;
+using Windows.Media.MediaProperties;
 using Windows.Media.Transcoding;
 
 namespace OpRec.Infrastructure.Recording
@@ -43,7 +44,7 @@ namespace OpRec.Infrastructure.Recording
                 composition.BackgroundAudioTracks.Add(audioTrack);
 
                 var profile = MediaEncodingProfile.CreateMp4(VideoQualitySelector.FromSettings(_settingsService.Current));
-                profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.RecordingFps;
+                profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.VideoFps;
                 profile.Video.FrameRate.Denominator = 1;
 
                 var result = await composition.RenderToFileAsync(

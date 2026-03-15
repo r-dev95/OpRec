@@ -1,6 +1,6 @@
 namespace OpRec.Domain.Settings.ValueObjects
 {
-    public enum KeyDisplayPosition
+    public enum KeyDisplayPositionOptions
     {
         TopLeft,
         TopCenter,

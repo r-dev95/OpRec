@@ -87,26 +87,23 @@ namespace OpRec.Infrastructure.Settings
             var outputPath = settings.OutputDirPath;
             if (string.IsNullOrWhiteSpace(outputPath))
             {
-                var videosPath = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
-                outputPath = videosPath;
+                outputPath = UserSettingsDefaults.OutputDirPath;
             }
 
-            int fps = settings.RecordingFps;
-            if (Array.IndexOf(UserSettingsConstraints.FpsOptions, fps) < 0)
-            {
-                fps = UserSettingsConstraints.Fps30;
-            }
+            var fps = Enum.IsDefined(typeof(VideoFpsOptions), settings.VideoFps)
+                ? settings.VideoFps
+                : UserSettingsDefaults.VideoFps;
 
-            var qualityPreset = Enum.IsDefined(typeof(QualityPreset), settings.QualityPreset)
-                ? settings.QualityPreset
-                : UserSettingsConstraints.DefaultQualityPreset;
+            var videoQuality = Enum.IsDefined(typeof(VideoQualityOptions), settings.VideoQuality)
+                ? settings.VideoQuality
+                : UserSettingsDefaults.VideoQuality;
 
             var micVolume = settings.MicVolume;
             if (double.IsNaN(micVolume)
                 || micVolume < UserSettingsConstraints.MinAudioVolume
                 || micVolume > UserSettingsConstraints.MaxAudioVolume)
             {
-                micVolume = UserSettingsConstraints.DefaultMicVolume;
+                micVolume = UserSettingsDefaults.MicVolume;
             }
 
             var systemVolume = settings.SystemVolume;
@@ -114,14 +111,14 @@ namespace OpRec.Infrastructure.Settings
                 || systemVolume < UserSettingsConstraints.MinAudioVolume
                 || systemVolume > UserSettingsConstraints.MaxAudioVolume)
             {
-                systemVolume = UserSettingsConstraints.DefaultSystemVolume;
+                systemVolume = UserSettingsDefaults.SystemVolume;
             }
 
             var zoom = settings.ZoomFactor;
             if (zoom < UserSettingsConstraints.MinZoomFactor
                 || zoom > UserSettingsConstraints.MaxZoomFactor)
             {
-                zoom = UserSettingsConstraints.DefaultZoomFactor;
+                zoom = UserSettingsDefaults.ZoomFactor;
             }
 
             var zoomInterpolation = settings.ZoomInterpolationSpeed;
@@ -129,45 +126,45 @@ namespace OpRec.Infrastructure.Settings
                 || zoomInterpolation < UserSettingsConstraints.MinZoomInterpolationSpeed
                 || zoomInterpolation > UserSettingsConstraints.MaxZoomInterpolationSpeed)
             {
-                zoomInterpolation = UserSettingsConstraints.DefaultZoomInterpolationSpeed;
+                zoomInterpolation = UserSettingsDefaults.ZoomInterpolationSpeed;
             }
 
             var keySeconds = settings.KeyDisplayDurationSeconds;
             if (keySeconds < UserSettingsConstraints.MinKeyDisplayDurationSeconds
                 || keySeconds > UserSettingsConstraints.MaxKeyDisplayDurationSeconds)
             {
-                keySeconds = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
+                keySeconds = UserSettingsDefaults.KeyDisplayDurationSeconds;
             }
 
             var clickSize = settings.ClickHighlightSize;
             if (clickSize < UserSettingsConstraints.MinClickHighlightSize
                 || clickSize > UserSettingsConstraints.MaxClickHighlightSize)
             {
-                clickSize = UserSettingsConstraints.DefaultClickHighlightSize;
+                clickSize = UserSettingsDefaults.ClickHighlightSize;
             }
 
-            var audioMode = Enum.IsDefined(typeof(AudioCaptureMode), settings.AudioCaptureMode)
+            var audioMode = Enum.IsDefined(typeof(AudioCaptureModeOptions), settings.AudioCaptureMode)
                 ? settings.AudioCaptureMode
-                : AudioCaptureMode.Off;
+                : UserSettingsDefaults.AudioCaptureMode;
 
             var color = string.IsNullOrWhiteSpace(settings.ClickHighlightColor)
-                ? UserSettingsConstraints.DefaultClickHighlightColor
+                ? UserSettingsDefaults.ClickHighlightColor
                 : settings.ClickHighlightColor.Trim();
 
             var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
-                ? UserSettingsConstraints.DefaultRecordingHotkey
+                ? UserSettingsDefaults.ToggleRecordingHotkey
                 : settings.ToggleRecordingHotkey.Trim();
 
             var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
-                ? UserSettingsConstraints.DefaultZoomHotkey
+                ? UserSettingsDefaults.ToggleZoomHotkey
                 : settings.ToggleZoomHotkey.Trim();
 
             return new UserSettings
             {
                 OutputDirPath = outputPath,
                 OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording,
-                RecordingFps = fps,
-                QualityPreset = qualityPreset,
+                VideoFps = fps,
+                VideoQuality = videoQuality,
                 AudioCaptureMode = audioMode,
                 MicVolume = micVolume,
                 SystemVolume = systemVolume,

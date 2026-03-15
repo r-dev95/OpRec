@@ -8,7 +8,6 @@ namespace OpRec.Presentation.Overlay.Guide
 {
     public partial class CountdownState : ObservableObject
     {
-        private double _scaleFactor = 1.0;
         private bool _isRunning;
 
         [ObservableProperty]
@@ -18,11 +17,6 @@ namespace OpRec.Presentation.Overlay.Guide
         public partial Visibility Visibility { get; set; } = Visibility.Collapsed;
 
         public bool IsRunning => _isRunning;
-
-        public void SetScaleFactor(double scaleFactor)
-        {
-            _scaleFactor = scaleFactor;
-        }
 
         public async Task ShowAsync()
         {

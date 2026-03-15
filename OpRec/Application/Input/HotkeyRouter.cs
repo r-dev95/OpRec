@@ -25,7 +25,7 @@ namespace OpRec.Application.Input
             _logger = logger;
             _settingsService = settingsService;
             _settingsService.SettingsChanged += OnSettingsChanged;
-            RebuildBindings(_settingsService.Current);
+            ApplaySettings(_settingsService.Current);
         }
 
         public void Register(HotkeyAction action, Func<Task> handler)
@@ -41,7 +41,7 @@ namespace OpRec.Application.Input
             }
 
             _handlers[action] = handler;
-            RebuildBindings(_settingsService.Current);
+            ApplaySettings(_settingsService.Current);
         }
 
         public async Task<bool> TryHandleAsync(string keyName)
@@ -91,10 +91,10 @@ namespace OpRec.Application.Input
 
         private void OnSettingsChanged(UserSettings settings)
         {
-            RebuildBindings(settings);
+            ApplaySettings(settings);
         }
 
-        private void RebuildBindings(UserSettings settings)
+        private void ApplaySettings(UserSettings settings)
         {
             _bindings.Clear();
 
