@@ -119,9 +119,11 @@ graph LR
         ScreenRect(ScreenRect)
         subgraph Domain_Settings ["Domain Settings"]
             UserSettings(UserSettings)
-            AudioCaptureMode(AudioCaptureMode)
-            QualityPreset(QualityPreset)
-            KeyDisplayPosition(KeyDisplayPosition)
+            AudioCaptureModeOptions(AudioCaptureModeOptions)
+            VideoFpsOptions(VideoFpsOptions)
+            VideoQualityOptions(VideoQualityOptions)
+            KeyDisplayPositionOptions(KeyDisplayPositionOptions)
+            UserSettingsDefaults(UserSettingsDefaults)
         end
     end
 

@@ -16,11 +16,6 @@ namespace OpRec.Infrastructure.Settings
         private readonly ILogger<UserSettingsService> _logger;
         private readonly string _settingsPath;
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true
-        };
-
         public UserSettings Current { get; private set; }
 
         public event Action<UserSettings>? SettingsChanged;
@@ -29,10 +24,7 @@ namespace OpRec.Infrastructure.Settings
         {
             _logger = logger;
 
-            var appPath = AppContext.BaseDirectory;
-            Directory.CreateDirectory(appPath);
-
-            _settingsPath = Path.Combine(appPath, "usersettings.json");
+            _settingsPath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "usersettings.json");
 
             Current = LoadOrCreate();
         }
@@ -42,7 +34,7 @@ namespace OpRec.Infrastructure.Settings
             var normalized = Normalize(settings);
             var tempPath = _settingsPath + ".tmp";
 
-            var json = JsonSerializer.Serialize(normalized, JsonOptions);
+            var json = JsonSerializer.Serialize(normalized, UserSettingsJsonContext.Default.UserSettings);
             await File.WriteAllTextAsync(tempPath, json);
             File.Move(tempPath, _settingsPath, overwrite: true);
 
@@ -57,21 +49,21 @@ namespace OpRec.Infrastructure.Settings
                 if (!File.Exists(_settingsPath))
                 {
                     var created = Normalize(new UserSettings());
-                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(created, JsonOptions));
+                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(created, UserSettingsJsonContext.Default.UserSettings));
                     return created;
                 }
 
                 var json = File.ReadAllText(_settingsPath);
-                var loaded = JsonSerializer.Deserialize<UserSettings>(json);
+                var loaded = JsonSerializer.Deserialize(json, UserSettingsJsonContext.Default.UserSettings);
                 if (loaded == null)
                 {
                     return Normalize(new UserSettings());
                 }
 
                 var normalized = Normalize(loaded);
-                if (json != JsonSerializer.Serialize(normalized, JsonOptions))
+                if (json != JsonSerializer.Serialize(normalized, UserSettingsJsonContext.Default.UserSettings))
                 {
-                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(normalized, JsonOptions));
+                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(normalized, UserSettingsJsonContext.Default.UserSettings));
                 }
                 return normalized;
             }

@@ -7,8 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:converters="using:OpRec.Presentation.Overlay.Guide.Converters"
     mc:Ignorable="d"
     Title="GuideOverlayWindow">
 
@@ -17,26 +15,11 @@
     </Window.SystemBackdrop>
 
     <Grid Background="Transparent">
-        <Grid.Resources>
-            <converters:PointerArgsToPointConverter x:Key="PointerArgsToPointConverter" />
-        </Grid.Resources>
-
-        <Canvas x:Name="GuideCanvas" Background="Transparent">
-            <interactivity:Interaction.Behaviors>
-                <interactivity:EventTriggerBehavior EventName="PointerPressed">
-                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerPressedCommand}"
-                                                       InputConverter="{StaticResource PointerArgsToPointConverter}" />
-                </interactivity:EventTriggerBehavior>
-
-                <interactivity:EventTriggerBehavior EventName="PointerMoved">
-                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}"
-                                                       InputConverter="{StaticResource PointerArgsToPointConverter}" />
-                </interactivity:EventTriggerBehavior>
-
-                <interactivity:EventTriggerBehavior EventName="PointerReleased">
-                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.PointerReleasedCommand}" />
-                </interactivity:EventTriggerBehavior>
-            </interactivity:Interaction.Behaviors>
+        <Canvas x:Name="GuideCanvas"
+                Background="Transparent"
+                PointerPressed="OnPointerPressed"
+                PointerMoved="OnPointerMoved"
+                PointerReleased="OnPointerReleased">
 
             <!-- 録画範囲（選択中） -->
             <Path Fill="#88000000"

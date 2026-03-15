@@ -16,9 +16,8 @@
     <WindowsPackageType>None</WindowsPackageType>
     <!-- WindowsAppSDKの同梱 -->
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <!-- 未使用コードのトリミング -->
-    <!--<PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>full</TrimMode>-->
+    <!-- COMの有効化 -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <!-- プレビュー言語機能の有効化 -->
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
@@ -27,6 +26,13 @@
     <None Remove="Presentation\Overlay\RecordingOverlayWindow.xaml" />
     <None Remove="Presentation\Overlay\GuideOverlayWindow.xaml" />
     <None Remove="Presentation\Shell\ShellPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

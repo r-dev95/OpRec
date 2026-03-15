@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +35,7 @@ namespace OpRec
 
             _host = Host
                 .CreateDefaultBuilder()
-                .UseContentRoot(AppContext.BaseDirectory)
+                .UseContentRoot(Path.GetDirectoryName(Environment.ProcessPath)!)
                 .ConfigureLogging((context, logging) =>
                 {
                     logging.AddDebug();

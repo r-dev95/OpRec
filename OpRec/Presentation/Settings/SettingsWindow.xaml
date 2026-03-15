@@ -92,16 +92,16 @@
                             <controls:SettingsCard Header="Mic volume"
                                                    Description="Mic gain. 0 = mute, 1 = normal, 2 = boost.">
                                 <NumberBox Value="{x:Bind ViewModel.MicVolume, Mode=TwoWay}"
-                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
-                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume}"
                                            SmallChange="0.1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="System volume"
                                                    Description="System audio gain. 0 = mute, 1 = normal, 2 = boost.">
                                 <NumberBox Value="{x:Bind ViewModel.SystemVolume, Mode=TwoWay}"
-                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
-                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume}"
                                            SmallChange="0.1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
@@ -130,16 +130,16 @@
                             <controls:SettingsCard Header="Zoom factor"
                                                    Description="Zoom level when enabled.">
                                 <NumberBox Value="{x:Bind ViewModel.ZoomFactor, Mode=TwoWay}"
-                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomFactor, Mode=OneWay}"
-                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomFactor, Mode=OneWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomFactor}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomFactor}"
                                            SmallChange="0.1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Zoom interpolation speed"
                                                    Description="Transition speed. Lower = smoother, higher = faster.">
                                 <NumberBox Value="{x:Bind ViewModel.ZoomInterpolationSpeed, Mode=TwoWay}"
-                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomInterpolationSpeed, Mode=OneWay}"
-                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomInterpolationSpeed, Mode=OneWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomInterpolationSpeed}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomInterpolationSpeed}"
                                            SmallChange="0.01"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
@@ -162,8 +162,8 @@
                             <controls:SettingsCard Header="Click highlight size"
                                                    Description="Ripple size in pixels.">
                                 <NumberBox Value="{x:Bind ViewModel.ClickHighlightSize, Mode=TwoWay}"
-                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinClickHighlightSize, Mode=OneWay}"
-                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxClickHighlightSize, Mode=OneWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinClickHighlightSize}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxClickHighlightSize}"
                                            SmallChange="1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
@@ -187,8 +187,8 @@
                             <controls:SettingsCard Header="Key display duration (seconds)"
                                                    Description="How long keys stay visible.">
                                 <NumberBox Value="{x:Bind ViewModel.KeyDisplayDurationSeconds, Mode=TwoWay}"
-                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinKeyDisplayDurationSeconds, Mode=OneWay}"
-                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxKeyDisplayDurationSeconds, Mode=OneWay}"
+                                           Minimum="{x:Bind settings:UserSettingsConstraints.MinKeyDisplayDurationSeconds}"
+                                           Maximum="{x:Bind settings:UserSettingsConstraints.MaxKeyDisplayDurationSeconds}"
                                            SmallChange="0.1"
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
