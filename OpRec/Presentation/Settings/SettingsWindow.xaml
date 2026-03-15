@@ -37,7 +37,7 @@
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
                             <controls:SettingsCard Header="Output directory"
-                                                   Description="Directory where recordings are saved.">
+                                                   Description="Recordings are saved to this directory.">
                                 <Grid ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -51,12 +51,13 @@
                                 </Grid>
                             </controls:SettingsCard>
 
-                            <controls:SettingsCard Header="Open output directory after recording">
+                            <controls:SettingsCard Header="Open output directory after recording"
+                                                   Description="Open the output directory when recording stops.">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.OpenDirectoryAfterRecording, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard Header="Reset settings"
-                                                   Description="Restore all settings to defaults.">
+                                                   Description="Reset all settings to their default values.">
                                 <Button Content="Reset"
                                         Command="{x:Bind ViewModel.ResetToDefaultsCommand}" />
                             </controls:SettingsCard>
@@ -67,13 +68,13 @@
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
                             <controls:SettingsCard Header="FPS"
-                                                   Description="Select 15, 30, or 60 FPS.">
+                                                   Description="Frame rate. Higher = smoother, larger files.">
                                 <ComboBox ItemsSource="{x:Bind ViewModel.VideoFpsItems}"
                                           SelectedItem="{x:Bind ViewModel.VideoFps, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard Header="Quality"
-                                                   Description="Video encoding quality.">
+                                                   Description="Encoding quality. Higher = larger files.">
                                 <ComboBox ItemsSource="{x:Bind ViewModel.VideoQualityItems}"
                                           SelectedItem="{x:Bind ViewModel.VideoQuality, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -84,12 +85,12 @@
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
                             <controls:SettingsCard Header="Audio recording"
-                                                   Description="Select audio source to record.">
+                                                   Description="Choose which audio sources to capture.">
                                 <ComboBox ItemsSource="{x:Bind ViewModel.AudioCaptureModeItems}"
                                           SelectedItem="{x:Bind ViewModel.AudioCaptureMode, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Mic volume"
-                                                   Description="0.0 = mute, 1.0 = normal, 2.0 = boost.">
+                                                   Description="Mic gain. 0 = mute, 1 = normal, 2 = boost.">
                                 <NumberBox Value="{x:Bind ViewModel.MicVolume, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
@@ -97,7 +98,7 @@
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="System volume"
-                                                   Description="0.0 = mute, 1.0 = normal, 2.0 = boost.">
+                                                   Description="System audio gain. 0 = mute, 1 = normal, 2 = boost.">
                                 <NumberBox Value="{x:Bind ViewModel.SystemVolume, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinAudioVolume, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxAudioVolume, Mode=OneWay}"
@@ -122,11 +123,12 @@
                                    FontSize="14"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
-                            <controls:SettingsCard Header="Double click zoom">
+                            <controls:SettingsCard Header="Double click zoom"
+                                                   Description="Enable zoom toggle on double click.">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDoubleClickZoom, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Zoom factor"
-                                                   Description="Zoom amount.">
+                                                   Description="Zoom level when enabled.">
                                 <NumberBox Value="{x:Bind ViewModel.ZoomFactor, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomFactor, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomFactor, Mode=OneWay}"
@@ -134,7 +136,7 @@
                                            SpinButtonPlacementMode="Inline" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Zoom interpolation speed"
-                                                   Description="Lower is smoother, higher is snappier.">
+                                                   Description="Transition speed. Lower = smoother, higher = faster.">
                                 <NumberBox Value="{x:Bind ViewModel.ZoomInterpolationSpeed, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinZoomInterpolationSpeed, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxZoomInterpolationSpeed, Mode=OneWay}"
@@ -147,16 +149,18 @@
                                    FontSize="14"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
-                            <controls:SettingsCard Header="Click highlight">
+                            <controls:SettingsCard Header="Click highlight"
+                                                   Description="Show a visual ripple on mouse clicks.">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.EnableClickHighlight, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard Header="Click highlight color"
-                                                   Description="#RRGGBB format.">
+                                                   Description="Hex color. (#RRGGBB) Example: #00FFFF">
                                 <TextBox Text="{x:Bind ViewModel.ClickHighlightColor, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
-                            <controls:SettingsCard Header="Click highlight size">
+                            <controls:SettingsCard Header="Click highlight size"
+                                                   Description="Ripple size in pixels.">
                                 <NumberBox Value="{x:Bind ViewModel.ClickHighlightSize, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinClickHighlightSize, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxClickHighlightSize, Mode=OneWay}"
@@ -169,16 +173,19 @@
                                    FontSize="14"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
-                            <controls:SettingsCard Header="Key display">
+                            <controls:SettingsCard Header="Key display"
+                                                   Description="Show pressed keys on screen.">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.EnableKeyDisplay, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
-                            <controls:SettingsCard Header="Key display position">
+                            <controls:SettingsCard Header="Key display position"
+                                                   Description="Where the key overlay appears.">
                                 <ComboBox ItemsSource="{x:Bind ViewModel.KeyDisplayPositionItems}"
                                           SelectedItem="{x:Bind ViewModel.KeyDisplayPosition, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
-                            <controls:SettingsCard Header="Key display duration (seconds)">
+                            <controls:SettingsCard Header="Key display duration (seconds)"
+                                                   Description="How long keys stay visible.">
                                 <NumberBox Value="{x:Bind ViewModel.KeyDisplayDurationSeconds, Mode=TwoWay}"
                                            Minimum="{x:Bind settings:UserSettingsConstraints.MinKeyDisplayDurationSeconds, Mode=OneWay}"
                                            Maximum="{x:Bind settings:UserSettingsConstraints.MaxKeyDisplayDurationSeconds, Mode=OneWay}"
@@ -196,7 +203,8 @@
                                    FontSize="14"
                                    FontWeight="SemiBold" />
                         <StackPanel Spacing="12">
-                            <controls:SettingsCard Header="Minimap">
+                            <controls:SettingsCard Header="Minimap"
+                                                   Description="Show a minimap while recording (not captured).">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.EnableMinimap, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </StackPanel>
@@ -211,14 +219,14 @@
                         <TextBlock Text="Hotkey"
                                    FontSize="16"
                                    FontWeight="SemiBold" />
-                        <TextBlock Text="Leave blank to disable."
+                        <TextBlock Text="Leave blank to disable a hotkey."
                                    Opacity="0.7" />
                         <controls:SettingsCard Header="Toggle recording hotkey"
-                                               Description="Example: Ctrl+Shift+R">
+                                               Description="Starts or stops recording. Example: Ctrl+Shift+R">
                             <TextBox Text="{x:Bind ViewModel.ToggleRecordingHotkey, Mode=TwoWay}" />
                         </controls:SettingsCard>
                         <controls:SettingsCard Header="Toggle zoom hotkey"
-                                               Description="Example: Ctrl+Shift+Z">
+                                               Description="Toggle zoom at the cursor. Example: Ctrl+Shift+Z">
                             <TextBox Text="{x:Bind ViewModel.ToggleZoomHotkey, Mode=TwoWay}" />
                         </controls:SettingsCard>
                     </StackPanel>
