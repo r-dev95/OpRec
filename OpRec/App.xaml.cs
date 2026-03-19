@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.Storage;
 
 using NLog.Extensions.Logging;
 
@@ -36,6 +37,14 @@ namespace OpRec
             _host = Host
                 .CreateDefaultBuilder()
                 .UseContentRoot(Path.GetDirectoryName(Environment.ProcessPath)!)
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    var dirPath = ApplicationData.GetDefault().LocalFolder.Path;
+                    var filePath = Path.Combine(dirPath, "appsettings.json");
+
+                    // ローカルの appsettings（上書き用）
+                    config.AddJsonFile(filePath, optional: true, reloadOnChange: true);
+                })
                 .ConfigureLogging((context, logging) =>
                 {
                     logging.AddDebug();

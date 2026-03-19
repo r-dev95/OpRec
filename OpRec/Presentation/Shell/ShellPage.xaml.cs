@@ -88,11 +88,10 @@ namespace OpRec.Presentation.Shell
 
         private void SetWindow()
         {
+            WindowHelper.GetAppWindow(_mainWindow).SetIcon("Assets/icon.ico");
+            WindowHelper.SetBorderAndTitleBar(_mainWindow, false, false);
             WindowHelper.SetExcludeFromCapture(_mainWindow, true);
             WindowHelper.SetAlwaysOnTop(_mainWindow, true);
-
-            _mainWindow.ExtendsContentIntoTitleBar = true;
-            WindowHelper.SetBorderAndTitleBar(_mainWindow, false, false);
 
             RootPage.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             _logger.LogDebug("RootPage desired size width: {}, height: {}", RootPage.DesiredSize.Width, RootPage.DesiredSize.Height);

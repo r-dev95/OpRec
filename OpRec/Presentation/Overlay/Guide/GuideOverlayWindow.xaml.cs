@@ -66,6 +66,7 @@ namespace OpRec.Presentation.Overlay.Guide
 
         private void SetWindow()
         {
+            WindowHelper.GetAppWindow(this).SetIcon("Assets/icon.ico");
             WindowHelper.SetBorderAndTitleBar(this, false, false);
             WindowHelper.SetClickThrough(this, false);
             WindowHelper.MaximizeWindow(this);

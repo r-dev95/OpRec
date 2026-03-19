@@ -57,6 +57,8 @@ namespace OpRec.Presentation.Settings
 
         private void SetWindow()
         {
+            WindowHelper.GetAppWindow(this).SetIcon("Assets/icon.ico");
+
             RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             _logger.LogDebug("RootGrid desired size width: {}, height: {}", RootGrid.DesiredSize.Width, RootGrid.DesiredSize.Height);
             var scalingFactor = WindowHelper.GetScaleFactor(this);

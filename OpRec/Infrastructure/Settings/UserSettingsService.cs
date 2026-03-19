@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Windows.Storage;
 
 using OpRec.Application.Settings.Ports;
 using OpRec.Domain.Settings.Policies;
@@ -24,7 +25,8 @@ namespace OpRec.Infrastructure.Settings
         {
             _logger = logger;
 
-            _settingsPath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "usersettings.json");
+            //_settingsPath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "usersettings.json");
+            _settingsPath = Path.Combine(ApplicationData.GetDefault().LocalFolder.Path, "usersettings.json");
 
             Current = LoadOrCreate();
         }
