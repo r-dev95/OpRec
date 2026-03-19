@@ -15,54 +15,66 @@ namespace OpRec.Presentation.Settings
         private readonly IUserSettingsService _settingsService;
 
         [ObservableProperty]
-        public partial string OutputDirPath { get; set; } = UserSettingsConstraints.DefaultOutputDirPath;
+        public partial string OutputDirPath { get; set; } = UserSettingsDefaults.OutputDirPath;
 
         [ObservableProperty]
-        public partial int RecordingFps { get; set; } = UserSettingsConstraints.DefaultRecordingFps;
+        public partial bool OpenDirectoryAfterRecording { get; set; } = UserSettingsDefaults.OpenDirectoryAfterRecording;
 
         [ObservableProperty]
-        public partial QualityPreset QualityPreset { get; set; } = UserSettingsConstraints.DefaultQualityPreset;
+        public partial VideoFpsOptions VideoFps { get; set; } = UserSettingsDefaults.VideoFps;
 
         [ObservableProperty]
-        public partial AudioCaptureMode AudioCaptureMode { get; set; } = UserSettingsConstraints.DefaultAudioCaptureMode;
+        public partial VideoQualityOptions VideoQuality { get; set; } = UserSettingsDefaults.VideoQuality;
 
         [ObservableProperty]
-        public partial bool EnableClickHighlight { get; set; } = UserSettingsConstraints.DefaultEnableClickHighlight;
+        public partial AudioCaptureModeOptions AudioCaptureMode { get; set; } = UserSettingsDefaults.AudioCaptureMode;
 
         [ObservableProperty]
-        public partial string ClickHighlightColor { get; set; } = UserSettingsConstraints.DefaultClickHighlightColor;
+        public partial double MicVolume { get; set; } = UserSettingsDefaults.MicVolume;
 
         [ObservableProperty]
-        public partial double ClickHighlightSize { get; set; } = UserSettingsConstraints.DefaultClickHighlightSize;
+        public partial double SystemVolume { get; set; } = UserSettingsDefaults.SystemVolume;
 
         [ObservableProperty]
-        public partial bool EnableKeyDisplay { get; set; } = UserSettingsConstraints.DefaultEnableKeyDisplay;
+        public partial bool EnableDoubleClickZoom { get; set; } = UserSettingsDefaults.EnableDoubleClickZoom;
 
         [ObservableProperty]
-        public partial KeyDisplayPosition KeyDisplayPosition { get; set; } = UserSettingsConstraints.DefaultKeyDisplayPosition;
+        public partial double ZoomFactor { get; set; } = UserSettingsDefaults.ZoomFactor;
 
         [ObservableProperty]
-        public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
+        public partial double ZoomInterpolationSpeed { get; set; } = UserSettingsDefaults.ZoomInterpolationSpeed;
 
         [ObservableProperty]
-        public partial bool EnableMinimap { get; set; } = UserSettingsConstraints.DefaultEnableMinimap;
+        public partial bool EnableClickHighlight { get; set; } = UserSettingsDefaults.EnableClickHighlight;
 
         [ObservableProperty]
-        public partial double ZoomFactor { get; set; } = UserSettingsConstraints.DefaultZoomFactor;
+        public partial string ClickHighlightColor { get; set; } = UserSettingsDefaults.ClickHighlightColor;
 
         [ObservableProperty]
-        public partial string ToggleRecordingHotkey { get; set; } = UserSettingsConstraints.DefaultHotkey;
+        public partial double ClickHighlightSize { get; set; } = UserSettingsDefaults.ClickHighlightSize;
 
         [ObservableProperty]
-        public partial string ToggleZoomHotkey { get; set; } = UserSettingsConstraints.DefaultZoomHotkey;
+        public partial bool EnableKeyDisplay { get; set; } = UserSettingsDefaults.EnableKeyDisplay;
 
         [ObservableProperty]
-        public partial bool OpenDirectoryAfterRecording { get; set; } = UserSettingsConstraints.DefaultOpenDirectoryAfterRecording;
+        public partial KeyDisplayPositionOptions KeyDisplayPosition { get; set; } = UserSettingsDefaults.KeyDisplayPosition;
 
-        public int[] FpsOptions { get; } = UserSettingsConstraints.FpsOptions;
-        public QualityPreset[] QualityOptions { get; } = Enum.GetValues<QualityPreset>();
-        public KeyDisplayPosition[] KeyDisplayPositionOptions { get; } = Enum.GetValues<KeyDisplayPosition>();
-        public AudioCaptureMode[] AudioCaptureModeOptions { get; } = Enum.GetValues<AudioCaptureMode>();
+        [ObservableProperty]
+        public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsDefaults.KeyDisplayDurationSeconds;
+
+        [ObservableProperty]
+        public partial bool EnableMinimap { get; set; } = UserSettingsDefaults.EnableMinimap;
+
+        [ObservableProperty]
+        public partial string ToggleRecordingHotkey { get; set; } = UserSettingsDefaults.ToggleRecordingHotkey;
+
+        [ObservableProperty]
+        public partial string ToggleZoomHotkey { get; set; } = UserSettingsDefaults.ToggleZoomHotkey;
+
+        public VideoFpsOptions[] VideoFpsItems { get; } = Enum.GetValues<VideoFpsOptions>();
+        public VideoQualityOptions[] VideoQualityItems { get; } = Enum.GetValues<VideoQualityOptions>();
+        public KeyDisplayPositionOptions[] KeyDisplayPositionItems { get; } = Enum.GetValues<KeyDisplayPositionOptions>();
+        public AudioCaptureModeOptions[] AudioCaptureModeItems { get; } = Enum.GetValues<AudioCaptureModeOptions>();
 
         public event Action? CloseRequested;
 
@@ -86,9 +98,15 @@ namespace OpRec.Presentation.Settings
             var settings = new UserSettings
             {
                 OutputDirPath = OutputDirPath,
-                RecordingFps = RecordingFps,
-                QualityPreset = QualityPreset,
+                OpenDirectoryAfterRecording = OpenDirectoryAfterRecording,
+                VideoFps = VideoFps,
+                VideoQuality = VideoQuality,
                 AudioCaptureMode = AudioCaptureMode,
+                MicVolume = MicVolume,
+                SystemVolume = SystemVolume,
+                EnableDoubleClickZoom = EnableDoubleClickZoom,
+                ZoomFactor = ZoomFactor,
+                ZoomInterpolationSpeed = ZoomInterpolationSpeed,
                 EnableClickHighlight = EnableClickHighlight,
                 ClickHighlightColor = ClickHighlightColor,
                 ClickHighlightSize = ClickHighlightSize,
@@ -96,10 +114,8 @@ namespace OpRec.Presentation.Settings
                 KeyDisplayPosition = KeyDisplayPosition,
                 KeyDisplayDurationSeconds = KeyDisplayDurationSeconds,
                 EnableMinimap = EnableMinimap,
-                ZoomFactor = ZoomFactor,
                 ToggleRecordingHotkey = ToggleRecordingHotkey,
                 ToggleZoomHotkey = ToggleZoomHotkey,
-                OpenDirectoryAfterRecording = OpenDirectoryAfterRecording
             };
 
             await _settingsService.SaveAsync(settings);
@@ -116,15 +132,21 @@ namespace OpRec.Presentation.Settings
         [RelayCommand]
         private void ResetToDefaults()
         {
-            Load(UserSettingsConstraints.CreateDefaultSettings());
+            Load(new UserSettings());
         }
 
         private void Load(UserSettings settings)
         {
             OutputDirPath = settings.OutputDirPath;
-            RecordingFps = settings.RecordingFps;
-            QualityPreset = settings.QualityPreset;
+            OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording;
+            VideoFps = settings.VideoFps;
+            VideoQuality = settings.VideoQuality;
             AudioCaptureMode = settings.AudioCaptureMode;
+            MicVolume = settings.MicVolume;
+            SystemVolume = settings.SystemVolume;
+            EnableDoubleClickZoom = settings.EnableDoubleClickZoom;
+            ZoomFactor = settings.ZoomFactor;
+            ZoomInterpolationSpeed = settings.ZoomInterpolationSpeed;
             EnableClickHighlight = settings.EnableClickHighlight;
             ClickHighlightColor = settings.ClickHighlightColor;
             ClickHighlightSize = settings.ClickHighlightSize;
@@ -132,10 +154,8 @@ namespace OpRec.Presentation.Settings
             KeyDisplayPosition = settings.KeyDisplayPosition;
             KeyDisplayDurationSeconds = settings.KeyDisplayDurationSeconds;
             EnableMinimap = settings.EnableMinimap;
-            ZoomFactor = settings.ZoomFactor;
             ToggleRecordingHotkey = settings.ToggleRecordingHotkey;
             ToggleZoomHotkey = settings.ToggleZoomHotkey;
-            OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording;
         }
     }
 }

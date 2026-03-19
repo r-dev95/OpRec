@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 
 using OpRec.Common.Helpers;
 
@@ -34,6 +35,23 @@ namespace OpRec.Presentation.Overlay.Guide
             ViewModel.Stop();
         }
 
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint((UIElement)sender).Position;
+            ViewModel.OnPointerPressed(point);
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint((UIElement)sender).Position;
+            ViewModel.OnPointerMoved(point);
+        }
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            ViewModel.OnPointerReleased();
+        }
+
         private void OnSetRecordingUi()
         {
             WindowHelper.SetAlwaysOnTop(this, true);
@@ -48,6 +66,7 @@ namespace OpRec.Presentation.Overlay.Guide
 
         private void SetWindow()
         {
+            WindowHelper.GetAppWindow(this).SetIcon("Assets/icon.ico");
             WindowHelper.SetBorderAndTitleBar(this, false, false);
             WindowHelper.SetClickThrough(this, false);
             WindowHelper.MaximizeWindow(this);

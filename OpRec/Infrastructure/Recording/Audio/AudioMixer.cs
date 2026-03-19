@@ -20,14 +20,14 @@ namespace OpRec.Infrastructure.Recording.Audio
             _logger = logger;
         }
 
-        public Task MixAsync(StorageFile micFile, StorageFile systemFile, StorageFile outputFile)
+        public Task MixAsync(StorageFile micFile, StorageFile systemFile, StorageFile outputFile, float micVolume, float systemVolume)
         {
             var disposables = new List<IDisposable>();
             try
             {
                 var targetFormat = WaveFormat.CreateIeeeFloatWaveFormat(48000, 2);
-                var micSample = PrepareInput(micFile.Path, targetFormat, disposables);
-                var systemSample = PrepareInput(systemFile.Path, targetFormat, disposables);
+                var micSample = PrepareInput(micFile.Path, targetFormat, micVolume, disposables);
+                var systemSample = PrepareInput(systemFile.Path, targetFormat, systemVolume, disposables);
 
                 var mixer = new MixingSampleProvider(targetFormat)
                 {
@@ -55,7 +55,11 @@ namespace OpRec.Infrastructure.Recording.Audio
             }
         }
 
-        private static ISampleProvider PrepareInput(string path, WaveFormat targetFormat, List<IDisposable> disposables)
+        private static ISampleProvider PrepareInput(
+            string path,
+            WaveFormat targetFormat,
+            float volume,
+            List<IDisposable> disposables)
         {
             var reader = new MediaFoundationReader(path);
             disposables.Add(reader);
@@ -78,7 +82,7 @@ namespace OpRec.Infrastructure.Recording.Audio
 
             var volumeSample = new VolumeSampleProvider(sample)
             {
-                Volume = 0.5f
+                Volume = volume
             };
             return volumeSample;
         }

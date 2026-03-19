@@ -65,8 +65,8 @@ namespace OpRec.Presentation.Overlay.Guide
 
             var x = Math.Min(_startPoint.X, currentPoint.X);
             var y = Math.Min(_startPoint.Y, currentPoint.Y);
-            var width = Math.Abs(_startPoint.X - currentPoint.X);
-            var height = Math.Abs(_startPoint.Y - currentPoint.Y);
+            var width = Math.Round(Math.Abs(_startPoint.X - currentPoint.X));
+            var height = Math.Round(Math.Abs(_startPoint.Y - currentPoint.Y));
             CaptureAreaRect = new Rect(x, y, width, height);
             return true;
         }

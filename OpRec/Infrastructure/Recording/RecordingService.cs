@@ -73,7 +73,7 @@ namespace OpRec.Infrastructure.Recording
                     return false;
                 }
 
-                var shouldCaptureAudio = _settingsService.Current.AudioCaptureMode != AudioCaptureMode.Off;
+                var shouldCaptureAudio = _settingsService.Current.AudioCaptureMode != AudioCaptureModeOptions.Off;
                 if (shouldCaptureAudio)
                 {
                     var AudioFile = _recordingFiles.AudioFile;
@@ -112,7 +112,7 @@ namespace OpRec.Infrastructure.Recording
             {
                 await _videoCapture.StopAsync();
 
-                var shouldCaptureAudio = _settingsService.Current.AudioCaptureMode != AudioCaptureMode.Off;
+                var shouldCaptureAudio = _settingsService.Current.AudioCaptureMode != AudioCaptureModeOptions.Off;
                 if (shouldCaptureAudio)
                 {
                     await _audioCapture.StopAsync();

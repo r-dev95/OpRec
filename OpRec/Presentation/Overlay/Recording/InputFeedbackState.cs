@@ -28,7 +28,7 @@ namespace OpRec.Presentation.Overlay.Recording
         public partial Rect KeyDisplayArea { get; set; }
 
         [ObservableProperty]
-        public partial bool EnableKeyDisplay { get; set; } = true;
+        public partial bool EnableKeyDisplay { get; set; } = UserSettingsDefaults.EnableKeyDisplay;
 
         [ObservableProperty]
         public partial HorizontalAlignment KeyHorizontalAlignment { get; set; } = HorizontalAlignment.Center;
@@ -40,7 +40,7 @@ namespace OpRec.Presentation.Overlay.Recording
         public partial Thickness KeyMargin { get; set; } = new(0, 0, 0, 50);
 
         [ObservableProperty]
-        public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
+        public partial double KeyDisplayDurationSeconds { get; set; } = UserSettingsDefaults.KeyDisplayDurationSeconds;
 
         public Visibility KeyVisibility => EnableKeyDisplay && !string.IsNullOrWhiteSpace(CurrentKeyText)
             ? Visibility.Visible
@@ -87,27 +87,27 @@ namespace OpRec.Presentation.Overlay.Recording
 
             switch (settings.KeyDisplayPosition)
             {
-                case KeyDisplayPosition.TopLeft:
+                case KeyDisplayPositionOptions.TopLeft:
                     KeyHorizontalAlignment = HorizontalAlignment.Left;
                     KeyVerticalAlignment = VerticalAlignment.Top;
                     KeyMargin = new Thickness(30, 50, 0, 0);
                     break;
-                case KeyDisplayPosition.TopCenter:
+                case KeyDisplayPositionOptions.TopCenter:
                     KeyHorizontalAlignment = HorizontalAlignment.Center;
                     KeyVerticalAlignment = VerticalAlignment.Top;
                     KeyMargin = new Thickness(0, 50, 0, 0);
                     break;
-                case KeyDisplayPosition.TopRight:
+                case KeyDisplayPositionOptions.TopRight:
                     KeyHorizontalAlignment = HorizontalAlignment.Right;
                     KeyVerticalAlignment = VerticalAlignment.Top;
                     KeyMargin = new Thickness(0, 50, 30, 0);
                     break;
-                case KeyDisplayPosition.BottomLeft:
+                case KeyDisplayPositionOptions.BottomLeft:
                     KeyHorizontalAlignment = HorizontalAlignment.Left;
                     KeyVerticalAlignment = VerticalAlignment.Bottom;
                     KeyMargin = new Thickness(30, 0, 0, 50);
                     break;
-                case KeyDisplayPosition.BottomRight:
+                case KeyDisplayPositionOptions.BottomRight:
                     KeyHorizontalAlignment = HorizontalAlignment.Right;
                     KeyVerticalAlignment = VerticalAlignment.Bottom;
                     KeyMargin = new Thickness(0, 0, 30, 50);

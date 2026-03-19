@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.Extensions.Logging;
 
@@ -31,12 +30,7 @@ namespace OpRec.Presentation.Overlay.Guide
         private IDisposable? _startRequestSubscription;
         private double _scaleFactor = 1.0;
         private bool _isRecording;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(PointerPressedCommand))]
-        [NotifyCanExecuteChangedFor(nameof(PointerMovedCommand))]
-        [NotifyCanExecuteChangedFor(nameof(PointerReleasedCommand))]
-        public partial bool CanSubmit { get; set; }
+        private bool _canSubmit;
 
         [ObservableProperty]
         public partial SelectionAreaState Selection { get; set; } = new();
@@ -80,9 +74,8 @@ namespace OpRec.Presentation.Overlay.Guide
             _settingsService.SettingsChanged += OnSettingsChanged;
 
             _scaleFactor = scaleFactor;
-            CanSubmit = true;
+            _canSubmit = true;
 
-            Countdown.SetScaleFactor(_scaleFactor);
             Selection.SetScaleFactor(_scaleFactor);
             Selection.SetFullAreaRect(width, height);
             Minimap.SetScaleFactor(_scaleFactor);
@@ -99,21 +92,33 @@ namespace OpRec.Presentation.Overlay.Guide
             _settingsService.SettingsChanged -= OnSettingsChanged;
         }
 
-        [RelayCommand(CanExecute = nameof(CanSubmit))]
-        private void OnPointerPressed(Point position)
+        public void OnPointerPressed(Point position)
         {
+            if (!_canSubmit)
+            {
+                return;
+            }
+
             Selection.BeginSelection(position);
         }
 
-        [RelayCommand(CanExecute = nameof(CanSubmit))]
-        private void OnPointerMoved(Point currentPoint)
+        public void OnPointerMoved(Point currentPoint)
         {
+            if (!_canSubmit)
+            {
+                return;
+            }
+
             Selection.UpdateSelection(currentPoint);
         }
 
-        [RelayCommand(CanExecute = nameof(CanSubmit))]
-        private void OnPointerReleased()
+        public void OnPointerReleased()
         {
+            if (!_canSubmit)
+            {
+                return;
+            }
+
             Selection.EndSelection();
             if (!Selection.HasSelection)
             {
@@ -187,13 +192,13 @@ namespace OpRec.Presentation.Overlay.Guide
                 _isRecording = state.IsRecording;
                 if (_isRecording)
                 {
-                    CanSubmit = false;
+                    _canSubmit = false;
                     Selection.SetMaskVisible(false);
                     SetRecordingUi?.Invoke();
                 }
                 else
                 {
-                    CanSubmit = true;
+                    _canSubmit = true;
                     Selection.SetMaskVisible(true);
                     Selection.ClearSelection();
                     UnSetRecordingUi?.Invoke();

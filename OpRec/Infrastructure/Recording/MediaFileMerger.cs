@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using OpRec.Application.Settings.Ports;
-using OpRec.Domain.Settings.ValueObjects;
 using OpRec.Infrastructure.Recording.Models;
 
 using Windows.Media.Editing;
@@ -43,8 +42,8 @@ namespace OpRec.Infrastructure.Recording
                 composition.Clips.Add(videoClip);
                 composition.BackgroundAudioTracks.Add(audioTrack);
 
-                var profile = MediaEncodingProfile.CreateMp4(ToVideoQuality(_settingsService.Current.QualityPreset));
-                profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.RecordingFps;
+                var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
+                profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.VideoFps;
                 profile.Video.FrameRate.Denominator = 1;
 
                 var result = await composition.RenderToFileAsync(
@@ -66,15 +65,6 @@ namespace OpRec.Infrastructure.Recording
             }
         }
 
-        private static VideoEncodingQuality ToVideoQuality(QualityPreset preset)
-        {
-            return preset switch
-            {
-                QualityPreset.Low => VideoEncodingQuality.Wvga,
-                QualityPreset.Medium => VideoEncodingQuality.HD720p,
-                _ => VideoEncodingQuality.HD1080p
-            };
-        }
     }
 }
 

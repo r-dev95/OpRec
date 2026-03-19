@@ -37,7 +37,7 @@ namespace OpRec.Infrastructure.Recording
                 var VideoFile = FinalFile;
                 StorageFile? AudioFile = null;
 
-                if (_settingsService.Current.AudioCaptureMode != AudioCaptureMode.Off)
+                if (_settingsService.Current.AudioCaptureMode != AudioCaptureModeOptions.Off)
                 {
                     VideoFile = await localDir.CreateFileAsync($"{baseName}.video.tmp.mp4", CreationCollisionOption.GenerateUniqueName);
                     var audioExtension = "m4a";
@@ -51,7 +51,7 @@ namespace OpRec.Infrastructure.Recording
                     AudioFile = AudioFile
                 };
 
-                if (_settingsService.Current.AudioCaptureMode is AudioCaptureMode.Mic or AudioCaptureMode.Both && AudioFile != null)
+                if (_settingsService.Current.AudioCaptureMode is AudioCaptureModeOptions.Mic or AudioCaptureModeOptions.Both && AudioFile != null)
                 {
                     files.MicTempFile = await localDir.CreateFileAsync(
                         $"{baseName}.audio.mic.tmp.wav",
@@ -59,7 +59,7 @@ namespace OpRec.Infrastructure.Recording
                     files.AudioTempFiles.Add(files.MicTempFile);
                 }
 
-                if (_settingsService.Current.AudioCaptureMode is AudioCaptureMode.System or AudioCaptureMode.Both && AudioFile != null)
+                if (_settingsService.Current.AudioCaptureMode is AudioCaptureModeOptions.System or AudioCaptureModeOptions.Both && AudioFile != null)
                 {
                     files.SystemTempFile = await localDir.CreateFileAsync(
                         $"{baseName}.audio.sys.tmp.wav",

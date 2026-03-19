@@ -24,7 +24,7 @@ namespace OpRec.Infrastructure.Recording.Audio
         private readonly IEventBus _eventBus;
 
         private bool _isRecording;
-        private AudioCaptureMode _mode = AudioCaptureMode.Off;
+        private AudioCaptureModeOptions _mode = AudioCaptureModeOptions.Off;
         private StorageFile? _outputFile;
         private StorageFile? _micTempFile;
         private StorageFile? _systemTempFile;
@@ -54,8 +54,9 @@ namespace OpRec.Infrastructure.Recording.Audio
                 return false;
             }
 
-            _mode = _settingsService.Current.AudioCaptureMode;
-            if (_mode == AudioCaptureMode.Off)
+            var settings = _settingsService.Current;
+            _mode = settings.AudioCaptureMode;
+            if (_mode == AudioCaptureModeOptions.Off)
             {
                 return true;
             }
@@ -116,19 +117,19 @@ namespace OpRec.Infrastructure.Recording.Audio
         {
             switch (_mode)
             {
-                case AudioCaptureMode.Mic:
+                case AudioCaptureModeOptions.Mic:
                     if (_micTempFile == null)
                     {
                         return false;
                     }
                     return await _micAudioCapture.StartAsync(_micTempFile);
-                case AudioCaptureMode.System:
+                case AudioCaptureModeOptions.System:
                     if (_systemTempFile == null)
                     {
                         return false;
                     }
                     return await _systemAudioCapture.StartAsync(_systemTempFile);
-                case AudioCaptureMode.Both:
+                case AudioCaptureModeOptions.Both:
                     if (_micTempFile == null || _systemTempFile == null)
                     {
                         return false;
@@ -155,25 +156,28 @@ namespace OpRec.Infrastructure.Recording.Audio
 
         private async Task StopCaptureAsync()
         {
+            var micVolume = (float)_settingsService.Current.MicVolume;
+            var systemVolume = (float)_settingsService.Current.SystemVolume;
+
             switch (_mode)
             {
-                case AudioCaptureMode.Mic:
+                case AudioCaptureModeOptions.Mic:
                     await _micAudioCapture.StopAsync();
                     if (_micTempFile == null || _outputFile == null)
                     {
                         throw new InvalidOperationException("Microphone temp file is not prepared.");
                     }
-                    await _audioTranscoder.EncodeWavToM4aAsync(_micTempFile, _outputFile);
+                    await _audioTranscoder.EncodeWavToM4aAsync(_micTempFile, _outputFile, micVolume);
                     return;
-                case AudioCaptureMode.System:
+                case AudioCaptureModeOptions.System:
                     await _systemAudioCapture.StopAsync();
                     if (_systemTempFile == null || _outputFile == null)
                     {
                         throw new InvalidOperationException("System audio temp file is not prepared.");
                     }
-                    await _audioTranscoder.EncodeWavToM4aAsync(_systemTempFile, _outputFile);
+                    await _audioTranscoder.EncodeWavToM4aAsync(_systemTempFile, _outputFile, systemVolume);
                     return;
-                case AudioCaptureMode.Both:
+                case AudioCaptureModeOptions.Both:
                     await _micAudioCapture.StopAsync();
                     await _systemAudioCapture.StopAsync();
 
@@ -182,7 +186,7 @@ namespace OpRec.Infrastructure.Recording.Audio
                         throw new InvalidOperationException("Audio temp files are not prepared.");
                     }
 
-                    await _audioMixer.MixAsync(_micTempFile, _systemTempFile, _outputFile);
+                    await _audioMixer.MixAsync(_micTempFile, _systemTempFile, _outputFile, micVolume, systemVolume);
                     return;
                 default:
                     return;
@@ -229,7 +233,7 @@ namespace OpRec.Infrastructure.Recording.Audio
             _outputFile = null;
             _micTempFile = null;
             _systemTempFile = null;
-            _mode = AudioCaptureMode.Off;
+            _mode = AudioCaptureModeOptions.Off;
         }
 
     }

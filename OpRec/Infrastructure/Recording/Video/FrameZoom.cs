@@ -3,18 +3,20 @@ using System.Numerics;
 
 using Microsoft.Graphics.Canvas;
 
+using OpRec.Application.Settings.Ports;
+
 using Windows.Foundation;
 
 namespace OpRec.Infrastructure.Recording.Video
 {
     public class FrameZoom
     {
-        private const float InterpolationSpeed = 0.01f;
         private const float ZoomMin = 1.0f;
 
-        private readonly float _zoomMax;
+        private readonly IUserSettingsService _settingsService;
         private readonly Rect _captureArea;
         private readonly Vector2 _originalPos;
+
         private Vector2 _currentPos;
         private Vector2 _targetPos;
         private float _currentZoom = 1.0f;
@@ -22,10 +24,10 @@ namespace OpRec.Infrastructure.Recording.Video
 
         public Action<Rect>? ZoomAction;
 
-        public FrameZoom(Rect captureArea, double zoomMax = 2.0)
+        public FrameZoom(IUserSettingsService settingsService, Rect captureArea)
         {
+            _settingsService = settingsService;
             _captureArea = captureArea;
-            _zoomMax = (float)zoomMax;
 
             _originalPos = new Vector2((float)(captureArea.Width * 0.5), (float)(captureArea.Height * 0.5));
             _currentPos = _originalPos;
@@ -35,7 +37,7 @@ namespace OpRec.Infrastructure.Recording.Video
         {
             if (_targetZoom == ZoomMin)
             {
-                _targetZoom = _zoomMax;
+                _targetZoom = (float)_settingsService.Current.ZoomFactor;
                 _currentPos = _originalPos;
                 _targetPos = new Vector2(mouseX, mouseY);
             }
@@ -64,8 +66,9 @@ namespace OpRec.Infrastructure.Recording.Video
 
         private Rect UpdateViewport(double width, double height)
         {
-            _currentZoom += (_targetZoom - _currentZoom) * InterpolationSpeed;
-            _currentPos = Vector2.Lerp(_currentPos, _targetPos, InterpolationSpeed);
+            var interpolationSpeed = (float)_settingsService.Current.ZoomInterpolationSpeed;
+            _currentZoom += ((_targetZoom - _currentZoom) * interpolationSpeed);
+            _currentPos = Vector2.Lerp(_currentPos, _targetPos, interpolationSpeed);
 
             float viewWidth = (float)(width / _currentZoom);
             float viewHeight = (float)(height / _currentZoom);

@@ -3,6 +3,7 @@ using System;
 using Microsoft.Graphics.Canvas;
 
 using OpRec.Application.Input.Ports;
+using OpRec.Application.Settings.Ports;
 
 using Windows.Foundation;
 
@@ -10,17 +11,19 @@ namespace OpRec.Infrastructure.Recording.Video
 {
     public class CompositionManager : IDisposable
     {
+        private readonly IUserSettingsService _settingsService;
         private readonly IMouseInputListener _mouseInputListener;
         private readonly Rect _captureArea;
         private readonly FrameZoom _frameZoom;
 
         public event Action<Rect>? ZoomChanged;
 
-        public CompositionManager(IMouseInputListener mouseInputListener, Rect captureArea, double zoomFactor)
+        public CompositionManager(IUserSettingsService settingsService, IMouseInputListener mouseInputListener, Rect captureArea)
         {
+            _settingsService = settingsService;
             _mouseInputListener = mouseInputListener;
             _captureArea = captureArea;
-            _frameZoom = new FrameZoom(_captureArea, zoomFactor);
+            _frameZoom = new FrameZoom(_settingsService, _captureArea);
 
             _frameZoom.ZoomAction += OnZoomAction;
             _mouseInputListener.MouseClicked += OnMouseClicked;
@@ -50,7 +53,7 @@ namespace OpRec.Infrastructure.Recording.Video
 
         private void OnMouseClicked(int x, int y, bool isDouble)
         {
-            if (!isDouble)
+            if (!isDouble || !_settingsService.Current.EnableDoubleClickZoom)
             {
                 return;
             }

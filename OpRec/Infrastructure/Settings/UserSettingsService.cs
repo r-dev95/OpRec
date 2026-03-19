@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Windows.Storage;
 
 using OpRec.Application.Settings.Ports;
 using OpRec.Domain.Settings.Policies;
@@ -16,11 +17,6 @@ namespace OpRec.Infrastructure.Settings
         private readonly ILogger<UserSettingsService> _logger;
         private readonly string _settingsPath;
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true
-        };
-
         public UserSettings Current { get; private set; }
 
         public event Action<UserSettings>? SettingsChanged;
@@ -29,10 +25,8 @@ namespace OpRec.Infrastructure.Settings
         {
             _logger = logger;
 
-            var appPath = AppContext.BaseDirectory;
-            Directory.CreateDirectory(appPath);
-
-            _settingsPath = Path.Combine(appPath, "usersettings.json");
+            //_settingsPath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "usersettings.json");
+            _settingsPath = Path.Combine(ApplicationData.GetDefault().LocalFolder.Path, "usersettings.json");
 
             Current = LoadOrCreate();
         }
@@ -42,7 +36,7 @@ namespace OpRec.Infrastructure.Settings
             var normalized = Normalize(settings);
             var tempPath = _settingsPath + ".tmp";
 
-            var json = JsonSerializer.Serialize(normalized, JsonOptions);
+            var json = JsonSerializer.Serialize(normalized, UserSettingsJsonContext.Default.UserSettings);
             await File.WriteAllTextAsync(tempPath, json);
             File.Move(tempPath, _settingsPath, overwrite: true);
 
@@ -57,21 +51,21 @@ namespace OpRec.Infrastructure.Settings
                 if (!File.Exists(_settingsPath))
                 {
                     var created = Normalize(new UserSettings());
-                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(created, JsonOptions));
+                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(created, UserSettingsJsonContext.Default.UserSettings));
                     return created;
                 }
 
                 var json = File.ReadAllText(_settingsPath);
-                var loaded = JsonSerializer.Deserialize<UserSettings>(json);
+                var loaded = JsonSerializer.Deserialize(json, UserSettingsJsonContext.Default.UserSettings);
                 if (loaded == null)
                 {
                     return Normalize(new UserSettings());
                 }
 
                 var normalized = Normalize(loaded);
-                if (json != JsonSerializer.Serialize(normalized, JsonOptions))
+                if (json != JsonSerializer.Serialize(normalized, UserSettingsJsonContext.Default.UserSettings))
                 {
-                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(normalized, JsonOptions));
+                    File.WriteAllText(_settingsPath, JsonSerializer.Serialize(normalized, UserSettingsJsonContext.Default.UserSettings));
                 }
                 return normalized;
             }
@@ -87,58 +81,90 @@ namespace OpRec.Infrastructure.Settings
             var outputPath = settings.OutputDirPath;
             if (string.IsNullOrWhiteSpace(outputPath))
             {
-                var videosPath = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
-                outputPath = videosPath;
+                outputPath = UserSettingsDefaults.OutputDirPath;
             }
 
-            int fps = settings.RecordingFps;
-            if (Array.IndexOf(UserSettingsConstraints.FpsOptions, fps) < 0)
+            var fps = Enum.IsDefined(typeof(VideoFpsOptions), settings.VideoFps)
+                ? settings.VideoFps
+                : UserSettingsDefaults.VideoFps;
+
+            var videoQuality = Enum.IsDefined(typeof(VideoQualityOptions), settings.VideoQuality)
+                ? settings.VideoQuality
+                : UserSettingsDefaults.VideoQuality;
+
+            var micVolume = settings.MicVolume;
+            if (double.IsNaN(micVolume)
+                || micVolume < UserSettingsConstraints.MinAudioVolume
+                || micVolume > UserSettingsConstraints.MaxAudioVolume)
             {
-                fps = UserSettingsConstraints.Fps30;
+                micVolume = UserSettingsDefaults.MicVolume;
             }
 
-            var keySeconds = settings.KeyDisplayDurationSeconds;
-            if (keySeconds < UserSettingsConstraints.MinKeyDisplayDurationSeconds
-                || keySeconds > UserSettingsConstraints.MaxKeyDisplayDurationSeconds)
+            var systemVolume = settings.SystemVolume;
+            if (double.IsNaN(systemVolume)
+                || systemVolume < UserSettingsConstraints.MinAudioVolume
+                || systemVolume > UserSettingsConstraints.MaxAudioVolume)
             {
-                keySeconds = UserSettingsConstraints.DefaultKeyDisplayDurationSeconds;
+                systemVolume = UserSettingsDefaults.SystemVolume;
             }
 
             var zoom = settings.ZoomFactor;
             if (zoom < UserSettingsConstraints.MinZoomFactor
                 || zoom > UserSettingsConstraints.MaxZoomFactor)
             {
-                zoom = UserSettingsConstraints.DefaultZoomFactor;
+                zoom = UserSettingsDefaults.ZoomFactor;
+            }
+
+            var zoomInterpolation = settings.ZoomInterpolationSpeed;
+            if (double.IsNaN(zoomInterpolation)
+                || zoomInterpolation < UserSettingsConstraints.MinZoomInterpolationSpeed
+                || zoomInterpolation > UserSettingsConstraints.MaxZoomInterpolationSpeed)
+            {
+                zoomInterpolation = UserSettingsDefaults.ZoomInterpolationSpeed;
+            }
+
+            var keySeconds = settings.KeyDisplayDurationSeconds;
+            if (keySeconds < UserSettingsConstraints.MinKeyDisplayDurationSeconds
+                || keySeconds > UserSettingsConstraints.MaxKeyDisplayDurationSeconds)
+            {
+                keySeconds = UserSettingsDefaults.KeyDisplayDurationSeconds;
             }
 
             var clickSize = settings.ClickHighlightSize;
             if (clickSize < UserSettingsConstraints.MinClickHighlightSize
                 || clickSize > UserSettingsConstraints.MaxClickHighlightSize)
             {
-                clickSize = UserSettingsConstraints.DefaultClickHighlightSize;
+                clickSize = UserSettingsDefaults.ClickHighlightSize;
             }
 
-            var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
-                ? UserSettingsConstraints.DefaultHotkey
-                : settings.ToggleRecordingHotkey.Trim();
-            var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
-                ? UserSettingsConstraints.DefaultZoomHotkey
-                : settings.ToggleZoomHotkey.Trim();
+            var audioMode = Enum.IsDefined(typeof(AudioCaptureModeOptions), settings.AudioCaptureMode)
+                ? settings.AudioCaptureMode
+                : UserSettingsDefaults.AudioCaptureMode;
 
             var color = string.IsNullOrWhiteSpace(settings.ClickHighlightColor)
-                ? UserSettingsConstraints.DefaultClickHighlightColor
+                ? UserSettingsDefaults.ClickHighlightColor
                 : settings.ClickHighlightColor.Trim();
 
-            var audioMode = Enum.IsDefined(typeof(AudioCaptureMode), settings.AudioCaptureMode)
-                ? settings.AudioCaptureMode
-                : AudioCaptureMode.Off;
+            var hotkey = string.IsNullOrWhiteSpace(settings.ToggleRecordingHotkey)
+                ? ""
+                : settings.ToggleRecordingHotkey.Trim();
+
+            var zoomHotkey = string.IsNullOrWhiteSpace(settings.ToggleZoomHotkey)
+                ? ""
+                : settings.ToggleZoomHotkey.Trim();
 
             return new UserSettings
             {
                 OutputDirPath = outputPath,
-                RecordingFps = fps,
-                QualityPreset = settings.QualityPreset,
+                OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording,
+                VideoFps = fps,
+                VideoQuality = videoQuality,
                 AudioCaptureMode = audioMode,
+                MicVolume = micVolume,
+                SystemVolume = systemVolume,
+                EnableDoubleClickZoom = settings.EnableDoubleClickZoom,
+                ZoomFactor = zoom,
+                ZoomInterpolationSpeed = zoomInterpolation,
                 EnableClickHighlight = settings.EnableClickHighlight,
                 ClickHighlightColor = color,
                 ClickHighlightSize = clickSize,
@@ -146,10 +172,8 @@ namespace OpRec.Infrastructure.Settings
                 KeyDisplayPosition = settings.KeyDisplayPosition,
                 KeyDisplayDurationSeconds = keySeconds,
                 EnableMinimap = settings.EnableMinimap,
-                ZoomFactor = zoom,
                 ToggleRecordingHotkey = hotkey,
                 ToggleZoomHotkey = zoomHotkey,
-                OpenDirectoryAfterRecording = settings.OpenDirectoryAfterRecording
             };
         }
     }
