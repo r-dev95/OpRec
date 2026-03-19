@@ -82,12 +82,16 @@
             </Canvas>
         </Grid>
 
-        <TextBlock HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="120"
-                   FontWeight="Bold"
-                   Foreground="White"
-                   Text="{x:Bind ViewModel.Countdown.Text, Mode=OneWay}"
-                   Visibility="{x:Bind ViewModel.Countdown.Visibility, Mode=OneWay}" />
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="#DD000000"
+                CornerRadius="12"
+                Padding="30,0"
+                Visibility="{x:Bind ViewModel.Countdown.Visibility, Mode=OneWay}">
+            <TextBlock FontSize="80"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       Text="{x:Bind ViewModel.Countdown.Text, Mode=OneWay}" />
+        </Border>
     </Grid>
 </Window>
