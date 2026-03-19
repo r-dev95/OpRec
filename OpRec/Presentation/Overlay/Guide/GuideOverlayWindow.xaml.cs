@@ -35,6 +35,23 @@ namespace OpRec.Presentation.Overlay.Guide
             ViewModel.Stop();
         }
 
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint((UIElement)sender).Position;
+            ViewModel.OnPointerPressed(point);
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint((UIElement)sender).Position;
+            ViewModel.OnPointerMoved(point);
+        }
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            ViewModel.OnPointerReleased();
+        }
+
         private void OnSetRecordingUi()
         {
             WindowHelper.SetAlwaysOnTop(this, true);
@@ -53,32 +70,6 @@ namespace OpRec.Presentation.Overlay.Guide
             WindowHelper.SetClickThrough(this, false);
             WindowHelper.MaximizeWindow(this);
             WindowHelper.SetExcludeFromCapture(this, true);
-        }
-
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var point = e.GetCurrentPoint((UIElement)sender).Position;
-            if (ViewModel.PointerPressedCommand.CanExecute(point))
-            {
-                ViewModel.PointerPressedCommand.Execute(point);
-            }
-        }
-
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            var point = e.GetCurrentPoint((UIElement)sender).Position;
-            if (ViewModel.PointerMovedCommand.CanExecute(point))
-            {
-                ViewModel.PointerMovedCommand.Execute(point);
-            }
-        }
-
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (ViewModel.PointerReleasedCommand.CanExecute(null))
-            {
-                ViewModel.PointerReleasedCommand.Execute(null);
-            }
         }
     }
 }
