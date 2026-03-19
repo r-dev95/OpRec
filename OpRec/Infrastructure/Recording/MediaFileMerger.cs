@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 
 using OpRec.Application.Settings.Ports;
 using OpRec.Infrastructure.Recording.Models;
-using OpRec.Infrastructure.Settings;
 
 using Windows.Media.Editing;
 using Windows.Media.MediaProperties;
@@ -43,7 +42,7 @@ namespace OpRec.Infrastructure.Recording
                 composition.Clips.Add(videoClip);
                 composition.BackgroundAudioTracks.Add(audioTrack);
 
-                var profile = MediaEncodingProfile.CreateMp4(VideoQualitySelector.FromSettings(_settingsService.Current));
+                var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
                 profile.Video.FrameRate.Numerator = (uint)_settingsService.Current.VideoFps;
                 profile.Video.FrameRate.Denominator = 1;
 

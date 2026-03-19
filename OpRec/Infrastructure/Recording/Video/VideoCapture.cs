@@ -12,6 +12,7 @@ using OpRec.Infrastructure.Recording.Models;
 using OpRec.Infrastructure.Settings;
 
 using Windows.Foundation;
+using Windows.Graphics;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Media.Core;
@@ -43,6 +44,7 @@ namespace OpRec.Infrastructure.Recording.Video
         private MediaTranscoder? _transcoder;
 
         private Rect _captureArea;
+        private SizeInt32 _outputSize;
 
         private RecordingState _state = RecordingState.Waiting;
 
@@ -186,10 +188,14 @@ namespace OpRec.Infrastructure.Recording.Video
 
             _device = new CanvasDevice();
 
+            var outputWidth = Math.Max(2, ((int)_captureArea.Width) & ~1);
+            var outputHeight = Math.Max(2, ((int)_captureArea.Height) & ~1);
+            _outputSize = new SizeInt32(outputWidth, outputHeight);
+
             var videoProperties = VideoEncodingProperties.CreateUncompressed(
                 MediaEncodingSubtypes.Bgra8,
-                (uint)_captureArea.Width,
-                (uint)_captureArea.Height);
+                (uint)_outputSize.Width,
+                (uint)_outputSize.Height);
             _videoDescriptor = new VideoStreamDescriptor(videoProperties);
 
             _mediaStreamSource = new MediaStreamSource(_videoDescriptor)
@@ -198,9 +204,12 @@ namespace OpRec.Infrastructure.Recording.Video
             };
             _mediaStreamSource.SampleRequested += OnSampleRequested;
 
-            _profile = MediaEncodingProfile.CreateMp4(VideoQualitySelector.FromSettings(settings));
+            _profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
             _profile.Video.FrameRate.Numerator = (uint)settings.VideoFps;
             _profile.Video.FrameRate.Denominator = 1;
+            _profile.Video.Bitrate = VideoQualitySelector.FromSettings(settings);
+            _profile.Video.Width = (uint)_outputSize.Width;
+            _profile.Video.Height = (uint)_outputSize.Height;
             _transcoder = new MediaTranscoder();
         }
 
@@ -275,7 +284,7 @@ namespace OpRec.Infrastructure.Recording.Video
             {
                 try
                 {
-                    renderTarget = new CanvasRenderTarget(device, (float)_captureArea.Width, (float)_captureArea.Height, 96);
+                    renderTarget = new CanvasRenderTarget(device, _outputSize.Width, _outputSize.Height, 96);
                     _renderTarget = renderTarget;
                 }
                 catch (Exception ex)

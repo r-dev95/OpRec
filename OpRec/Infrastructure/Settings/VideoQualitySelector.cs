@@ -1,23 +1,21 @@
 using OpRec.Domain.Settings.ValueObjects;
 
-using Windows.Media.MediaProperties;
-
 namespace OpRec.Infrastructure.Settings
 {
     public static class VideoQualitySelector
     {
-        public static VideoEncodingQuality FromSettings(UserSettings settings)
+        public static uint FromSettings(UserSettings settings)
         {
-            return ToVideoEncodingQuality(settings.VideoQuality);
+            return ToVideoBitrate(settings.VideoQuality);
         }
 
-        public static VideoEncodingQuality ToVideoEncodingQuality(VideoQualityOptions preset)
+        public static uint ToVideoBitrate(VideoQualityOptions preset)
         {
             return preset switch
             {
-                VideoQualityOptions.Low => VideoEncodingQuality.Wvga,
-                VideoQualityOptions.Medium => VideoEncodingQuality.HD720p,
-                _ => VideoEncodingQuality.HD1080p
+                VideoQualityOptions.Low => 8_000_000,
+                VideoQualityOptions.Medium => 14_000_000,
+                _ => 21_000_000
             };
         }
     }
