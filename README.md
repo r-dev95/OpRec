@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/image/icon.png" alt="OpRec" width="120" />
+  <img src="docs/image/icon.svg" alt="OpRec" width="120" />
   <h1>OpRec</h1>
 
 <!-- [![English](https://img.shields.io/badge/English-018EF5.svg?labelColor=d3d3d3&logo=readme)](./README.md) -->
